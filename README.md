@@ -23,3 +23,4 @@
 ### Day 02 - Part A
 
 - start of day-02
+- simple solution to Part A
