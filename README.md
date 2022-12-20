@@ -24,3 +24,8 @@
 
 - start of day-02
 - simple solution to Part A
+
+### Day 02 - Part B
+
+- start on day-02 Part B
+- ugly solution to Part B
