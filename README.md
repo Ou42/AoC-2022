@@ -19,3 +19,7 @@
 - sortBy in Data.List not Data.Sort?!
 - reverse sort using (flip compare)
 - there are other ways: "Down" ?!
+
+### Day 02 - Part A
+
+- start of day-02
