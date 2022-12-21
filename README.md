@@ -29,3 +29,12 @@
 
 - start on day-02 Part B
 - ugly solution to Part B
+
+## 2022-12-20
+
+### Day 03 - Part A
+
+- WIP
+- Data.Text?
+- Data.ByteString?
+- Data.Set?
