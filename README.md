@@ -35,6 +35,7 @@
 ### Day 03 - Part A
 
 - WIP
-- Data.Text?
-- Data.ByteString?
-- Data.Set?
+- ~~Data.Text?~~
+- ~~Data.ByteString?~~ another time!
+- Used Data.Set to find the duplicate item
+- Used Data.List for the item to Int conversion
