@@ -39,3 +39,9 @@
 - ~~Data.ByteString?~~ another time!
 - Used Data.Set to find the duplicate item
 - Used Data.List for the item to Int conversion
+
+## 2022-12-22
+
+### Day 03 - Part B
+
+- Data.Set -> find intersection between 3 groups
