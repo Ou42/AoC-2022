@@ -1,13 +1,16 @@
-import qualified Data.List as L
+-- import qualified Data.List as L
 import qualified Data.Set as S
 
 type ElfPos = (Char, Int)
 
-elfPosFromFile :: String -> [[ElfPos]]
+-- elfPosFromFile :: String -> [[ElfPos]]
 elfPosFromFile f =
-  map ((filter ((=='#'). fst))
-      . flip zip [0..])
-      $ lines f
+  concatMap (\(es, y) -> map (\(_,x) -> (x,y)) es)
+  . filter (not . null . fst)
+  . flip zip [0..]
+  . map ((filter ((=='#') . fst))
+        . flip zip [0..])
+        $ lines f
 
 main = do
   f <- readFile "input-23-test.txt"

@@ -56,3 +56,4 @@
 - How to find the minmax of the fst and snd of a tuple in one pass?
 - But first ... parse the input data!
 - WIP: putStrLn $ unlines $ map show es
+- parsing works! 2D "Array" -> List of 2D coordinates
