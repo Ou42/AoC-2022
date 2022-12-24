@@ -57,3 +57,4 @@
 - But first ... parse the input data!
 - WIP: putStrLn $ unlines $ map show es
 - parsing works! 2D "Array" -> List of 2D coordinates
+- WIP: helper funcs for doing a round
