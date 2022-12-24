@@ -45,3 +45,14 @@
 ### Day 03 - Part B
 
 - Data.Set -> find intersection between 3 groups
+
+## 2022-12-24
+
+### Day 23 - Part A
+
+- Skipping ahead to Day 23!
+- How to find the minmax in one pass?
+- found: <https://hackage.haskell.org/package/foldl>
+- How to find the minmax of the fst and snd of a tuple in one pass?
+- But first ... parse the input data!
+- WIP: putStrLn $ unlines $ map show es
