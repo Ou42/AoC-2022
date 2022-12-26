@@ -74,3 +74,10 @@
 
 - Answer: use a fold!
 - but also need doRound to return the new positions & new move order
+- Part A - SUCCESS!
+- but a tad slow
+- ... and Part B requires checking to see if no elves moved
+  which will take more time to calculate.
+- other points to ponder: foldl' vs foldr
+- foldr can short-circuit
+- foldl' can't, but might be fast(er)

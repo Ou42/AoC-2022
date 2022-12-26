@@ -37,8 +37,7 @@ legalMoves W = ((all (==False)), [W, SW, NW])
 initialMoveOrder :: [Moves]
 initialMoveOrder = [N, S, W, E]
 
--- rotMoveOrder :: ([Bool] -> Bool,[Moves]) -> ([Bool] -> Bool,[Moves])
--- rotMoveOrder (f, (h:t)) = (f, t <> [h])
+rotMoveOrder :: [Moves] -> [Moves]
 rotMoveOrder (h:t) = t <> [h]
 
 canMove elfPos (mvChk, moves) allPos =
@@ -65,32 +64,28 @@ doRound (moveOrder, allPos) =
       possPos = M.keys mapPossPos
 
   in
-    -- possPos
-    -- M.toList mapPossPos
-    -- concatMap (mapPossPos ! possPos) possPos
     (rotMoveOrder moveOrder, concatMap (\(possPos', oldPos) -> if (length oldPos) == 1
                                                                  then [possPos']
                                                                  else oldPos)
                              $ M.toList mapPossPos)
 
 doRounds moveOrder allPos =
-  -- doRound (moveOrder, allPos)
   foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
 
 main = do
-  f <- readFile "input-23-test.txt"
-  -- f <- readFile "input-23.txt"
+  -- f <- readFile "input-23-test.txt"
+  f <- readFile "input-23.txt"
 
-  putStrLn "-- raw elf position data:"
-  putStrLn f
+  -- putStrLn "-- raw elf position data:"
+  -- putStrLn f
 
   let allElfPos = elfPosFromFile f
-  putStrLn "-- Parse of elf position data:"
-  putStrLn $ show allElfPos
+  -- putStrLn "-- Parse of elf position data:"
+  -- putStrLn $ show allElfPos
 
-  putStrLn ""
+  -- putStrLn ""
   let tenRounds = doRounds initialMoveOrder allElfPos
-  putStrLn $ show $ tenRounds
+  -- putStrLn $ show $ tenRounds
 
   let coords = snd tenRounds
   let (xs, ys) = unzip coords
@@ -102,10 +97,11 @@ main = do
   putStrLn $ "minmax X = " <> show minX <> " " <> show maxX
   putStrLn $ "minmax Y = " <> show minY <> " " <> show maxY
 
-  putStr "The minimum orthogonal rectangular area = "
   let area = ((maxX - minX + 1) * (maxY - minY + 1))
-  putStrLn $ show area
+  putStr $ show area
+  putStrLn " (The minimum orthogonal rectangular area)"
+
   let numElves = (length coords)
-  putStrLn $ "minus the # of elves (" <> show numElves <> ")"
-  putStrLn "------"
-  putStrLn $ "The answer is = " <> show (area - numElves)
+  putStrLn $ "minus " <> show numElves <> " (the # of elves)"
+  putStrLn "======"
+  putStrLn $ show (area - numElves) <> " (The answer for Part A)"
