@@ -81,3 +81,9 @@
 - other points to ponder: foldl' vs foldr
 - foldr can short-circuit
 - foldl' can't, but might be fast(er)
+
+### Day 23 - Part B
+
+- for Part B return number of rounds until no movement
+- I'm thinking foldr & short-circuiting
+- weirdness with foldr, but progress

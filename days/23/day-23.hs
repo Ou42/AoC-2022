@@ -2,6 +2,21 @@ module Day23 where
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
 
+{-
+    Day 23
+
+      Part A
+        . Conway's Game of Life type deal
+        . Follow rules to move elves
+        . Run rules 10x
+        . Calc rectangular area fitting
+          all elves
+
+      Part B
+        . Run rules until no movement
+        . How many rounds is that?
+-}
+
 type ElfPos = (Int, Int)
 
 elfPosFromFile :: String -> [ElfPos]
@@ -69,30 +84,23 @@ doRound (moveOrder, allPos) =
                                                                  else oldPos)
                              $ M.toList mapPossPos)
 
-doRounds moveOrder allPos =
+doRoundsPartA moveOrder allPos =
   foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
 
-main = do
-  -- f <- readFile "input-23-test.txt"
-  f <- readFile "input-23.txt"
+doRoundsPartB moveOrder allPos =
+  -- foldr (\cnt res@(_,acc) -> if cnt == 4 then res else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
+  foldr (\cnt (rnd,acc) -> if rnd == 3 then (rnd, acc) else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
 
-  -- putStrLn "-- raw elf position data:"
-  -- putStrLn f
+partA :: [ElfPos] -> IO ()
+partA allPos = do
+  let tenRounds = doRoundsPartA initialMoveOrder allPos
 
-  let allElfPos = elfPosFromFile f
-  -- putStrLn "-- Parse of elf position data:"
-  -- putStrLn $ show allElfPos
-
-  -- putStrLn ""
-  let tenRounds = doRounds initialMoveOrder allElfPos
-  -- putStrLn $ show $ tenRounds
-
-  let coords = snd tenRounds
-  let (xs, ys) = unzip coords
-  let minX = minimum xs
-  let maxX = maximum xs
-  let minY = minimum ys
-  let maxY = maximum ys
+      coords = snd tenRounds
+      (xs, ys) = unzip coords
+      minX = minimum xs
+      maxX = maximum xs
+      minY = minimum ys
+      maxY = maximum ys
 
   putStrLn $ "minmax X = " <> show minX <> " " <> show maxX
   putStrLn $ "minmax Y = " <> show minY <> " " <> show maxY
@@ -105,3 +113,27 @@ main = do
   putStrLn $ "minus " <> show numElves <> " (the # of elves)"
   putStrLn "======"
   putStrLn $ show (area - numElves) <> " (The answer for Part A)"
+
+partB :: [ElfPos] -> IO ()
+partB allPos = do
+  let getRounds = doRoundsPartB initialMoveOrder allPos
+  putStrLn "I don't know nuthin'! ... YET!"
+  putStrLn $ "... but I'm getting closer ... " <> show getRounds
+
+
+main = do
+  f <- readFile "input-23-test.txt"
+  -- f <- readFile "input-23.txt"
+
+  -- putStrLn "-- raw elf position data:"
+  -- putStrLn f
+
+  let allElfPos = elfPosFromFile f
+  -- putStrLn "-- Parse of elf position data:"
+  -- putStrLn $ show allElfPos
+
+  -- putStrLn ""
+  -- partA allElfPos
+
+  -- putStrLn ""
+  partB allElfPos
