@@ -59,3 +59,12 @@
 - parsing works! 2D "Array" -> List of 2D coordinates
 - WIP: helper funcs for doing a round
 - WIP: doRound func
+
+## 2022-12-25
+
+### Day 23 - Part A
+
+- doRound: want a single Map, not a List of Maps
+- Q: how to move the elves and then rotate the move order & then
+     move the elves again?
+     

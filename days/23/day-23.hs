@@ -49,22 +49,29 @@ canMove elfPos (mvChk, moves) allPos =
 -- create a Map to check if 2+ elves landed on same tile
 -- k v == (new pos) [(old pos)]
 doRound moveOrder allPos = 
-  let -- mapPos :: M.Map ElfPos [ElfPos]
-      mapPos = M.empty
-    --   moveOrNot :: ElfPos -> Bool -> M.Map ElfPos [ElfPos]
-    --   moveOrNot elfPos False = M.insert elfPos [elfPos] mapPos
-      moveOrNot elfPos True  =
-        -- take the head of the fold of ...
-        -- M.insert elfPos [elfPos] mapPos
-        M.insertWith (<>) newElfPos [elfPos] mapPos
-        where
-          validMoves = map (\move -> (canMove elfPos (legalMoves move) allPos)) moveOrder
-          possMoves  = map (\move -> (moveFuncs move) elfPos) moveOrder
-          newElfPos  = filter ((==True) . fst) $ zip validMoves possMoves
+  -- map creates a List of Maps.
+  -- fold creates ONE Map:
+  let mapPossPos = foldr ( \ePos eMap -> M.insertWith (<>) (getNewElfPos ePos) [ePos] eMap ) M.empty allPos
+                      where
+                        getNewElfPos elfPos = (moveOrNot elfPos) $ (canMove elfPos allMoves allPos)
+                        moveOrNot elfPos False = elfPos
+                        moveOrNot elfPos True  = newElfPos'
+                          where
+                            -- it IS possible that an Elf is *allowed* to move, but cannot!
+                            newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) $ zip validMoves possMoves
+                            validMoves = map (\move -> (canMove elfPos (legalMoves move) allPos)) moveOrder
+                            possMoves  = map (\move -> (moveFuncs move) elfPos) moveOrder
+      possPos = M.keys mapPossPos
 
   in
-    map ( \ep -> (moveOrNot ep) $ (canMove ep allMoves allPos) ) allPos
+    -- possPos
+    -- M.toList mapPossPos
+    -- concatMap (mapPossPos ! possPos) possPos
+    concatMap (\(possPos', oldPos) -> if (length oldPos) == 1 then [possPos'] else oldPos)
+               $ M.toList mapPossPos
 
+doRounds moveOrder allPos =
+  doRound moveOrder allPos
 
 main = do
   f <- readFile "input-23-test.txt"
@@ -77,4 +84,4 @@ main = do
   putStrLn $ show allElfPos
 
   putStrLn ""
-  putStrLn $ show $ doRound initialMoveOrder allElfPos
+  putStrLn $ show $ doRounds initialMoveOrder allElfPos
