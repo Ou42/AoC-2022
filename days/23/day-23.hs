@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Day23 where
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
@@ -88,8 +90,37 @@ doRoundsPartA moveOrder allPos =
   foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
 
 doRoundsPartB moveOrder allPos =
+  -- the following didn't work and returned (1, ...)
+  --    probably due to lazy evaluation?! It just read cnt and exited ???
   -- foldr (\cnt res@(_,acc) -> if cnt == 4 then res else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
-  foldr (\cnt (rnd,acc) -> if rnd == 3 then (rnd, acc) else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
+
+  -- this *did* do the calculations and short-circuited
+  -- foldr (\cnt (rnd,acc) -> if rnd == 3 then (rnd, acc) else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
+
+  -- check to see if no movement: slow method(?) compare 2 rounds
+{-
+  -- foldr (\cnt (rnd,acc@(_,allPos')) -> if ((allPos' == (snd (doRound acc))) || (rnd == 777))
+  foldr (\cnt (rnd,acc@(_,allPos')) -> if ( (rnd == 777) || (allPos' == (snd (doRound acc))) )
+                             then (rnd, acc)
+                             else (cnt,(doRound acc)))
+        (0,(moveOrder, allPos))
+        [1..1000]
+-- why does it go to "982" if I'm trying to short-circuit at 777 ?!        
+-- I don't know nuthin'! ... YET!
+-- ... but I'm getting closer ... (982,([E,N,S,W],[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]))
+-}
+  let prevPos = [] :: [ElfPos]
+  in
+    foldr (\cnt (rnd, !acc, prevPos') ->
+              let !res  = doRound acc
+                  !prev = snd acc
+              in
+                if ( (rnd == 3) )
+                  then (rnd, acc, prevPos')
+                  else (cnt, res, prev)
+          )
+          (0,(moveOrder, allPos), prevPos)
+          [1..1000]
 
 partA :: [ElfPos] -> IO ()
 partA allPos = do
@@ -118,7 +149,23 @@ partB :: [ElfPos] -> IO ()
 partB allPos = do
   let getRounds = doRoundsPartB initialMoveOrder allPos
   putStrLn "I don't know nuthin'! ... YET!"
-  putStrLn $ "... but I'm getting closer ... " <> show getRounds
+  putStrLn $ "... but I'm getting closer ... "
+  let (a,(b,c),d) = getRounds
+  print a
+  print b
+  print c
+  print d
+{-
+1
+[N,S,W,E]
+[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
+[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
+
+2
+[E,N,S,W]
+[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
+[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
+-}
 
 
 main = do

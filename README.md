@@ -87,3 +87,4 @@
 - for Part B return number of rounds until no movement
 - I'm thinking foldr & short-circuiting
 - weirdness with foldr, but progress
+- lazy evaluation issue? res/acc aren't updating
