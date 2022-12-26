@@ -67,4 +67,10 @@
 - doRound: want a single Map, not a List of Maps
 - Q: how to move the elves and then rotate the move order & then
      move the elves again?
-     
+
+## 2022-12-26
+
+### Day 23 - Part A
+
+- Answer: use a fold!
+- but also need doRound to return the new positions & new move order

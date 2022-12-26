@@ -37,8 +37,9 @@ legalMoves W = ((all (==False)), [W, SW, NW])
 initialMoveOrder :: [Moves]
 initialMoveOrder = [N, S, W, E]
 
-rotMoveOrder :: ([Bool] -> Bool,[Moves]) -> ([Bool] -> Bool,[Moves])
-rotMoveOrder (f, (h:t)) = (f, t <> [h])
+-- rotMoveOrder :: ([Bool] -> Bool,[Moves]) -> ([Bool] -> Bool,[Moves])
+-- rotMoveOrder (f, (h:t)) = (f, t <> [h])
+rotMoveOrder (h:t) = t <> [h]
 
 canMove elfPos (mvChk, moves) allPos =
   mvChk
@@ -48,7 +49,7 @@ canMove elfPos (mvChk, moves) allPos =
 
 -- create a Map to check if 2+ elves landed on same tile
 -- k v == (new pos) [(old pos)]
-doRound moveOrder allPos = 
+doRound (moveOrder, allPos) = 
   -- map creates a List of Maps.
   -- fold creates ONE Map:
   let mapPossPos = foldr ( \ePos eMap -> M.insertWith (<>) (getNewElfPos ePos) [ePos] eMap ) M.empty allPos
@@ -67,14 +68,18 @@ doRound moveOrder allPos =
     -- possPos
     -- M.toList mapPossPos
     -- concatMap (mapPossPos ! possPos) possPos
-    concatMap (\(possPos', oldPos) -> if (length oldPos) == 1 then [possPos'] else oldPos)
-               $ M.toList mapPossPos
+    (rotMoveOrder moveOrder, concatMap (\(possPos', oldPos) -> if (length oldPos) == 1
+                                                                 then [possPos']
+                                                                 else oldPos)
+                             $ M.toList mapPossPos)
 
 doRounds moveOrder allPos =
-  doRound moveOrder allPos
+  -- doRound (moveOrder, allPos)
+  foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
 
 main = do
   f <- readFile "input-23-test.txt"
+  -- f <- readFile "input-23.txt"
 
   putStrLn "-- raw elf position data:"
   putStrLn f
@@ -84,4 +89,23 @@ main = do
   putStrLn $ show allElfPos
 
   putStrLn ""
-  putStrLn $ show $ doRounds initialMoveOrder allElfPos
+  let tenRounds = doRounds initialMoveOrder allElfPos
+  putStrLn $ show $ tenRounds
+
+  let coords = snd tenRounds
+  let (xs, ys) = unzip coords
+  let minX = minimum xs
+  let maxX = maximum xs
+  let minY = minimum ys
+  let maxY = maximum ys
+
+  putStrLn $ "minmax X = " <> show minX <> " " <> show maxX
+  putStrLn $ "minmax Y = " <> show minY <> " " <> show maxY
+
+  putStr "The minimum orthogonal rectangular area = "
+  let area = ((maxX - minX + 1) * (maxY - minY + 1))
+  putStrLn $ show area
+  let numElves = (length coords)
+  putStrLn $ "minus the # of elves (" <> show numElves <> ")"
+  putStrLn "------"
+  putStrLn $ "The answer is = " <> show (area - numElves)
