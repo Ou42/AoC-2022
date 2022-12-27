@@ -88,3 +88,4 @@
 - I'm thinking foldr & short-circuiting
 - weirdness with foldr, but progress
 - lazy evaluation issue? res/acc aren't updating
+- some optimization attempts. Less code, but not faster!?

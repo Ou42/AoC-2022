@@ -3,6 +3,7 @@
 module Day23 where
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
+import System.CPUTime
 
 {-
     Day 23
@@ -63,6 +64,11 @@ canMove elfPos (mvChk, moves) allPos =
         . (flip moveFuncs elfPos)
         ) moves
 
+-- per: https://wiki.haskell.org/Foldr_Foldl_Foldl'
+foldl' f z []     = z
+foldl' f z (x:xs) = let z' = z `f` x 
+                    in seq z' $ foldl' f z' xs
+
 -- create a Map to check if 2+ elves landed on same tile
 -- k v == (new pos) [(old pos)]
 doRound (moveOrder, allPos) = 
@@ -75,9 +81,28 @@ doRound (moveOrder, allPos) =
                         moveOrNot elfPos True  = newElfPos'
                           where
                             -- it IS possible that an Elf is *allowed* to move, but cannot!
-                            newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) $ zip validMoves possMoves
-                            validMoves = map (\move -> (canMove elfPos (legalMoves move) allPos)) moveOrder
-                            possMoves  = map (\move -> (moveFuncs move) elfPos) moveOrder
+                            -- newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) $ zip validMoves possMoves
+                            -- validMoves = map (\move -> (canMove elfPos (legalMoves move) allPos)) moveOrder
+                            -- possMoves  = map (\move -> (moveFuncs move) elfPos) moveOrder
+
+                            -- possible optimization:
+                            --  combine validMoves & possMove and do only ONE map op!
+                            -- newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) validAndPossMoves
+                            -- validAndPossMoves = map (\move -> 
+                            --                             ((canMove elfPos (legalMoves move) allPos),
+                            --                              ((moveFuncs move) elfPos)
+                            --                             )
+                            --                         ) moveOrder
+                            -- futher optimization:
+                            newElfPos' = head $ (<> [elfPos]) onlyValidMoves
+                            onlyValidMoves = foldr (\move acc ->
+                            -- foldl' produces the WRONG ANSWER!!!
+                            -- onlyValidMoves = foldl' (\acc move -> 
+                                                            if (canMove elfPos (legalMoves move) allPos)
+                                                              then ((moveFuncs move) elfPos) : acc
+                                                              else acc
+                                                    ) [] moveOrder
+
       possPos = M.keys mapPossPos
 
   in
@@ -87,7 +112,8 @@ doRound (moveOrder, allPos) =
                              $ M.toList mapPossPos)
 
 doRoundsPartA moveOrder allPos =
-  foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
+  -- foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
+  foldl' (\acc cnt -> doRound acc) (moveOrder, allPos) [1..10]
 
 doRoundsPartB moveOrder allPos =
   -- the following didn't work and returned (1, ...)
@@ -122,6 +148,14 @@ doRoundsPartB moveOrder allPos =
           (0,(moveOrder, allPos), prevPos)
           [1..1000]
 
+pB2 moveOrder allPos = go 0 (moveOrder, allPos) []
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 420 || (ap == prevPos)
+        then (rnd, res)
+        else go (rnd+1) (doRound res) ap
+
+
 partA :: [ElfPos] -> IO ()
 partA allPos = do
   let tenRounds = doRoundsPartA initialMoveOrder allPos
@@ -147,14 +181,16 @@ partA allPos = do
 
 partB :: [ElfPos] -> IO ()
 partB allPos = do
-  let getRounds = doRoundsPartB initialMoveOrder allPos
+  -- let getRounds = doRoundsPartB initialMoveOrder allPos
+  let getRounds = pB2 initialMoveOrder allPos
   putStrLn "I don't know nuthin'! ... YET!"
   putStrLn $ "... but I'm getting closer ... "
-  let (a,(b,c),d) = getRounds
-  print a
-  print b
-  print c
-  print d
+  -- let (a,(b,c),d) = getRounds
+  -- print a
+  -- print b
+  -- print c
+  -- print d
+  print getRounds
 {-
 1
 [N,S,W,E]
@@ -169,8 +205,10 @@ partB allPos = do
 
 
 main = do
-  f <- readFile "input-23-test.txt"
-  -- f <- readFile "input-23.txt"
+
+  start <- getCPUTime
+  -- f <- readFile "input-23-test.txt"
+  f <- readFile "input-23.txt"
 
   -- putStrLn "-- raw elf position data:"
   -- putStrLn f
@@ -180,7 +218,12 @@ main = do
   -- putStrLn $ show allElfPos
 
   -- putStrLn ""
-  -- partA allElfPos
+  partA allElfPos
 
   -- putStrLn ""
-  partB allElfPos
+  -- partB allElfPos
+
+  end <- getCPUTime
+
+  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
+  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
