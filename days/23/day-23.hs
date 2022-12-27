@@ -21,6 +21,7 @@ import System.CPUTime
 -}
 
 type ElfPos = (Int, Int)
+type ElfPosSet = S.Set ElfPos
 
 elfPosFromFile :: String -> [ElfPos]
 elfPosFromFile f =
@@ -30,6 +31,10 @@ elfPosFromFile f =
   . map ((filter ((=='#') . fst))
         . flip zip [0..])
         $ lines f
+
+elfPosFromFileToSet :: String -> ElfPosSet
+elfPosFromFileToSet f =
+  S.fromList $ elfPosFromFile f
 
 data Moves =   N  | S  | E  | W
              | NW | NE | SW | SE deriving Show
@@ -65,15 +70,14 @@ canMove elfPos (mvChk, moves) allPos =
         ) moves
 
 -- per: https://wiki.haskell.org/Foldr_Foldl_Foldl'
-foldl' f z []     = z
-foldl' f z (x:xs) = let z' = z `f` x 
-                    in seq z' $ foldl' f z' xs
+-- foldl' f z []     = z
+-- foldl' f z (x:xs) = let z' = z `f` x 
+--                     in seq z' $ foldl' f z' xs
 
 -- create a Map to check if 2+ elves landed on same tile
 -- k v == (new pos) [(old pos)]
-doRound (moveOrder, allPos) = 
-  -- map creates a List of Maps.
-  -- fold creates ONE Map:
+doRndV01UsingMap (moveOrder, allPos) = 
+  -- map creates a List of Maps. foldf creates ONE Map:
   let mapPossPos = foldr ( \ePos eMap -> M.insertWith (<>) (getNewElfPos ePos) [ePos] eMap ) M.empty allPos
                       where
                         getNewElfPos elfPos = (moveOrNot elfPos) $ (canMove elfPos allMoves allPos)
@@ -81,23 +85,8 @@ doRound (moveOrder, allPos) =
                         moveOrNot elfPos True  = newElfPos'
                           where
                             -- it IS possible that an Elf is *allowed* to move, but cannot!
-                            -- newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) $ zip validMoves possMoves
-                            -- validMoves = map (\move -> (canMove elfPos (legalMoves move) allPos)) moveOrder
-                            -- possMoves  = map (\move -> (moveFuncs move) elfPos) moveOrder
-
-                            -- possible optimization:
-                            --  combine validMoves & possMove and do only ONE map op!
-                            -- newElfPos' = head $ (<> [elfPos]) $ snd $ unzip $ filter ((==True) . fst) validAndPossMoves
-                            -- validAndPossMoves = map (\move -> 
-                            --                             ((canMove elfPos (legalMoves move) allPos),
-                            --                              ((moveFuncs move) elfPos)
-                            --                             )
-                            --                         ) moveOrder
-                            -- futher optimization:
                             newElfPos' = head $ (<> [elfPos]) onlyValidMoves
                             onlyValidMoves = foldr (\move acc ->
-                            -- foldl' produces the WRONG ANSWER!!!
-                            -- onlyValidMoves = foldl' (\acc move -> 
                                                             if (canMove elfPos (legalMoves move) allPos)
                                                               then ((moveFuncs move) elfPos) : acc
                                                               else acc
@@ -111,34 +100,38 @@ doRound (moveOrder, allPos) =
                                                                  else oldPos)
                              $ M.toList mapPossPos)
 
-doRoundsPartA moveOrder allPos =
-  -- foldr (\cnt acc -> doRound acc) (moveOrder, allPos) [1..10]
-  foldl' (\acc cnt -> doRound acc) (moveOrder, allPos) [1..10]
+-- using a Set, calc potential move, then check to see if NN, SS, EE, or WW moved there too.
+doRndV02UsingSet (moveOrder, allPosSet) =
+  -- create new Set from old Set
+  (rotMoveOrder moveOrder
+  , S.foldr ( \elfPos newSet -> S.insert elfPos newSet
+                              --  ************************************
+                              --
+                              --     - cycle over all elfPos
+                              --     - canMove == False
+                              --           - store (old) elfPos
+                              --           - break/continue looping
+                              --     - canMove == True
+                              --           - calc new elfPos
+                              --           - check NN, SS, EE, or WW
+                              --           - if ANY move to new elfPos
+                              --                 - store (old) elfPos
+                              --           - else
+                              --                 - store new elfPos
+                              --   
+                              --   ************************************
+              ) S.empty allPosSet )
+
+doTenRoundsPartA01 strFromFile =
+  snd $ foldr (\cnt acc -> doRndV01UsingMap acc) (initialMoveOrder, allElfPos) [1..10]
+    where
+      allElfPos = elfPosFromFile strFromFile
 
 doRoundsPartB moveOrder allPos =
-  -- the following didn't work and returned (1, ...)
-  --    probably due to lazy evaluation?! It just read cnt and exited ???
-  -- foldr (\cnt res@(_,acc) -> if cnt == 4 then res else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
-
-  -- this *did* do the calculations and short-circuited
-  -- foldr (\cnt (rnd,acc) -> if rnd == 3 then (rnd, acc) else (cnt,(doRound acc))) (0,(moveOrder, allPos)) [1..10]
-
-  -- check to see if no movement: slow method(?) compare 2 rounds
-{-
-  -- foldr (\cnt (rnd,acc@(_,allPos')) -> if ((allPos' == (snd (doRound acc))) || (rnd == 777))
-  foldr (\cnt (rnd,acc@(_,allPos')) -> if ( (rnd == 777) || (allPos' == (snd (doRound acc))) )
-                             then (rnd, acc)
-                             else (cnt,(doRound acc)))
-        (0,(moveOrder, allPos))
-        [1..1000]
--- why does it go to "982" if I'm trying to short-circuit at 777 ?!        
--- I don't know nuthin'! ... YET!
--- ... but I'm getting closer ... (982,([E,N,S,W],[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]))
--}
   let prevPos = [] :: [ElfPos]
   in
     foldr (\cnt (rnd, !acc, prevPos') ->
-              let !res  = doRound acc
+              let !res  = doRndV01UsingMap acc
                   !prev = snd acc
               in
                 if ( (rnd == 3) )
@@ -153,24 +146,28 @@ pB2 moveOrder allPos = go 0 (moveOrder, allPos) []
     go rnd res@(mo, ap) prevPos =
       if rnd == 420 || (ap == prevPos)
         then (rnd, res)
-        else go (rnd+1) (doRound res) ap
+        else go (rnd+1) (doRndV01UsingMap res) ap
 
+dispTimings start end = do
+  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
+  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
 
-partA :: [ElfPos] -> IO ()
-partA allPos = do
-  let tenRounds = doRoundsPartA initialMoveOrder allPos
-
-      coords = snd tenRounds
+partA :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
+partA strFromFile verTag showTimings tenRndsFunc = do
+  start <- getCPUTime
+  let 
+      coords = tenRndsFunc strFromFile
       (xs, ys) = unzip coords
       minX = minimum xs
       maxX = maximum xs
       minY = minimum ys
       maxY = maximum ys
+      area = ((maxX - minX + 1) * (maxY - minY + 1))
 
+  putStrLn $ "------ Part A " <> verTag
   putStrLn $ "minmax X = " <> show minX <> " " <> show maxX
   putStrLn $ "minmax Y = " <> show minY <> " " <> show maxY
 
-  let area = ((maxX - minX + 1) * (maxY - minY + 1))
   putStr $ show area
   putStrLn " (The minimum orthogonal rectangular area)"
 
@@ -179,51 +176,24 @@ partA allPos = do
   putStrLn "======"
   putStrLn $ show (area - numElves) <> " (The answer for Part A)"
 
+  end <- getCPUTime
+
+  if showTimings then dispTimings start end
+                 else putStr ""
+  putStrLn "------------------------"
+
 partB :: [ElfPos] -> IO ()
 partB allPos = do
   -- let getRounds = doRoundsPartB initialMoveOrder allPos
   let getRounds = pB2 initialMoveOrder allPos
-  putStrLn "I don't know nuthin'! ... YET!"
-  putStrLn $ "... but I'm getting closer ... "
-  -- let (a,(b,c),d) = getRounds
-  -- print a
-  -- print b
-  -- print c
-  -- print d
+  putStrLn $ "Part B, but to slow to find the right answer = ??? = ..."
   print getRounds
-{-
-1
-[N,S,W,E]
-[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
-[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
-
-2
-[E,N,S,W]
-[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
-[(0,5),(2,2),(2,7),(3,4),(4,1),(4,6),(4,8),(4,10),(6,3),(6,8),(7,0),(7,11),(8,2),(8,4),(8,7),(9,9),(10,4),(10,6),(11,1),(11,8),(11,10),(13,4)]
--}
 
 
 main = do
-
-  start <- getCPUTime
   -- f <- readFile "input-23-test.txt"
   f <- readFile "input-23.txt"
 
-  -- putStrLn "-- raw elf position data:"
-  -- putStrLn f
+  partA f "version 1:" True doTenRoundsPartA01
 
-  let allElfPos = elfPosFromFile f
-  -- putStrLn "-- Parse of elf position data:"
-  -- putStrLn $ show allElfPos
-
-  -- putStrLn ""
-  partA allElfPos
-
-  -- putStrLn ""
   -- partB allElfPos
-
-  end <- getCPUTime
-
-  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
-  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"

@@ -76,7 +76,7 @@
 - but also need doRound to return the new positions & new move order
 - Part A - SUCCESS!
 - but a tad slow
-- ... and Part B requires checking to see if no elves moved
+- ... and Part B requires checking to see if no elves moved  
   which will take more time to calculate.
 - other points to ponder: foldl' vs foldr
 - foldr can short-circuit
@@ -89,3 +89,17 @@
 - weirdness with foldr, but progress
 - lazy evaluation issue? res/acc aren't updating
 - some optimization attempts. Less code, but not faster!?
+
+## 2022-12-27
+
+### Day 23 - Part B ( and A )
+
+- It's too slow. Perhaps not converting back to a List ea round?
+- Prep for Part A Version 2: Using Sets
+- code cleanup:
+  - renamed some funcs
+  - now passing funcs to funcs
+  - DRY
+  - future use: made timing diff vers easier
+- vscode tip: Ctrl + ` (backtick) toggles Terminal  
+  ( can leave ghci running! )
