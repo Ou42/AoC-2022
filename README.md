@@ -103,3 +103,7 @@
   - future use: made timing diff vers easier
 - vscode tip: Ctrl + ` (backtick) toggles Terminal  
   ( can leave ghci running! )
+- Ver 2 using sets: WIP
+  - WIP on doRndV02UsingSet
+  - canMoveUsingSet vs canMove  
+    Set.member O(log n) vs List.elem O(???)

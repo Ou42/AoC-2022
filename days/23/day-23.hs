@@ -37,16 +37,22 @@ elfPosFromFileToSet f =
   S.fromList $ elfPosFromFile f
 
 data Moves =   N  | S  | E  | W
-             | NW | NE | SW | SE deriving Show
+             | NW | NE | SW | SE
+             | NN | SS | EE | WW deriving Show
 
-moveFuncs N  = \(x,y) -> (x,y-1)
-moveFuncs S  = \(x,y) -> (x,y+1)
-moveFuncs E  = \(x,y) -> (x+1,y)
-moveFuncs W  = \(x,y) -> (x-1,y)
-moveFuncs NE = \(x,y) -> (x+1,y-1)
-moveFuncs NW = \(x,y) -> (x-1,y-1)
-moveFuncs SE = \(x,y) -> (x+1,y+1)
-moveFuncs SW = \(x,y) -> (x-1,y+1)
+moveToTile :: Moves -> (ElfPos -> ElfPos)
+moveToTile N  = \(x,y) -> (x,y-1)
+moveToTile S  = \(x,y) -> (x,y+1)
+moveToTile E  = \(x,y) -> (x+1,y)
+moveToTile W  = \(x,y) -> (x-1,y)
+moveToTile NE = moveToTile N . moveToTile E
+moveToTile NW = moveToTile N . moveToTile W
+moveToTile SE = moveToTile S . moveToTile E
+moveToTile SW = moveToTile S . moveToTile W
+moveToTile NN = moveToTile N . moveToTile N
+moveToTile SS = moveToTile S . moveToTile S
+moveToTile EE = moveToTile E . moveToTile E
+moveToTile WW = moveToTile W . moveToTile W
 
 allMoves :: ([Bool] -> Bool,[Moves])
 allMoves = ((any (==True)), [N, S, W, E, NW, NE, SW, SE])
@@ -63,16 +69,20 @@ initialMoveOrder = [N, S, W, E]
 rotMoveOrder :: [Moves] -> [Moves]
 rotMoveOrder (h:t) = t <> [h]
 
+canMove :: ElfPos -> ([Bool] -> Bool, [Moves]) -> [ElfPos] -> Bool
 canMove elfPos (mvChk, moves) allPos =
   mvChk
   $ map ( (flip elem allPos)
-        . (flip moveFuncs elfPos)
+        . (flip moveToTile elfPos)
         ) moves
 
--- per: https://wiki.haskell.org/Foldr_Foldl_Foldl'
--- foldl' f z []     = z
--- foldl' f z (x:xs) = let z' = z `f` x 
---                     in seq z' $ foldl' f z' xs
+canMoveUsingSet :: ElfPos -> ([Bool] -> Bool, [Moves]) -> S.Set ElfPos -> Bool
+canMoveUsingSet elfPos (mvChk, moves) allPos =
+  mvChk
+--  $ map ( (flip elem allPos)
+  $ map ( (flip S.member allPos)
+          . (flip moveToTile elfPos)
+          ) moves
 
 -- create a Map to check if 2+ elves landed on same tile
 -- k v == (new pos) [(old pos)]
@@ -88,7 +98,7 @@ doRndV01UsingMap (moveOrder, allPos) =
                             newElfPos' = head $ (<> [elfPos]) onlyValidMoves
                             onlyValidMoves = foldr (\move acc ->
                                                             if (canMove elfPos (legalMoves move) allPos)
-                                                              then ((moveFuncs move) elfPos) : acc
+                                                              then ((moveToTile move) elfPos) : acc
                                                               else acc
                                                     ) [] moveOrder
 
@@ -104,28 +114,49 @@ doRndV01UsingMap (moveOrder, allPos) =
 doRndV02UsingSet (moveOrder, allPosSet) =
   -- create new Set from old Set
   (rotMoveOrder moveOrder
-  , S.foldr ( \elfPos newSet -> S.insert elfPos newSet
-                              --  ************************************
+  , S.foldr ( \elfPos newSet ->
+        if canMoveUsingSet elfPos allMoves allPosSet
+          then S.insert (getNewElfPos elfPos) newSet
+          else S.insert elfPos newSet
+                              --  ****************************************
                               --
-                              --     - cycle over all elfPos
-                              --     - canMove == False
-                              --           - store (old) elfPos
-                              --           - break/continue looping
-                              --     - canMove == True
-                              --           - calc new elfPos
-                              --           - check NN, SS, EE, or WW
-                              --           - if ANY move to new elfPos
-                              --                 - store (old) elfPos
-                              --           - else
-                              --                 - store new elfPos
+                              --   [✔] - cycle over all elfPos
+                              --   [✔] - canMove == False
+                              --   [✔]     - store (old) elfPos
+                              --   [✔]     - break/continue looping
+                              --   [ ] - canMove == True
+                              --   [✔]     - calc new elfPos
+                              --   [ ]     - check NN, SS, EE, or WW
+                              --   [ ]          - canMove on ea
+                              --   [ ]          - calc new elfPos for ea
+                              --   [ ]          - S.member newElfPos [elfPos' of NN..WW]
+                              --                  ( *can* S.member on Set.empty! )
+                              --   [ ]     - if ANY move to new elfPos
+                              --   [ ]          - store (old) elfPos
+                              --   [ ]     - else
+                              --   [ ]          - store new elfPos
                               --   
-                              --   ************************************
+                              --  ****************************************
               ) S.empty allPosSet )
+    where
+      -- it IS possible that an Elf is *allowed* to move, but cannot!
+      getNewElfPos ePos = head $ (<> [ePos]) $ onlyValidMoves ePos
+      onlyValidMoves ePos' = foldr (\move acc ->
+                                      if (canMoveUsingSet ePos' (legalMoves move) allPosSet)
+                                        then ((moveToTile move) ePos') : acc
+                                        else acc
+                              ) [] moveOrder
+
 
 doTenRoundsPartA01 strFromFile =
   snd $ foldr (\cnt acc -> doRndV01UsingMap acc) (initialMoveOrder, allElfPos) [1..10]
     where
       allElfPos = elfPosFromFile strFromFile
+
+doTenRoundsPartA02 strFromFile =
+  S.toList $ snd $ foldr (\cnt acc -> doRndV02UsingSet acc) (initialMoveOrder, allElfPos) [1..10]
+    where
+      allElfPos = elfPosFromFileToSet strFromFile
 
 doRoundsPartB moveOrder allPos =
   let prevPos = [] :: [ElfPos]
@@ -195,5 +226,7 @@ main = do
   f <- readFile "input-23.txt"
 
   partA f "version 1:" True doTenRoundsPartA01
+
+  partA f "version 2:" True doTenRoundsPartA02
 
   -- partB allElfPos
