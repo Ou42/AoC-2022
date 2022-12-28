@@ -107,3 +107,16 @@
   - WIP on doRndV02UsingSet
   - canMoveUsingSet vs canMove  
     Set.member O(log n) vs List.elem O(???)
+
+## 2022-12-28
+
+### Day 23 - Part B ( and A )
+
+- Part B Solved!
+  - Part A Version 2, using Sets is much faster
+  - Much of Part A is used in Part B
+  - Solved Part B in 260889.949274 ms
+  - but ... "every problem has a solution that completes  
+    in at most 15 seconds on ten-year-old hardware."  
+    per: <https://adventofcode.com/2022/about>
+  - What am I missing?!

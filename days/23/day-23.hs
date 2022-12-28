@@ -3,6 +3,7 @@
 module Day23 where
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
+import Debug.Trace
 import System.CPUTime
 
 {-
@@ -115,8 +116,8 @@ doRndV02UsingSet (moveOrder, allPosSet) =
   -- create new Set from old Set
   (rotMoveOrder moveOrder
   , S.foldr ( \elfPos newSet ->
-        if canMoveUsingSet elfPos allMoves allPosSet
-          then S.insert (getNewElfPos elfPos) newSet
+        if (canMoveUsingSet elfPos allMoves allPosSet) && (not (isDestDupe elfPos moveOrder allPosSet))
+          then S.insert (getNewElfPos elfPos moveOrder allPosSet) newSet
           else S.insert elfPos newSet
                               --  ****************************************
                               --
@@ -127,6 +128,7 @@ doRndV02UsingSet (moveOrder, allPosSet) =
                               --   [ ] - canMove == True
                               --   [✔]     - calc new elfPos
                               --   [ ]     - check NN, SS, EE, or WW
+                              --   [✔✔]         - S.member of allPosSet !!
                               --   [ ]          - canMove on ea
                               --   [ ]          - calc new elfPos for ea
                               --   [ ]          - S.member newElfPos [elfPos' of NN..WW]
@@ -137,24 +139,53 @@ doRndV02UsingSet (moveOrder, allPosSet) =
                               --   [ ]          - store new elfPos
                               --   
                               --  ****************************************
-              ) S.empty allPosSet )
-    where
-      -- it IS possible that an Elf is *allowed* to move, but cannot!
-      getNewElfPos ePos = head $ (<> [ePos]) $ onlyValidMoves ePos
-      onlyValidMoves ePos' = foldr (\move acc ->
-                                      if (canMoveUsingSet ePos' (legalMoves move) allPosSet)
-                                        then ((moveToTile move) ePos') : acc
-                                        else acc
-                              ) [] moveOrder
+              ) (S.empty :: S.Set ElfPos) allPosSet )
+    -- where
+    --   -- it IS possible that an Elf is *allowed* to move, but cannot!
+    --   getNewElfPos ePos = head $ (<> [ePos]) $ onlyValidMoves ePos
+    --   onlyValidMoves ePos' = foldr (\move acc ->
+    --                                   if (canMoveUsingSet ePos' (legalMoves move) allPosSet)
+    --                                     then ((moveToTile move) ePos') : acc
+    --                                     else acc
+    --                                 ) [] moveOrder
+    --   twoAway ePos = filter (\ePos' -> canMoveUsingSet ePos' allMoves allPosSet)
+    --                  $ map (flip moveToTile ePos) [NN, SS, EE, WW]
+    --   isDestDupe ePos = (getNewElfPos ePos) `elem` (map getNewElfPos $ twoAway ePos)
+
+
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+-- it IS possible that an Elf is *allowed* to move, but cannot!
+getNewElfPos ePos moveOrder allPosSet = head $ (<> [ePos]) $ onlyValidMoves ePos moveOrder allPosSet
+onlyValidMoves ePos' moveOrder allPosSet
+  = foldr (\move acc ->
+                        if (canMoveUsingSet ePos' (legalMoves move) allPosSet)
+                          then ((moveToTile move) ePos') : acc
+                          else acc
+          ) [] moveOrder
+
+twoAway ePos allPosSet =
+  filter (\ePos' -> (S.member ePos' allPosSet) && (canMoveUsingSet ePos' allMoves allPosSet))
+  $ map (flip moveToTile ePos) [NN, SS, EE, WW]
+
+isDestDupe ePos moveOrder allPosSet
+  = (getNewElfPos ePos moveOrder allPosSet)
+    `elem` (map (\ePos' -> getNewElfPos ePos' moveOrder allPosSet) $ twoAway ePos allPosSet)
+
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 
 
 doTenRoundsPartA01 strFromFile =
   snd $ foldr (\cnt acc -> doRndV01UsingMap acc) (initialMoveOrder, allElfPos) [1..10]
+  -- snd $ foldr (\cnt acc -> trace ("calling doRndV01UsingMap with acc = " ++ show acc) $ doRndV01UsingMap acc) (initialMoveOrder, allElfPos) [1..10]
     where
       allElfPos = elfPosFromFile strFromFile
 
 doTenRoundsPartA02 strFromFile =
   S.toList $ snd $ foldr (\cnt acc -> doRndV02UsingSet acc) (initialMoveOrder, allElfPos) [1..10]
+  -- S.toList $ snd $ foldr (\cnt acc -> trace ("calling doRndV02UsingSet with acc = " ++ show acc) $ doRndV02UsingSet acc) (initialMoveOrder, allElfPos) [1..10]
     where
       allElfPos = elfPosFromFileToSet strFromFile
 
@@ -172,12 +203,21 @@ doRoundsPartB moveOrder allPos =
           (0,(moveOrder, allPos), prevPos)
           [1..1000]
 
-pB2 moveOrder allPos = go 0 (moveOrder, allPos) []
+doRndsUntilDoneB01 strFromFile = go 0 (initialMoveOrder, allElfPos) []
   where
     go rnd res@(mo, ap) prevPos =
-      if rnd == 420 || (ap == prevPos)
-        then (rnd, res)
+      if rnd == 5 || (ap == prevPos)
+        then rnd -- (rnd, res)
         else go (rnd+1) (doRndV01UsingMap res) ap
+    allElfPos = elfPosFromFile strFromFile
+
+doRndsUntilDoneB02 strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 2000 || (ap == prevPos)
+        then rnd -- (rnd, res)
+        else go (rnd+1) (doRndV02UsingSet res) ap
+    allElfPos = elfPosFromFileToSet strFromFile
 
 dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
@@ -213,20 +253,30 @@ partA strFromFile verTag showTimings tenRndsFunc = do
                  else putStr ""
   putStrLn "------------------------"
 
-partB :: [ElfPos] -> IO ()
-partB allPos = do
-  -- let getRounds = doRoundsPartB initialMoveOrder allPos
-  let getRounds = pB2 initialMoveOrder allPos
-  putStrLn $ "Part B, but to slow to find the right answer = ??? = ..."
-  print getRounds
+-- partB :: String -> String -> Bool -> (String -> () -> Int) -> IO ()
+partB strFromFile verTag showTimings doRndsFunc = do
+  start <- getCPUTime
+  -- let numRounds = pB2 initialMoveOrder allPos doRndsFunc
+  let numRounds = doRndsFunc strFromFile
+  putStrLn $ "Part B, fast enough ???"
+  putStrLn $ "Rounds until no movement = " <> show numRounds
+  end <- getCPUTime
+
+  if showTimings then dispTimings start end
+                 else putStr ""
+  putStrLn "------------------------"
 
 
 main = do
   -- f <- readFile "input-23-test.txt"
   f <- readFile "input-23.txt"
 
-  partA f "version 1:" True doTenRoundsPartA01
+  -- partA f "version 1:" True doTenRoundsPartA01
 
-  partA f "version 2:" True doTenRoundsPartA02
+  -- partA f "version 2:" True doTenRoundsPartA02
+
+  -- partB f "version 1:" True doRndsUntilDoneB01
+
+  partB f "version 2:" True doRndsUntilDoneB02
 
   -- partB allElfPos
