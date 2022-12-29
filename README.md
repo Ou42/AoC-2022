@@ -120,3 +120,12 @@
     in at most 15 seconds on ten-year-old hardware."  
     per: <https://adventofcode.com/2022/about>
   - What am I missing?!
+
+## 2022-12-29
+
+### Day 23 - Part A ( but for B )
+
+- Data.HashSet - faster, but not by much.
+- Perhaps Data.IntSet with my own from/to (x,y) hash funcs?
+- Or maybe a way to determine what won't move?
+- Or maybe memoize precomputed values?
