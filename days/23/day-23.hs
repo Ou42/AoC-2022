@@ -8,6 +8,8 @@ import qualified Data.Map.Strict as M
 import Debug.Trace
 import System.CPUTime
 
+import Sets (partA, doTenRoundsPartA)
+
 {-
     Day 23
 
@@ -247,8 +249,8 @@ dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
   putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
 
-partA :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
-partA strFromFile verTag showTimings tenRndsFunc = do
+partA' :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
+partA' strFromFile verTag showTimings tenRndsFunc = do
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile
@@ -292,14 +294,20 @@ partB strFromFile verTag showTimings doRndsFunc = do
 
 
 main = do
-  -- f <- readFile "input-23-test.txt"
-  f <- readFile "input-23.txt"
+  -- fileStr <- readFile "input-23-test.txt"
+  fileStr <- readFile "input-23.txt"
 
   -- partA f "version 1:" True doTenRoundsPartA01
 
-  partA f "version 2:" True doTenRoundsPartA02
+  -- partA f "version 2:" True doTenRoundsPartA02
 
-  partA f "version 3:" True doTenRoundsPartA03
+  -- partA f "version 3:" True doTenRoundsPartA03
+
+  partA fileStr "version 2 using Set:" True doTenRoundsPartA
+        S.toList S.fromList S.foldr S.insert S.empty S.member
+
+  partA fileStr "version 3 using HashSet:" True doTenRoundsPartA
+        HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 

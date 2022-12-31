@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sets where
+module Sets (partA, doTenRoundsPartA) where
 
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
@@ -72,46 +72,47 @@ initialMoveOrder = [N, S, W, E]
 rotMoveOrder :: [Moves] -> [Moves]
 rotMoveOrder (h:t) = t <> [h]
 
--- canMoveUsingX :: ElfPos -> ([Bool] -> Bool, [Moves]) -> t -> ?? -> Bool
+canMoveUsingX :: ElfPos -> ([Bool] -> Bool, [Moves]) -> t -> (ElfPos -> t -> Bool) -> Bool
 canMoveUsingX elfPos (mvChk, moves) allPos member =
   mvChk $ map ( (flip member allPos) . (flip moveToTile elfPos) ) moves
 
 -- using a Set or HashSet or ??
 --   calc potential move, then check to see if NN, SS, EE, or WW moved there too.
 doRndV02UsingX (moveOrder, allPosSet) foldr insert empty member =
-  -- create new Set from old Set
+  -- create new "Set" from old "Set"
   (rotMoveOrder moveOrder
   -- [✔] - cycle over all elfPos
   , foldr ( \elfPos newSet ->
                   if (canMoveUsingX elfPos allMoves allPosSet member)
-                     && (not (isDestDupeX elfPos moveOrder allPosSet member))
+                    && (not (isDestDupeX elfPos moveOrder allPosSet))
                     then -- [✔] - store new elfPos
-                         insert (getNewElfPosX elfPos moveOrder allPosSet member) newSet
+                        insert (getNewElfPosX elfPos moveOrder allPosSet member) newSet
                     else -- [✔] - canMove == False OR Destination is duplicated
-                         -- [✔] - store (old) elfPos
-                         insert elfPos newSet
+                        -- [✔] - store (old) elfPos
+                        insert elfPos newSet
           ) empty allPosSet )
+  where
+    -- [✔] - check if NN, SS, EE, or WW move to the same tile as the current elfPos (here: ePos)
+    isDestDupeX ePos moveOrder allPosSet =
+      (getNewElfPosX ePos moveOrder allPosSet member)
+      `elem` (map (\ePos' -> getNewElfPosX ePos' moveOrder allPosSet member) $ twoAwayX ePos allPosSet)
+      where
+        -- [✔] - get NN, SS, EE, and WW and check if (a) and elf is standing there and (b) can move
+        twoAwayX ePos allPosSet =
+          filter (\ePos' -> (member ePos' allPosSet) && (canMoveUsingX ePos' allMoves allPosSet member))
+          $ map (flip moveToTile ePos) [NN, SS, EE, WW]
 
--- it IS possible that an Elf is *allowed* to move, but cannot!
-getNewElfPosX ePos moveOrder allPosSet member
-  = head $ (<> [ePos]) $ onlyValidMovesX ePos moveOrder allPosSet member
-
-onlyValidMovesX ePos' moveOrder allPosSet member
-  = foldr (\move acc ->
-                        if (canMoveUsingX ePos' (legalMoves move) allPosSet member)
-                          then ((moveToTile move) ePos') : acc
-                          else acc
-          ) [] moveOrder
-
--- [✔] - get NN, SS, EE, and WW and check if (a) and elf is standing there and (b) can move
-twoAwayX ePos allPosSet member =
-  filter (\ePos' -> (member ePos' allPosSet) && (canMoveUsingX ePos' allMoves allPosSet member))
-  $ map (flip moveToTile ePos) [NN, SS, EE, WW]
-
--- [✔] - check if NN, SS, EE, or WW move to the same tile as the current elfPos (here: ePos)
-isDestDupeX ePos moveOrder allPosSet member
-  = (getNewElfPosX ePos moveOrder allPosSet member)
-    `elem` (map (\ePos' -> getNewElfPosX ePos' moveOrder allPosSet member) $ twoAwayX ePos allPosSet member)
+    -- it IS possible that an Elf is *allowed* to move, but cannot!
+    getNewElfPosX :: ElfPos -> [Moves] -> t2 -> (ElfPos -> t2 -> Bool) -> ElfPos
+    getNewElfPosX ePos moveOrder allPosSet member =
+      head $ (<> [ePos]) $ onlyValidMovesX ePos moveOrder allPosSet
+      where
+        onlyValidMovesX ePos' moveOrder allPosSet =
+          Prelude.foldr (\move acc ->
+                              if (canMoveUsingX ePos' (legalMoves move) allPosSet member)
+                                then ((moveToTile move) ePos') : acc
+                                else acc
+                        ) [] moveOrder
 
 -- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 
