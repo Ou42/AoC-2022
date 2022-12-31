@@ -129,3 +129,12 @@
 - Perhaps Data.IntSet with my own from/to (x,y) hash funcs?
 - Or maybe a way to determine what won't move?
 - Or maybe memoize precomputed values?
+
+## 2022-12-31
+
+### Day 23 - Part A
+
+- refactor -> sets.hs
+- can send in a Set or HashSet ...
+- prep for Data.IntSet  
+  ... but will need to/from key helper funcs
