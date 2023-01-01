@@ -138,3 +138,15 @@
 - can send in a Set or HashSet ...
 - prep for Data.IntSet  
   ... but will need to/from key helper funcs
+
+## 2023-01-01
+
+- continue refactor -> Sets.hs
+- renamed sets.hs to Sets.hs
+- setup stack tool to compile via `stack build`
+- compiled ver finishes **MUCH** faster!  
+  Part B using Sets: 290s vs 20s !!  
+  see also: days/23/timings.md
+- To-Do:
+  - Part B using HashSets
+  - Data.IntSet
