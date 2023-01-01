@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sets (partA, doTenRoundsPartA) where
+module Sets (usingSetPartA, usingHashSetPartA) where
 
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
@@ -165,6 +165,14 @@ partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert em
                  else putStr ""
   putStrLn "------------------------"
 
+usingSetPartA fileStr tagVer timeIt =
+  partA fileStr tagVer timeIt doTenRoundsPartA
+    S.toList S.fromList S.foldr S.insert S.empty S.member
+
+usingHashSetPartA fileStr tagVer timeIt =
+  partA fileStr tagVer timeIt doTenRoundsPartA
+    HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
+
 -- partB :: String -> String -> Bool -> (String -> () -> Int) -> IO ()
 partB strFromFile verTag showTimings doRndsFunc = do
   start <- getCPUTime
@@ -185,11 +193,9 @@ main = do
 
   -- partA fileStr "version 1:" True doTenRoundsPartA01
 
-  partA fileStr "version 2 using Set:" True doTenRoundsPartA
-        S.toList S.fromList S.foldr S.insert S.empty S.member
+  usingSetPartA fileStr "version 2 using Set:" True
 
-  partA fileStr "version 3 using HashSet:" True doTenRoundsPartA
-        HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
+  usingHashSetPartA fileStr "version 3 using HashSet:" True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 
