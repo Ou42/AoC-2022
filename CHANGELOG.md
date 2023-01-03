@@ -158,3 +158,5 @@
   - with tables! So fancy!
 - fixed formatting in days/23/timings.md
 - fixed formatting of the the fixed formatting ...
+- Part B using HashSets &check;
+- timings updated

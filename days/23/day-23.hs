@@ -1,12 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Day23 where
+module Main where
 
 import qualified Data.Map.Strict as M
 import Debug.Trace
 import System.CPUTime
 
-import Sets (usingSetPartA, usingHashSetPartA)
+import Sets (usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB)
 
 {-
     Day 23
@@ -196,4 +197,7 @@ main = do
   -- partB f "version 1:" True doRndsUntilDoneB01
 
   -- partB f "version 2:" True doRndsUntilDoneB02
+
   usingSetPartB fileStr "version 2 using Set:" True
+
+  usingHashSetPartB fileStr "version 3 using HashSet:" True

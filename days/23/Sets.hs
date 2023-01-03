@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sets (usingSetPartA, usingHashSetPartA, usingSetPartB) where
+module Sets (usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB) where
 
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
@@ -123,18 +124,6 @@ doTenRoundsPartA strFromFile toList fromList foldr insert empty member =
     where
       allElfPos = elfPosFromFileTo2 strFromFile fromList
 
-doRndsUntilDoneB02UsingSet strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
-  where
-    go rnd res@(mo, ap) prevPos =
-      if rnd == 2000 || (ap == prevPos)
-        then rnd -- (rnd, res)
-        else go (rnd+1) (doRndV02UsingX res S.foldr S.insert S.empty S.member) ap
-    allElfPos = elfPosFromFileTo2 strFromFile S.fromList
-
-dispTimings start end = do
-  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
-  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
-
 -- partA :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
 partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert empty member = do
   start <- getCPUTime
@@ -173,10 +162,27 @@ usingHashSetPartA fileStr tagVer timeIt =
   partA fileStr tagVer timeIt doTenRoundsPartA
     HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
 
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+doRndsUntilDoneB02UsingSet strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 2000 || (ap == prevPos)
+        then rnd -- (rnd, res)
+        else go (rnd+1) (doRndV02UsingX res S.foldr S.insert S.empty S.member) ap
+    allElfPos = elfPosFromFileTo2 strFromFile S.fromList
+
+doRndsUntilDoneB02UsingHashSet strFromFile = go 0 (initialMoveOrder, allElfPos) HashSet.empty
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 2000 || (ap == prevPos)
+        then rnd -- (rnd, res)
+        else go (rnd+1) (doRndV02UsingX res HashSet.foldr HashSet.insert HashSet.empty HashSet.member) ap
+    allElfPos = elfPosFromFileTo2 strFromFile HashSet.fromList
+
 -- partB :: String -> String -> Bool -> (String -> () -> Int) -> IO ()
 usingSetPartB strFromFile verTag showTimings = do
   start <- getCPUTime
-  -- let numRounds = pB2 initialMoveOrder allPos doRndsFunc
   let numRounds = doRndsUntilDoneB02UsingSet strFromFile
   putStrLn $ "------ Part B " <> verTag
   putStrLn $ "Rounds until no movement = " <> show numRounds
@@ -185,6 +191,23 @@ usingSetPartB strFromFile verTag showTimings = do
   if showTimings then dispTimings start end
                  else putStr ""
   putStrLn "------------------------"
+
+usingHashSetPartB strFromFile verTag showTimings = do
+  start <- getCPUTime
+  let numRounds = doRndsUntilDoneB02UsingHashSet strFromFile
+  putStrLn $ "------ Part B " <> verTag
+  putStrLn $ "Rounds until no movement = " <> show numRounds
+  end <- getCPUTime
+
+  if showTimings then dispTimings start end
+                 else putStr ""
+  putStrLn "------------------------"
+
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+dispTimings start end = do
+  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
+  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
 
 
 main = do
@@ -200,3 +223,5 @@ main = do
   -- partB f "version 1:" True doRndsUntilDoneB01
 
   usingSetPartB fileStr "version 2 using Set:" True
+
+  usingHashSetPartB fileStr "version 3 using HashSet:" True
