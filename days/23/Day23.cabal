@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -21,7 +21,6 @@ source-repository head
 
 library
   exposed-modules:
-      Main
       Sets
   other-modules:
       Paths_Day23
@@ -35,7 +34,7 @@ library
   default-language: Haskell2010
 
 executable Day23-exe
-  main-is: Main.hs
+  main-is: day-23.hs
   other-modules:
       Sets
       Paths_Day23

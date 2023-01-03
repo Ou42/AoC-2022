@@ -40,7 +40,7 @@ library:
 
 executables:
   Day23-exe:
-    main:                Main.hs
+    main:                day-23.hs
     source-dirs:         .
     ghc-options:
     - -threaded

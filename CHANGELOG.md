@@ -160,3 +160,6 @@
 - fixed formatting of the the fixed formatting ...
 - Part B using HashSets &check;
 - timings updated
+- don't need Main.hs
+- and the executable is now smaller! 1.8MB v 4.8MB
+- but it doesn't copy the exe to the root folder

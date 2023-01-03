@@ -128,14 +128,6 @@ doRndsUntilDoneB01 strFromFile = go 0 (initialMoveOrder, allElfPos) []
         else go (rnd+1) (doRndV01UsingMap res) ap
     allElfPos = elfPosFromFile strFromFile
 
--- doRndsUntilDoneB02 strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
---   where
---     go rnd res@(mo, ap) prevPos =
---       if rnd == 2000 || (ap == prevPos)
---         then rnd -- (rnd, res)
---         else go (rnd+1) (doRndV02UsingSet res) ap
---     allElfPos = elfPosFromFileToSet strFromFile
-
 dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
   putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
@@ -195,8 +187,6 @@ main = do
   usingHashSetPartA fileStr "version 3 using HashSet:" True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
-
-  -- partB f "version 2:" True doRndsUntilDoneB02
 
   usingSetPartB fileStr "version 2 using Set:" True
 
