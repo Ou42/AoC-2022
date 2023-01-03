@@ -2,8 +2,10 @@
 
 ## 2023-01-01
 
+### ghci:
+---
+
 ```text
--- ghci
 *Sets λ main
 ------ Part A version 2 using Set:
 minmax X = -5 75
@@ -30,8 +32,12 @@ Rounds until no movement = 988
 Start = 70650115062000 end = 363622715568000 Time = 292972600506000
          ... or 292972.600506 ms
 ------------------------
+```
 
--- compiled
+### compiled via `stack build`:
+---
+
+```text
 $ ./Main
 ------ Part A version 1:
 minmax X = -5 75
