@@ -6,18 +6,18 @@ cabal-version: 1.12
 
 name:           Day23
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/test#readme>
-homepage:       https://github.com/githubuser/test#readme
-bug-reports:    https://github.com/githubuser/test/issues
-author:         Author name here
+description:    Please see the README on GitHub at <https://github.com/Ou42/AoC-2022#readme>
+homepage:       https://github.com/Ou42/AoC-2022#readme
+bug-reports:    https://github.com/Ou42/AoC-2022/issues
+author:         Ou42
 maintainer:     example@example.com
-copyright:      2022 Author name here
+copyright:      2022-2023 Ou42
 license:        BSD3
 build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/test
+  location: https://github.com/Ou42/AoC-2022
 
 library
   exposed-modules:
@@ -33,14 +33,14 @@ library
     , unordered-containers
   default-language: Haskell2010
 
-executable Day23-exe
+executable day23-exe
   main-is: day-23.hs
   other-modules:
       Sets
       Paths_Day23
   hs-source-dirs:
       ./
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , containers
