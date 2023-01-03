@@ -150,3 +150,10 @@
 - To-Do:
   - Part B using HashSets
   - Data.IntSet
+
+## 2023-01-02
+
+- renamed README.md to CHANGELOG.md
+- created new README.md
+  - with tables! So fancy!
+- fixed formatting in days/23/timings.md

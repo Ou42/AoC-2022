@@ -2,6 +2,7 @@
 
 ## 2023-01-01
 
+```text
 -- ghci
 *Sets λ main
 ------ Part A version 2 using Set:
@@ -67,3 +68,4 @@ Rounds until no movement = 988
 Start = 30651661289000 end = 50297581126000 Time = 19645919837000
 	 ... or 19645.919837 ms
 ------------------------
+```
