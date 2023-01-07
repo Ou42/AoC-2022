@@ -182,3 +182,11 @@
   in <package.yaml> ***improved*** performance!  
   e.g. for Part B using HashSet, 15s v 23s
 - and shrank exe from 1.89 MB to 1.82 MB
+
+## 2023-01-06
+
+### Day 23 continued ...
+
+- version 1.x `notUsingSetPartA`, using same `partA` func,  
+  but passing in: `id id foldr (:) [] elem`
+- it's *slower* than "native" List version (ver 1)?!

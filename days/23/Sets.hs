@@ -1,7 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sets (usingSetPartA, usingHashSetPartA
-            , usingSetPartB, usingHashSetPartB) where
+module Sets ( notUsingSetPartA
+            , usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB ) where
 
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
@@ -154,12 +155,16 @@ partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert em
                  else putStr ""
   putStrLn "------------------------"
 
-usingSetPartA fileStr tagVer timeIt =
-  partA fileStr tagVer timeIt doTenRoundsPartA
+notUsingSetPartA fileStr timeIt =
+  partA fileStr "version 1.x using List:" True doTenRoundsPartA
+    id id foldr (:) [] elem
+
+usingSetPartA fileStr timeIt =
+  partA fileStr "version 2 using Set:" timeIt doTenRoundsPartA
     S.toList S.fromList S.foldr S.insert S.empty S.member
 
-usingHashSetPartA fileStr tagVer timeIt =
-  partA fileStr tagVer timeIt doTenRoundsPartA
+usingHashSetPartA fileStr timeIt =
+  partA fileStr "version 3 using HashSet:" timeIt doTenRoundsPartA
     HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
 
 -- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
@@ -181,10 +186,10 @@ doRndsUntilDoneB02UsingHashSet strFromFile = go 0 (initialMoveOrder, allElfPos) 
     allElfPos = elfPosFromFileTo2 strFromFile HashSet.fromList
 
 -- partB :: String -> String -> Bool -> (String -> () -> Int) -> IO ()
-usingSetPartB strFromFile verTag showTimings = do
+usingSetPartB strFromFile showTimings = do
   start <- getCPUTime
   let numRounds = doRndsUntilDoneB02UsingSet strFromFile
-  putStrLn $ "------ Part B " <> verTag
+  putStrLn $ "------ Part B version 2 using Set:"
   putStrLn $ "Rounds until no movement = " <> show numRounds
   end <- getCPUTime
 
@@ -192,10 +197,10 @@ usingSetPartB strFromFile verTag showTimings = do
                  else putStr ""
   putStrLn "------------------------"
 
-usingHashSetPartB strFromFile verTag showTimings = do
+usingHashSetPartB strFromFile showTimings = do
   start <- getCPUTime
   let numRounds = doRndsUntilDoneB02UsingHashSet strFromFile
-  putStrLn $ "------ Part B " <> verTag
+  putStrLn $ "------ Part B version 3 using HashSet:"
   putStrLn $ "Rounds until no movement = " <> show numRounds
   end <- getCPUTime
 
@@ -214,14 +219,14 @@ main = do
   -- fileStr <- readFile "input-23-test.txt"
   fileStr <- readFile "input-23.txt"
 
-  -- partA fileStr "version 1:" True doTenRoundsPartA01
+  notUsingSetPartA fileStr True
 
-  usingSetPartA fileStr "version 2 using Set:" True
+  usingSetPartA fileStr True
 
-  usingHashSetPartA fileStr "version 3 using HashSet:" True
+  usingHashSetPartA fileStr True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 
-  usingSetPartB fileStr "version 2 using Set:" True
+  usingSetPartB fileStr True
 
-  usingHashSetPartB fileStr "version 3 using HashSet:" True
+  usingHashSetPartB fileStr True

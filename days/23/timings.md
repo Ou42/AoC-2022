@@ -253,3 +253,117 @@ Rounds until no movement = 988
 Start = 43686074725000 end = 58387430644000 Time = 14701355919000
 	 ... or 14701.355919 ms
 ```
+
+## 2023-01-06
+
+### ghci:
+---
+
+```text
+*Main λ main
+------ Part A version 1:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 688439640787000 end = 736932518832000 Time = 48492878045000
+         ... or 48492.878045 ms
+------------------------
+------ Part A version 1.x using List:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 736933821860000 end = 890952771672000 Time = 154018949812000
+         ... or 154018.949812 ms
+------------------------
+------ Part A version 2 using Set:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 890954449090000 end = 897634197627000 Time = 6679748537000
+         ... or 6679.748537 ms
+------------------------
+------ Part A version 3 using HashSet:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 897635967293000 end = 903705775602000 Time = 6069808309000
+         ... or 6069.808309 ms
+------------------------
+------ Part B version 2 using Set:
+Rounds until no movement = 988
+Start = 903706803033000 end = 1230479991825000 Time = 326773188792000
+         ... or 326773.188792 ms
+------------------------
+------ Part B version 3 using HashSet:
+Rounds until no movement = 988
+Start = 1230481180028000 end = 1551653022981000 Time = 321171842953000
+         ... or 321171.842953 ms
+```
+
+### ghci via `stack ghci`:
+---
+
+```text
+$ ./day23-exe 
+------ Part A version 1:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 3201269000 end = 21775563603000 Time = 21772362334000
+	 ... or 21772.362334 ms
+------------------------
+------ Part A version 1.x using List:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 21775913296000 end = 109772180939000 Time = 87996267643000
+	 ... or 87996.267643 ms
+------------------------
+------ Part A version 2 using Set:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 109772254659000 end = 110259387383000 Time = 487132724000
+	 ... or 487.132724 ms
+------------------------
+------ Part A version 3 using HashSet:
+minmax X = -5 75
+minmax Y = -4 75
+6480 (The minimum orthogonal rectangular area)
+minus 2563 (the # of elves)
+======
+3917 (The answer for Part A)
+Start = 110259685413000 end = 110663981032000 Time = 404295619000
+	 ... or 404.295619 ms
+------------------------
+------ Part B version 2 using Set:
+Rounds until no movement = 988
+Start = 110664297605000 end = 134450944563000 Time = 23786646958000
+	 ... or 23786.646958 ms
+------------------------
+------ Part B version 3 using HashSet:
+Rounds until no movement = 988
+Start = 134450994376000 end = 148967275017000 Time = 14516280641000
+	 ... or 14516.280641 ms
+```

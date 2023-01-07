@@ -6,8 +6,9 @@ import qualified Data.Map.Strict as M
 import Debug.Trace
 import System.CPUTime
 
-import Sets (usingSetPartA, usingHashSetPartA
-            , usingSetPartB, usingHashSetPartB)
+import Sets ( notUsingSetPartA
+            , usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB )
 
 {-
     Day 23
@@ -182,12 +183,14 @@ main = do
 
   partA' fileStr "version 1:" True doTenRoundsPartA01
 
-  usingSetPartA fileStr "version 2 using Set:" True
+  notUsingSetPartA fileStr True
 
-  usingHashSetPartA fileStr "version 3 using HashSet:" True
+  usingSetPartA fileStr True
+
+  usingHashSetPartA fileStr True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 
-  usingSetPartB fileStr "version 2 using Set:" True
+  usingSetPartB fileStr True
 
-  usingHashSetPartB fileStr "version 3 using HashSet:" True
+  usingHashSetPartB fileStr True
