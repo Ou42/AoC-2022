@@ -4,6 +4,7 @@ module Sets ( notUsingSetPartA
             , usingSetPartA, usingHashSetPartA
             , usingSetPartB, usingHashSetPartB ) where
 
+import Data.Bifunctor (bimap)
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
 import qualified Data.Set as S
@@ -130,11 +131,13 @@ partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert em
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile toList fromList foldr insert empty member
-      (xs, ys) = unzip coords
-      minX = minimum xs
-      maxX = maximum xs
-      minY = minimum ys
-      maxY = maximum ys
+
+      ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
+
+      -- minX = minimum xs
+      -- maxX = maximum xs
+      -- minY = minimum ys
+      -- maxY = maximum ys
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag
@@ -209,6 +212,13 @@ usingHashSetPartB strFromFile showTimings = do
   putStrLn "------------------------"
 
 -- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+minmax :: [Int] -> (Int, Int)
+minmax [x] = (x,x)
+minmax (x:xs) = 
+  foldr (\n (mn, mx) -> (min n mn, max n mx))
+  (x, x)
+  xs
 
 dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)

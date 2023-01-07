@@ -2,6 +2,7 @@
 
 module Main where
 
+import Data.Bifunctor (bimap)
 import qualified Data.Map.Strict as M
 import Debug.Trace
 import System.CPUTime
@@ -133,16 +134,24 @@ dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
   putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
 
+minmax :: [Int] -> (Int, Int)
+minmax [x] = (x,x)
+minmax (x:xs) = 
+  foldr (\n (mn, mx) -> (min n mn, max n mx))
+  (x, x)
+  xs
+
 partA' :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
 partA' strFromFile verTag showTimings tenRndsFunc = do
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile
-      (xs, ys) = unzip coords
-      minX = minimum xs
-      maxX = maximum xs
-      minY = minimum ys
-      maxY = maximum ys
+      -- (xs, ys) = unzip coords
+      ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
+      -- minX = minimum xs
+      -- maxX = maximum xs
+      -- minY = minimum ys
+      -- maxY = maximum ys
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag
