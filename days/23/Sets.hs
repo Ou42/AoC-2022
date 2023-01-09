@@ -134,10 +134,6 @@ partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert em
 
       ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
 
-      -- minX = minimum xs
-      -- maxX = maximum xs
-      -- minY = minimum ys
-      -- maxY = maximum ys
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag

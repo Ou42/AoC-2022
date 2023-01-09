@@ -146,12 +146,7 @@ partA' strFromFile verTag showTimings tenRndsFunc = do
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile
-      -- (xs, ys) = unzip coords
       ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
-      -- minX = minimum xs
-      -- maxX = maximum xs
-      -- minY = minimum ys
-      -- maxY = maximum ys
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag

@@ -190,3 +190,12 @@
 - version 1.x `notUsingSetPartA`, using same `partA` func,  
   but passing in: `id id foldr (:) [] elem`
 - it's *slower* than "native" List version (ver 1)?!
+- Data.Bifunctor (bimap)  
+  `bimap minmax minmax $ unzip coords`
+- adding tables for timings data in timings.md WIP
+
+## 2023-01-08
+
+### Day 23 continued ...
+
+- Part B table for timings data in timings.md

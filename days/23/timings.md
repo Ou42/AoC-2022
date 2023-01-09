@@ -2,24 +2,32 @@
 
 ( in seconds, unless otherwise noted )
 ## Part A
-			
-| 	Date	| 	Run Type	| 	Part A ver 1	| 	Part A ver 1.x using List	| 	Part A ver 2 using Set	| 	Part A ver 3 using HashSet	| 
-| 	---:	| 	---:	| 	---:	| 	---:	| 	---:	| 	---:	| 
-| 	2023-01-01	| 	ghci:	| 		| 		| 	4.911	| 	4.696	| 
-| 		| 	compiled via `stack build`:	| 	29.987	| 		| 	0.352	| 	0.308	| 
-| 	2023-01-02	| 	ghci:	| 		| 		| 	7.673	| 	6.479	| 
-| 		| 	compiled via `stack build`:	| 	30.532	| 		| 	0.412	| 	0.330	| 
-| 	2023-01-03	| 	ghci via `stack ghci`:	| 	39.919	| 		| 	9.984	| 	6.525	| 
-| 		| 	compiled via `stack build`:	| 	22.340	| 		| 	0.365	| 	0.303	| 
-| 	2023-01-06	| 	ghci:	| 	48.493	| 	154.019	| 	6.680	| 	6.070	| 
-| 		| 	~~ghci via `stack ghci`:~~ compiled via 'stack build':	| 	21.772	| 	87.996	| 	0.487	| 	0.404	| 
+
+|       Date |     Run Type |  ver 1 | ver 1.x <br /> using List | ver 2 <br /> using Set | ver 3 <br /> using HashSet |
+| ---------: | -----------: | -----: | ------------------------: | ---------------------: | -------------------------: |
+| 2023-01-01 |         ghci |        |                           |                  4.911 |                      4.696 |
+|            |   compiled\* | 29.987 |                           |                  0.352 |                      0.308 |
+| 2023-01-02 |         ghci |        |                           |                  7.673 |                      6.479 |
+|            |   compiled\* | 30.532 |                           |                  0.412 |                      0.330 |
+| 2023-01-03 | `stack ghci` | 39.919 |                           |                  9.984 |                      6.525 |
+|            |   compiled\* | 22.340 |                           |                  0.365 |                      0.303 |
+| 2023-01-06 |         ghci | 48.493 |                   154.019 |                  6.680 |                      6.070 |
+|            |   compiled\* | 21.772 |                    87.996 |                  0.487 |                      0.404 |
+### \* compiled via `stack build`
 
 ## Part B
 
-| Date/run type           | Lists "native" | Lists | Set     | HashSet |
-| ---:                    | ---:           | ---:  | ---:    | ---:    |
-| 2023-01-01 <br /> ghci: | _              | _     | 293.00s |         |
-| stack build:            | &check;        | _     |  19.65s | _       |
+|       Date |     Run Type | ver 2 <br /> using Set | ver 3 <br /> using HashSet |
+| ---------: | -----------: | ---------------------: | -------------------------: |
+| 2023-01-01 |         ghci |                292.973 |                            |
+|            |   compiled\* |                 19.646 |                            |
+| 2023-01-02 |         ghci |                310.076 |                    291.891 |
+|            |   compiled\* |                 26.100 |                     18.767 |
+| 2023-01-03 | `stack ghci` |                319.592 |                    286.854 |
+|            |   compiled\* |                 20.674 |                     14.701 |
+| 2023-01-06 |         ghci |                326.773 |                    321.172 |
+|            |   compiled\* |                 23.787 |                     14.516 |
+### \* compiled via `stack build`
 
 ---
 
