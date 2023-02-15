@@ -156,5 +156,46 @@
 - renamed README.md to CHANGELOG.md
 - created new README.md
   - with tables! So fancy!
+
+### Day 23 continued ...
+
 - fixed formatting in days/23/timings.md
-- fixed formatting of the the fixed formatting ...
+- fixed formatting of the the "fixed formatting" ...
+- Part B using HashSets &check;
+- timings updated
+- don't need Main.hs
+- and the executable is now smaller! 1.89 MB v 4.89 MB
+- but it doesn't copy the exe to the root folder
+
+## 2023-01-03
+
+### Day 23 continued ...
+
+- \$ `stack build` followed by:  
+  \$ `stack exec <exe file>` runs the file
+- \$ `stack build --copy-bins` copies exe to the "local-bin-path"
+- \$ `stack path` lists all paths stack is potentially using
+- `local-bin-path` defaults to ~/.local/bin
+- `copy-bins` & `local-bin-path` can be set in <stack.yaml>
+- now copies exe to project root
+- disabling ghc-options: `threaded`, `rtsopts` & `with-rtsopts=-N`  
+  in <package.yaml> ***improved*** performance!  
+  e.g. for Part B using HashSet, 15s v 23s
+- and shrank exe from 1.89 MB to 1.82 MB
+
+## 2023-01-06
+
+### Day 23 continued ...
+
+- version 1.x `notUsingSetPartA`, using same `partA` func,  
+  but passing in: `id id foldr (:) [] elem`
+- it's *slower* than "native" List version (ver 1)?!
+- Data.Bifunctor (bimap)  
+  `bimap minmax minmax $ unzip coords`
+- adding tables for timings data in timings.md WIP
+
+## 2023-01-08
+
+### Day 23 continued ...
+
+- Part B table for timings data in timings.md

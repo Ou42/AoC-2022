@@ -1,7 +1,10 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Sets (usingSetPartA, usingHashSetPartA, usingSetPartB) where
+module Sets ( notUsingSetPartA
+            , usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB ) where
 
+import Data.Bifunctor (bimap)
 import qualified Data.HashSet as HashSet
 import qualified Data.IntSet as IntSet
 import qualified Data.Set as S
@@ -123,28 +126,14 @@ doTenRoundsPartA strFromFile toList fromList foldr insert empty member =
     where
       allElfPos = elfPosFromFileTo2 strFromFile fromList
 
-doRndsUntilDoneB02UsingSet strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
-  where
-    go rnd res@(mo, ap) prevPos =
-      if rnd == 2000 || (ap == prevPos)
-        then rnd -- (rnd, res)
-        else go (rnd+1) (doRndV02UsingX res S.foldr S.insert S.empty S.member) ap
-    allElfPos = elfPosFromFileTo2 strFromFile S.fromList
-
-dispTimings start end = do
-  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
-  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
-
 -- partA :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
 partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert empty member = do
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile toList fromList foldr insert empty member
-      (xs, ys) = unzip coords
-      minX = minimum xs
-      maxX = maximum xs
-      minY = minimum ys
-      maxY = maximum ys
+
+      ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
+
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag
@@ -165,20 +154,41 @@ partA strFromFile verTag showTimings tenRndsFunc toList fromList foldr insert em
                  else putStr ""
   putStrLn "------------------------"
 
-usingSetPartA fileStr tagVer timeIt =
-  partA fileStr tagVer timeIt doTenRoundsPartA
+notUsingSetPartA fileStr timeIt =
+  partA fileStr "version 1.x using List:" True doTenRoundsPartA
+    id id foldr (:) [] elem
+
+usingSetPartA fileStr timeIt =
+  partA fileStr "version 2 using Set:" timeIt doTenRoundsPartA
     S.toList S.fromList S.foldr S.insert S.empty S.member
 
-usingHashSetPartA fileStr tagVer timeIt =
-  partA fileStr tagVer timeIt doTenRoundsPartA
+usingHashSetPartA fileStr timeIt =
+  partA fileStr "version 3 using HashSet:" timeIt doTenRoundsPartA
     HashSet.toList HashSet.fromList HashSet.foldr HashSet.insert HashSet.empty HashSet.member
 
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+doRndsUntilDoneB02UsingSet strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 2000 || (ap == prevPos)
+        then rnd -- (rnd, res)
+        else go (rnd+1) (doRndV02UsingX res S.foldr S.insert S.empty S.member) ap
+    allElfPos = elfPosFromFileTo2 strFromFile S.fromList
+
+doRndsUntilDoneB02UsingHashSet strFromFile = go 0 (initialMoveOrder, allElfPos) HashSet.empty
+  where
+    go rnd res@(mo, ap) prevPos =
+      if rnd == 2000 || (ap == prevPos)
+        then rnd -- (rnd, res)
+        else go (rnd+1) (doRndV02UsingX res HashSet.foldr HashSet.insert HashSet.empty HashSet.member) ap
+    allElfPos = elfPosFromFileTo2 strFromFile HashSet.fromList
+
 -- partB :: String -> String -> Bool -> (String -> () -> Int) -> IO ()
-usingSetPartB strFromFile verTag showTimings = do
+usingSetPartB strFromFile showTimings = do
   start <- getCPUTime
-  -- let numRounds = pB2 initialMoveOrder allPos doRndsFunc
   let numRounds = doRndsUntilDoneB02UsingSet strFromFile
-  putStrLn $ "------ Part B " <> verTag
+  putStrLn $ "------ Part B version 2 using Set:"
   putStrLn $ "Rounds until no movement = " <> show numRounds
   end <- getCPUTime
 
@@ -186,17 +196,43 @@ usingSetPartB strFromFile verTag showTimings = do
                  else putStr ""
   putStrLn "------------------------"
 
+usingHashSetPartB strFromFile showTimings = do
+  start <- getCPUTime
+  let numRounds = doRndsUntilDoneB02UsingHashSet strFromFile
+  putStrLn $ "------ Part B version 3 using HashSet:"
+  putStrLn $ "Rounds until no movement = " <> show numRounds
+  end <- getCPUTime
+
+  if showTimings then dispTimings start end
+                 else putStr ""
+  putStrLn "------------------------"
+
+-- *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
+
+minmax :: [Int] -> (Int, Int)
+minmax [x] = (x,x)
+minmax (x:xs) = 
+  foldr (\n (mn, mx) -> (min n mn, max n mx))
+  (x, x)
+  xs
+
+dispTimings start end = do
+  putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
+  putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
+
 
 main = do
   -- fileStr <- readFile "input-23-test.txt"
   fileStr <- readFile "input-23.txt"
 
-  -- partA fileStr "version 1:" True doTenRoundsPartA01
+  notUsingSetPartA fileStr True
 
-  usingSetPartA fileStr "version 2 using Set:" True
+  usingSetPartA fileStr True
 
-  usingHashSetPartA fileStr "version 3 using HashSet:" True
+  usingHashSetPartA fileStr True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 
-  usingSetPartB fileStr "version 2 using Set:" True
+  usingSetPartB fileStr True
+
+  usingHashSetPartB fileStr True

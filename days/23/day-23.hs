@@ -1,12 +1,15 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Day23 where
+module Main where
 
+import Data.Bifunctor (bimap)
 import qualified Data.Map.Strict as M
 import Debug.Trace
 import System.CPUTime
 
-import Sets (usingSetPartA, usingHashSetPartA)
+import Sets ( notUsingSetPartA
+            , usingSetPartA, usingHashSetPartA
+            , usingSetPartB, usingHashSetPartB )
 
 {-
     Day 23
@@ -127,28 +130,23 @@ doRndsUntilDoneB01 strFromFile = go 0 (initialMoveOrder, allElfPos) []
         else go (rnd+1) (doRndV01UsingMap res) ap
     allElfPos = elfPosFromFile strFromFile
 
--- doRndsUntilDoneB02 strFromFile = go 0 (initialMoveOrder, allElfPos) S.empty
---   where
---     go rnd res@(mo, ap) prevPos =
---       if rnd == 2000 || (ap == prevPos)
---         then rnd -- (rnd, res)
---         else go (rnd+1) (doRndV02UsingSet res) ap
---     allElfPos = elfPosFromFileToSet strFromFile
-
 dispTimings start end = do
   putStrLn $ "Start = " <> show start <> " end = " <> show end <> " Time = " <> show (end-start)
   putStrLn $ "\t ... or " <> show ( fromIntegral (end-start)  /10^9 ) <> " ms"
+
+minmax :: [Int] -> (Int, Int)
+minmax [x] = (x,x)
+minmax (x:xs) = 
+  foldr (\n (mn, mx) -> (min n mn, max n mx))
+  (x, x)
+  xs
 
 partA' :: String -> String -> Bool -> (String -> [ElfPos]) -> IO ()
 partA' strFromFile verTag showTimings tenRndsFunc = do
   start <- getCPUTime
   let 
       coords = tenRndsFunc strFromFile
-      (xs, ys) = unzip coords
-      minX = minimum xs
-      maxX = maximum xs
-      minY = minimum ys
-      maxY = maximum ys
+      ((minX, maxX), (minY, maxY)) = bimap minmax minmax $ unzip coords
       area = ((maxX - minX + 1) * (maxY - minY + 1))
 
   putStrLn $ "------ Part A " <> verTag
@@ -189,11 +187,14 @@ main = do
 
   partA' fileStr "version 1:" True doTenRoundsPartA01
 
-  usingSetPartA fileStr "version 2 using Set:" True
+  notUsingSetPartA fileStr True
 
-  usingHashSetPartA fileStr "version 3 using HashSet:" True
+  usingSetPartA fileStr True
+
+  usingHashSetPartA fileStr True
 
   -- partB f "version 1:" True doRndsUntilDoneB01
 
-  -- partB f "version 2:" True doRndsUntilDoneB02
-  usingSetPartB fileStr "version 2 using Set:" True
+  usingSetPartB fileStr True
+
+  usingHashSetPartB fileStr True
