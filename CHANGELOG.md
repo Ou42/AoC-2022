@@ -199,3 +199,15 @@
 ### Day 23 continued ...
 
 - Part B table for timings data in timings.md
+
+## 2023-02-18
+
+### Day 04
+
+- Part A success!
+  - `stack install split`
+  - `stack ghci --package split`
+  - `:l day-04.hs`
+  - `main`
+- Part B success!
+  - same instructions as Part A
