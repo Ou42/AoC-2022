@@ -22,6 +22,10 @@ import Data.List.Split (splitOn)
         . given a list of 2 ranges (assignment pairs)
         . In how many assignment pairs does one range
           fully contain the other?
+      
+      Part B
+        . Instead, the Elves would like to know the
+          number of pairs that overlap at all.
 -}
 
 tuplify2 :: [a] -> (a,a)
@@ -41,6 +45,16 @@ isContained ((r1a, r1b), (r2a, r2b)) =
   ||
   (r2a >= r1a && r2b <= r1b)
 
+overlaps :: (Rng, Rng) -> Bool
+overlaps ((r1a, r1b), (r2a, r2b)) =
+  (r1a >= r2a && r1a <= r2b)
+  ||
+  (r1b >= r2a && r1b <= r2b)
+  ||
+  (r2a >= r1a && r2a <= r1b)
+  ||
+  (r2b >= r1a && r2b <= r1b)
+
 main = do
   f <- readFile "input-04.txt"
 
@@ -58,3 +72,9 @@ main = do
   putStrLn "\tIn how many assignment pairs does one range"
   putStr "\t...fully contain the other? "
   putStrLn $ show $ length $ filter isContained pairs
+
+  putStrLn ""
+
+  putStrLn "Part B:"
+  putStr "\tIn how many assignment pairs do the ranges overlap? "
+  putStrLn $ show $ length $ filter overlaps pairs
