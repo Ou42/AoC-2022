@@ -24,10 +24,37 @@ import Data.List.Split (splitOn)
           fully contain the other?
 -}
 
+tuplify2 :: [a] -> (a,a)
+tuplify2 [x,y] = (x,y)
+
+toIntList :: [String] -> [Int]
+toIntList = map read
+
+type Rng = (Int, Int)
+
+isLow2High :: (Rng, Rng) -> Bool
+isLow2High ((r1a, r1b), (r2a, r2b)) = r1a <= r1b && r2a <= r2b
+
+isContained :: (Rng, Rng) -> Bool
+isContained ((r1a, r1b), (r2a, r2b)) =
+  (r1a >= r2a && r1b <= r2b)
+  ||
+  (r2a >= r1a && r2b <= r1b)
+
 main = do
   f <- readFile "input-04.txt"
 
-  let pairs = map (splitOn ",") $ lines f
-  -- let pairs = map (break (== ',')) (lines f)
+  -- convert file containing lines in XX-XX,XX-XX format where X's are numbers
+  -- to a [(Rng, Rng)] where Rng == (Int, Int)
+  let pairs = map (tuplify2 . map (tuplify2 . toIntList . splitOn ("-")) . splitOn ",") $ lines f
 
-  putStrLn $ show pairs
+  -- putStrLn $ show pairs
+  -- putStrLn $ show $ length pairs
+
+  putStr "Are all the Ranges in ascending order? "
+  putStrLn $ show $ 0 == (length $ filter (not . isLow2High) pairs)
+
+  putStrLn "Part A:"
+  putStrLn "\tIn how many assignment pairs does one range"
+  putStr "\t...fully contain the other? "
+  putStrLn $ show $ length $ filter isContained pairs
