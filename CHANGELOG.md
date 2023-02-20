@@ -218,3 +218,4 @@
 
 - Part A started
   - parsing container "stacks" into lists
+  - parsing move instructions

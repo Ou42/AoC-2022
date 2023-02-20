@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Char (isAlphaNum)
+import Data.Char (isAlpha)
 import Data.List (transpose)
 import Data.List.Split (splitOn)
 
@@ -38,38 +38,40 @@ toInt = read
 type Qty = Int
 type Col = Int
 
--- isLow2High :: (Rng, Rng) -> Bool
--- isLow2High ((r1a, r1b), (r2a, r2b)) = r1a <= r1b && r2a <= r2b
+data From = From Col deriving (Show)
+data To = To Col deriving (Show)
 
--- isContained :: (Rng, Rng) -> Bool
--- isContained ((r1a, r1b), (r2a, r2b)) =
---   (r1a >= r2a && r1b <= r2b)
---   ||
---   (r2a >= r1a && r2b <= r1b)
+data Move = Move Qty From To deriving (Show)
 
--- overlaps :: (Rng, Rng) -> Bool
--- overlaps ((r1a, r1b), (r2a, r2b)) =
---   (r1a >= r2a && r1a <= r2b)
---   ||
---   (r1b >= r2a && r1b <= r2b)
---   ||
---   (r2a >= r1a && r2a <= r1b)
---   ||
---   (r2b >= r1a && r2b <= r1b)
+parseMove :: String -> Move
+parseMove moveStr =
+  let [qty, fromTo] = splitOn " from " $ concat $ splitOn "move " moveStr
+      [from, to] = map toInt $ splitOn " to " fromTo
+  in Move (toInt qty) (From from) (To to)
 
 main :: IO ()
 main = do
   f <- readFile "input-05.txt"
 
   -- split file into container stacks and instructions
-  let [boxesRaw, moves] = map lines $ splitOn "\n\n" f
+  let [boxesRaw, movesRaw] = map lines $ splitOn "\n\n" f
 
-  let boxes = filter (not . null) $ map (filter isAlphaNum) $ transpose boxesRaw
+  -- extract list of boxes per column into a [["box"]]
+  --   note: first "column" is at "index" zero
+  let boxesInCols = filter (not . null) $ map (filter isAlpha) $ transpose boxesRaw
+
+  -- convert movesRaw into [Moves]
+  let moves = map parseMove movesRaw
 
   putStrLn "Containers:"
   -- putStrLn $ show boxesRaw
   putStrLn $ unlines boxesRaw
-  putStrLn $ show boxes
-  putStrLn $ unlines boxes
-  -- putStrLn "Move Instructions:"
-  -- putStrLn $ show moves
+  putStrLn $ show boxesInCols
+  putStrLn $ unlines boxesInCols
+
+  putStrLn "Move Instructions:"
+  putStrLn $ show $ take 3 movesRaw
+
+  putStrLn ""
+
+  putStrLn $ unlines $ take 3 $ map show moves
