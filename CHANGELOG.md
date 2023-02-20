@@ -211,3 +211,10 @@
   - `main`
 - Part B success!
   - same instructions as Part A
+
+## 2023-02-20
+
+### Day 05
+
+- Part A started
+  - parsing container "stacks" into lists
