@@ -211,3 +211,19 @@
   - `main`
 - Part B success!
   - same instructions as Part A
+
+## 2023-02-20
+
+### Day 05
+
+- Part A started
+  - parsing container "stacks" into lists
+  - parsing move instructions
+  - applying move op WIP getting "Pattern match is redundant"
+  - SUCCESS! ( created `applyMove` and then used `foldl` )
+- Part B
+  - started
+  - SUCCESS!
+  - fortunately I didn't *literally* move 1 box at a time!
+  - I was able to edit `applyMove` to accept a function so 
+    that it'd work for both Part A & B ... attempt at DRY.
