@@ -220,4 +220,5 @@
   - parsing container "stacks" into lists
   - parsing move instructions
   - applying move op WIP getting "Pattern match is redundant"
+  - SUCCESS! ( created `applyMove` and then used `foldl` )
   

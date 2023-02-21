@@ -24,11 +24,23 @@ import Data.List.Split (splitOn)
         . given 9 stacks of containers listed vertically
           and instructions for moving X containers from
           one column to another
+
+              My Containers came in as:
+                [Q] [J]                         [H]
+                [G] [S] [Q]     [Z]             [P]
+                [P] [F] [M]     [F]     [F]     [S]
+                [R] [R] [P] [F] [V]     [D]     [L]
+                [L] [W] [W] [D] [W] [S] [V]     [G]
+                [C] [H] [H] [T] [D] [L] [M] [B] [B]
+                [T] [Q] [B] [S] [L] [C] [B] [J] [N]
+                [F] [N] [F] [V] [Q] [Z] [Z] [T] [Q]
+                 1   2   3   4   5   6   7   8   9
+
         . Although the instruction might include moving
           more than 1 container, containers are moved
           one at a time.
-        . After following the instructions, what are the
-          top containers from left to right?
+        . After following the instructions, list the
+          top-most container in each col, left to right
       
 -}
 
@@ -64,10 +76,7 @@ applyMove cnl (Move qty (From from) (To to)) =
         | col == to = newTo
         | otherwise = boxes
  
-  in map (\col -> case col of
-                    from -> newFrom
-                    to   -> newTo
-                    _ -> cnl !! (col - 1)
+  in map (\col -> updateBoxes col (cnl !! (col - 1))
          ) [1..(length cnl)]
 
 main :: IO ()
@@ -90,9 +99,14 @@ main = do
   putStrLn $ show boxesInCols
   putStrLn $ unlines boxesInCols
 
-  putStrLn "Move Instructions:"
-  putStrLn $ show $ take 3 movesRaw
+  putStrLn "Initial move instructions ..."
+  putStrLn $ '\t' : (show $ take 3 movesRaw)
 
-  putStrLn ""
+  -- test one move instruction
+  putStrLn $ unlines $ take 3 $ map (((:) '\t') . show) moves
+  putStrLn "Result after one move:"
+  putStrLn $ '\t' : (show $ applyMove boxesInCols (head moves))
 
-  putStrLn $ unlines $ take 3 $ map show moves
+  -- Complete all move instructions in order
+  putStrLn "Part A (final result after all move ops):"
+  putStrLn $ '\t' : (show $ map head $ foldl applyMove boxesInCols moves)
