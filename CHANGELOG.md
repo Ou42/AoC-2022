@@ -223,3 +223,7 @@
   - SUCCESS! ( created `applyMove` and then used `foldl` )
 - Part B
   - started
+  - SUCCESS!
+  - fortunately I didn't *literally* move 1 box at a time!
+  - I was able to edit `applyMove` to accept a function so 
+    that it'd work for both Part A & B ... attempt at DRY.

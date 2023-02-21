@@ -69,9 +69,9 @@ parseMove moveStr =
       [from, to] = map toInt $ splitOn " to " fromTo
   in Move (toInt qty) (From from) (To to)
 
-applyMove :: ContainersInList -> Move -> ContainersInList
-applyMove cnl (Move qty (From from) (To to)) =
-  let payload = reverse $ take qty $ cnl !! (from - 1)
+applyMove :: ([Box] -> [Box]) -> ContainersInList -> Move -> ContainersInList
+applyMove func cnl (Move qty (From from) (To to)) =
+  let payload = func $ take qty $ cnl !! (from - 1)
       newTo = (++) payload $ cnl !! (to - 1)
       newFrom = drop qty $ cnl !! (from - 1)
       updateBoxes :: Col -> Boxes -> Boxes
@@ -82,6 +82,12 @@ applyMove cnl (Move qty (From from) (To to)) =
  
   in map (\col -> updateBoxes col (cnl !! (col - 1))
          ) [1..(length cnl)]
+
+applyMvPartA :: ContainersInList -> Move -> ContainersInList
+applyMvPartA = applyMove reverse
+
+applyMvPartB :: ContainersInList -> Move -> ContainersInList
+applyMvPartB = applyMove id
 
 main :: IO ()
 main = do
@@ -109,8 +115,12 @@ main = do
   -- test one move instruction
   putStrLn $ unlines $ take 3 $ map (((:) '\t') . show) moves
   putStrLn "Result after one move:"
-  putStrLn $ '\t' : (show $ applyMove boxesInCols (head moves))
+  putStrLn $ '\t' : (show $ applyMvPartA boxesInCols (head moves))
 
-  -- Complete all move instructions in order
+  -- Complete all move instructions in order for Part A
   putStrLn "Part A (final result after all move ops):"
-  putStrLn $ '\t' : (show $ map head $ foldl applyMove boxesInCols moves)
+  putStrLn $ '\t' : (show $ map head $ foldl applyMvPartA boxesInCols moves)
+
+  -- Complete all move instructions in order for Part B
+  putStrLn "Part B (final result after all move ops):"
+  putStrLn $ '\t' : (show $ map head $ foldl applyMvPartB boxesInCols moves)
