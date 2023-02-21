@@ -41,7 +41,11 @@ import Data.List.Split (splitOn)
           one at a time.
         . After following the instructions, list the
           top-most container in each col, left to right
-      
+
+      Part B
+        . instead of moving 1 crate at a time, multiple
+          crates can be moved at once. IOW, the order
+          isn't reversed as it was in Part A
 -}
 
 toInt :: String -> Int
