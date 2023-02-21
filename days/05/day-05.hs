@@ -35,6 +35,10 @@ import Data.List.Split (splitOn)
 toInt :: String -> Int
 toInt = read
 
+type Box = Char
+type Boxes = [Box]
+type ContainersInList = [[Box]]
+
 type Qty = Int
 type Col = Int
 
@@ -48,6 +52,23 @@ parseMove moveStr =
   let [qty, fromTo] = splitOn " from " $ concat $ splitOn "move " moveStr
       [from, to] = map toInt $ splitOn " to " fromTo
   in Move (toInt qty) (From from) (To to)
+
+applyMove :: ContainersInList -> Move -> ContainersInList
+applyMove cnl (Move qty (From from) (To to)) =
+  let payload = reverse $ take qty $ cnl !! (from - 1)
+      newTo = (++) payload $ cnl !! (to - 1)
+      newFrom = drop qty $ cnl !! (from - 1)
+      updateBoxes :: Col -> Boxes -> Boxes
+      updateBoxes col boxes
+        | col == from = newFrom
+        | col == to = newTo
+        | otherwise = boxes
+ 
+  in map (\col -> case col of
+                    from -> newFrom
+                    to   -> newTo
+                    _ -> cnl !! (col - 1)
+         ) [1..(length cnl)]
 
 main :: IO ()
 main = do

@@ -219,3 +219,5 @@
 - Part A started
   - parsing container "stacks" into lists
   - parsing move instructions
+  - applying move op WIP getting "Pattern match is redundant"
+  
