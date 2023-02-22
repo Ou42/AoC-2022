@@ -227,3 +227,14 @@
   - fortunately I didn't *literally* move 1 box at a time!
   - I was able to edit `applyMove` to accept a function so 
     that it'd work for both Part A & B ... attempt at DRY.
+
+## 2023-02-22
+
+### Day 06
+
+- Part A
+  - started
+  - SUCCESS! simple / naive solution
+  - *could* jump ahead when pairs or triplets aren't unique
+  - *could* check to make sure app doesn't crash if marker not found
+  
