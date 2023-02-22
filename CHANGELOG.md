@@ -237,4 +237,8 @@
   - SUCCESS! simple / naive solution
   - *could* jump ahead when pairs or triplets aren't unique
   - *could* check to make sure app doesn't crash if marker not found
-  
+- Part B
+  - started
+  - SUCCESS! simple /naive solution (again)
+  - did refactor Part A's code to be useful for both A & B
+  - DRY principle
