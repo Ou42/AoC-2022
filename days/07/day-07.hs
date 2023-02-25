@@ -1,0 +1,31 @@
+module Main where
+
+{-
+    Day 07
+
+      Part A
+        . given commands ( `cd`, `ls` ) to navigate a filesystem
+              . `cd <dir-name>` moves to the sub-dir <dir-name>
+              . `cd ..` moves to the parent directory
+              . "/" is the root folder
+              . `ls` lists the contents of the current directory
+                  . "dir <dir-name>"
+                  . "<file-size> <file-name>"
+        . Find all of the directories with a total size of at
+          most 100K, then calculate the sum of their total sizes.
+              . directories include sub-directory totals
+-}
+
+-- from LYAH:
+--   http://www.learnyouahaskell.com/zippers
+--   "A very simple file system"
+
+type Name = String  
+type Size = Int  
+data FSItem = File Name Size | Folder Name Size [FSItem] deriving (Show)
+
+main :: IO ()
+main = do
+  putStrLn $ replicate 42 '-'
+  putStrLn $ show $ Folder "dir 01" 0 [File "yes" 42]
+  putStrLn $ replicate 42 '-'

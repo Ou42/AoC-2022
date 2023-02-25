@@ -242,3 +242,10 @@
   - SUCCESS! simple /naive solution (again)
   - did refactor Part A's code to be useful for both A & B
   - DRY principle
+
+## 2023-02-25
+
+### Day 07
+
+- Part A
+  - started
