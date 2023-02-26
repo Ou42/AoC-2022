@@ -43,9 +43,29 @@ fsTo name (Folder folderName size items, bs) =
     let (ls, item:rs) = break (nameIs name) items
     in  (item, FSCrumb folderName size ls rs:bs)
 
-nameIs :: Name -> FSItem -> Bool  
-nameIs name (Folder folderName _ _) = name == folderName  
-nameIs name (File fileName _) = name == fileName  
+nameIs :: Name -> FSItem -> Bool
+nameIs name (Folder folderName _ _) = name == folderName
+nameIs name (File fileName _) = name == fileName
+
+dfsFSZipper :: FSZipper -> String
+dfsFSZipper fszipper =
+  let (Folder _ _ firstDirItems, _) = fszipper
+      isDir :: FSItem -> Bool
+      isDir (Folder _ _ _) = True
+      isDir _              = False
+      firstDirDirs = filter isDir firstDirItems
+      subDirNames :: [FSItem] -> [Name]
+      subDirNames = map (\(Folder name _ _) -> name)
+      go :: [String] -> FSZipper -> [[Name]] -> [String]
+      go accu _ []            = accu
+      -- go accu fsz@(Folder folderName _ _,_) (next:todo) = go (folderName:accu) fsz todo
+      -- go accu fsz@(Folder folderName _ _,_) ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
+      go accu fsz ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
+      go accu fsz ([]:todo) = accu -- go (dir:accu) fsz (dirs:todo)
+      
+  -- in go "" fszipper firstDirItems
+  -- in unlines (subDirNames firstDirDirs)
+  in unlines $ go [] fszipper [(subDirNames firstDirDirs)]
 
 fsNewItem :: FSItem -> FSZipper -> FSZipper
 fsNewItem item (Folder folderName size items, bs) =

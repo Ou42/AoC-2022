@@ -255,3 +255,4 @@
   - To Do: keep track of folder sizes
   - To Do: traverse the "Zipper"
   - `fsToRoot` moves up to the root of the Zipper
+  - DFS WIP
