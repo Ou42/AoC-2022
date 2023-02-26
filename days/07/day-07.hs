@@ -34,11 +34,15 @@ type FSZipper = (FSItem, [FSCrumb])
 fsUp :: FSZipper -> FSZipper  
 fsUp (item, FSCrumb name size ls rs:bs) = (Folder name size (ls ++ [item] ++ rs), bs)
 
+fsToRoot :: FSZipper -> FSZipper
+fsToRoot fszipper@(Folder "/" _ _, _) = fszipper
+fsToRoot fszipper = fsUp fszipper
+
 fsTo :: Name -> FSZipper -> FSZipper
 fsTo name (Folder folderName size items, bs) =
     let (ls, item:rs) = break (nameIs name) items
     in  (item, FSCrumb folderName size ls rs:bs)
-  
+
 nameIs :: Name -> FSItem -> Bool  
 nameIs name (Folder folderName _ _) = name == folderName  
 nameIs name (File fileName _) = name == fileName  
@@ -82,5 +86,5 @@ main = do
   -- (Folder "brhvclj" (-1) [Folder "mvslzl" (-1) [],File "mtlscfrd.gdr" 40016],[FSCrumb "/" (-1) [Folder "tcdmgwp" (-1) [],Folder "shg" (-1) [],Folder "rtmj" (-1) [],Folder "qwvfpgl" (-1) [],Folder "pcqjncwl" (-1) [],Folder "lcz" (-1) [],Folder "dtqtvvrn" (-1) [],Folder "clnvqg" (-1) []] []])
 
   putStrLn $ replicate 42 '-'
-  putStrLn $ parseTermHistory f
+  putStrLn $ show $ fsToRoot $ parseTermHistory f
   putStrLn $ replicate 42 '-'
