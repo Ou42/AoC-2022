@@ -62,8 +62,15 @@ dfsFSZipper fszipper =
       go accu _ []            = accu
       -- go accu fsz@(Folder folderName _ _,_) ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
 
-      go accu fsz ([]:todo) = error "dir:dirs == []" -- go accu fsz (todo)
-      go accu fsz ((dir:dirs):todo) = go (dir:accu) (fsTo dir fsz) ((subDirNames fsz):dirs:todo)
+      -- go accu fsz ([]:todo) = error "dir:dirs == []" -- go accu fsz (todo)
+      go accu fsz ([]:[[]]) = accu
+      -- go accu fsz ([]:todo) = accu -- go accu (fsUp fsz) (todo)
+      go accu fsz ([]:todo) = error "error is here!  -- accu -- go accu (fsUp fsz) (todo)"
+      go accu fsz ((dir:[]):todo)   = accu -- go (dir:accu) (fsTo dir fsz) ((subDirNames fsz):todo)
+      go accu fsz ((dir:dirs):todo) = 
+        let sdNs = subDirNames fsz
+        in if sdNs == [] then error "sdNs == []"
+                         else go (dir:accu) (fsTo dir fsz) (sdNs:dirs:todo)
       -- go accu fsz ([]:todo) = accu -- go (dir:accu) fsz (dirs:todo)
       
   -- in go "" fszipper firstDirItems
