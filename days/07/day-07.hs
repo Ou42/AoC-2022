@@ -5,6 +5,8 @@ module Main where
 
       Part A
         . given commands ( `cd`, `ls` ) to navigate a filesystem
+          & resulting output
+              . commands are preceded by "$ "
               . `cd <dir-name>` moves to the sub-dir <dir-name>
               . `cd ..` moves to the parent directory
               . "/" is the root folder
@@ -24,8 +26,18 @@ type Name = String
 type Size = Int  
 data FSItem = File Name Size | Folder Name Size [FSItem] deriving (Show)
 
+-- parseTermLine parts
+parseTermLine ("$":"cd":[dir]) = "command = cd to " ++ dir
+parseTermLine ("$":["ls"])     = "command = ls"
+parseTermLine _                = "not command"
+
+-- parseTermHistory
+-- parseTermHistory = foldl ...
+
 main :: IO ()
 main = do
+  f <- readFile "input-07.txt"
+
   putStrLn $ replicate 42 '-'
   putStrLn $ show $ Folder "dir 01" 0 [File "yes" 42]
   putStrLn $ replicate 42 '-'
