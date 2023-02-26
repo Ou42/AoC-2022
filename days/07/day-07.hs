@@ -49,23 +49,27 @@ nameIs name (File fileName _) = name == fileName
 
 dfsFSZipper :: FSZipper -> String
 dfsFSZipper fszipper =
-  let (Folder _ _ firstDirItems, _) = fszipper
+  let dirItems :: FSZipper -> [FSItem]
+      dirItems (Folder _ _ dirItems', _) = dirItems'
       isDir :: FSItem -> Bool
       isDir (Folder _ _ _) = True
       isDir _              = False
-      firstDirDirs = filter isDir firstDirItems
-      subDirNames :: [FSItem] -> [Name]
-      subDirNames = map (\(Folder name _ _) -> name)
+      dirsOnly :: [FSItem] -> [FSItem]
+      dirsOnly = filter isDir
+      subDirNames :: FSZipper -> [Name]
+      subDirNames fsz' = map (\(Folder name _ _) -> name) $ dirsOnly $ dirItems fsz'
       go :: [String] -> FSZipper -> [[Name]] -> [String]
       go accu _ []            = accu
-      -- go accu fsz@(Folder folderName _ _,_) (next:todo) = go (folderName:accu) fsz todo
       -- go accu fsz@(Folder folderName _ _,_) ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
-      go accu fsz ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
-      go accu fsz ([]:todo) = accu -- go (dir:accu) fsz (dirs:todo)
+
+      go accu fsz ([]:todo) = error "dir:dirs == []" -- go accu fsz (todo)
+      go accu fsz ((dir:dirs):todo) = go (dir:accu) (fsTo dir fsz) ((subDirNames fsz):dirs:todo)
+      -- go accu fsz ([]:todo) = accu -- go (dir:accu) fsz (dirs:todo)
       
   -- in go "" fszipper firstDirItems
   -- in unlines (subDirNames firstDirDirs)
-  in unlines $ go [] fszipper [(subDirNames firstDirDirs)]
+  -- in unlines $ go [] fszipper [(subDirNames firstDirDirs)]
+  in unlines $ go [] fszipper [(subDirNames fszipper)]
 
 fsNewItem :: FSItem -> FSZipper -> FSZipper
 fsNewItem item (Folder folderName size items, bs) =
@@ -106,5 +110,12 @@ main = do
   -- (Folder "brhvclj" (-1) [Folder "mvslzl" (-1) [],File "mtlscfrd.gdr" 40016],[FSCrumb "/" (-1) [Folder "tcdmgwp" (-1) [],Folder "shg" (-1) [],Folder "rtmj" (-1) [],Folder "qwvfpgl" (-1) [],Folder "pcqjncwl" (-1) [],Folder "lcz" (-1) [],Folder "dtqtvvrn" (-1) [],Folder "clnvqg" (-1) []] []])
 
   putStrLn $ replicate 42 '-'
-  putStrLn $ show $ fsToRoot $ parseTermHistory f
+
+  let root = fsToRoot $ parseTermHistory f
+  putStrLn $ show $ root
+
+  putStrLn $ replicate 42 '-'
+
+  -- DFS output WIP
+  putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
