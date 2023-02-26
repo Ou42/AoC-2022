@@ -29,10 +29,13 @@ data FSItem = File Name Size | Folder Name Size [FSItem] deriving (Show)
 -- parseTermLine parts
 parseTermLine ("$":"cd":[dir]) = "command = cd to " ++ dir
 parseTermLine ("$":["ls"])     = "command = ls"
-parseTermLine _                = "not command"
+parseTermLine ("dir":[dir])    = "dir = " ++ dir
+parseTermLine (size:[file])    = "file = " ++ file ++ " size = " ++ size
+parseTermLine _                = error "unexpected data"
 
 -- parseTermHistory
 -- parseTermHistory = foldl ...
+parseTermHistory termHist = map (parseTermLine . words) $ lines termHist
 
 main :: IO ()
 main = do
