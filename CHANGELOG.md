@@ -251,3 +251,6 @@
   - started
   - start of parsing via pattern matching
   - more parsing
+  - parsing appears to be working
+  - To Do: keep track of folder sizes
+  - To Do: traverse the "Zipper"
