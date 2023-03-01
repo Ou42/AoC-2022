@@ -256,3 +256,9 @@
   - To Do: traverse the "Zipper"
   - `fsToRoot` moves up to the root of the Zipper
   - DFS WIP
+
+## 2023-03-01
+
+- Part A
+  - DFS working, can now traverse the "Zipper"
+  - To Do carried fwd: keep track of folder sizes

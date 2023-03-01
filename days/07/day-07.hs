@@ -1,6 +1,7 @@
 module Main where
 
-import Data.List (break)  
+import Data.List (break)
+import Debug.Trace (trace)
 
 {-
     Day 07
@@ -49,34 +50,40 @@ nameIs name (File fileName _) = name == fileName
 
 dfsFSZipper :: FSZipper -> String
 dfsFSZipper fszipper =
+  -- Mimics "tree" cmd. Skips files ( folders only ).
   let dirItems :: FSZipper -> [FSItem]
       dirItems (Folder _ _ dirItems', _) = dirItems'
+
       isDir :: FSItem -> Bool
       isDir (Folder _ _ _) = True
       isDir _              = False
+
       dirsOnly :: [FSItem] -> [FSItem]
       dirsOnly = filter isDir
+
       subDirNames :: FSZipper -> [Name]
       subDirNames fsz' = map (\(Folder name _ _) -> name) $ dirsOnly $ dirItems fsz'
-      go :: [String] -> FSZipper -> [[Name]] -> [String]
-      go accu _ []            = accu
-      -- go accu fsz@(Folder folderName _ _,_) ((dir:dirs):todo) = go (dir:accu) fsz (dirs:todo)
 
-      -- go accu fsz ([]:todo) = error "dir:dirs == []" -- go accu fsz (todo)
-      go accu fsz ([]:[[]]) = accu
-      -- go accu fsz ([]:todo) = accu -- go accu (fsUp fsz) (todo)
-      go accu fsz ([]:todo) = error "error is here!  -- accu -- go accu (fsUp fsz) (todo)"
-      go accu fsz ((dir:[]):todo)   = accu -- go (dir:accu) (fsTo dir fsz) ((subDirNames fsz):todo)
-      go accu fsz ((dir:dirs):todo) = 
-        let sdNs = subDirNames fsz
-        in if sdNs == [] then error "sdNs == []"
-                         else go (dir:accu) (fsTo dir fsz) (sdNs:dirs:todo)
-      -- go accu fsz ([]:todo) = accu -- go (dir:accu) fsz (dirs:todo)
-      
-  -- in go "" fszipper firstDirItems
-  -- in unlines (subDirNames firstDirDirs)
-  -- in unlines $ go [] fszipper [(subDirNames firstDirDirs)]
-  in unlines $ go [] fszipper [(subDirNames fszipper)]
+      go :: [String] -> FSZipper -> [Name] -> [String] -> [String]
+      go accu _ [] _          = accu
+      -- 2 reasons for moving Up (cd ..)
+      -- (1) we're at a leaf node / there are no more subdirs
+      -- (2) we've exhausted all the subdirs in the current dir
+      -- yet, *both* can be determined by checking if the dir (from dir:dirs) != subdir of curr dir ???
+      go accu fsz@(Folder name _ _, _) (dir:dirs) prefix =
+        let sdNs = subDirNames (fsTo dir fsz)
+        in  -- if length dirs > 25
+              -- then  error $ "dirs > 25 |\n  accu = " ++ (unlines accu) ++ "\n  dirs = " ++ (unlines dirs)
+              -- else
+            if dir `elem` (subDirNames fsz)
+              then
+                    -- "cd <dir>"
+                    go (accu ++ [(concat prefix) ++ dir]) (fsTo dir fsz) (sdNs ++ dirs) ("|  ":prefix)
+              else
+                    -- "cd .."
+                    go (accu) (fsUp fsz) (dir:dirs) (tail prefix)
+
+  in unlines $ go [] fszipper (subDirNames fszipper) ["+-- "]
 
 fsNewItem :: FSItem -> FSZipper -> FSZipper
 fsNewItem item (Folder folderName size items, bs) =
@@ -99,7 +106,6 @@ parseTermLine _                fszipper = error "unexpected data"
 -- parseTermHistory
 parseTermHistory termHist = foldl (flip parseTermLine) emptyFSZipper
                             $ map words $ lines termHist
--- parseTermHistory termHist = map ((flip parseTermLine (,)) . words) $ lines termHist
 
 main :: IO ()
 main = do
@@ -123,6 +129,6 @@ main = do
 
   putStrLn $ replicate 42 '-'
 
-  -- DFS output WIP
+  -- DFS output WIP: Directory structure only ( no files )
   putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
