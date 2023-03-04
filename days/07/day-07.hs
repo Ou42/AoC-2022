@@ -1,7 +1,9 @@
 module Main where
 
 import Data.List (break)
-import Debug.Trace (trace)
+-- import Debug.Trace (trace)
+import qualified Data.Map as Map
+import Data.Map (Map)
 
 {-
     Day 07
@@ -64,13 +66,20 @@ dfsFSZipper fszipper =
       subDirNames :: FSZipper -> [Name]
       subDirNames fsz' = map (\(Folder name _ _) -> name) $ dirsOnly $ dirItems fsz'
 
+      dirSize :: FSZipper -> Int
+      dirSize fsz' = sum $ map getSize $ dirItems fsz'
+
+      getSize :: FSItem -> Int
+      getSize (Folder _ size _) = size
+      getSize (File _ size) = size
+
       go :: [String] -> FSZipper -> [Name] -> [String] -> [String]
       go accu _ [] _          = accu
       -- 2 reasons for moving Up (cd ..)
       -- (1) we're at a leaf node / there are no more subdirs
       -- (2) we've exhausted all the subdirs in the current dir
       -- yet, *both* can be determined by checking if the dir (from dir:dirs) != subdir of curr dir ???
-      go accu fsz@(Folder name _ _, _) (dir:dirs) prefix =
+      go accu fsz@(Folder currDir _ items, bs) (dir:dirs) prefix =
         let sdNs = subDirNames (fsTo dir fsz)
         in  -- if length dirs > 25
               -- then  error $ "dirs > 25 |\n  accu = " ++ (unlines accu) ++ "\n  dirs = " ++ (unlines dirs)
@@ -81,7 +90,40 @@ dfsFSZipper fszipper =
                     go (accu ++ [(concat prefix) ++ dir]) (fsTo dir fsz) (sdNs ++ dirs) ("|  ":prefix)
               else
                     -- "cd .."
-                    go (accu) (fsUp fsz) (dir:dirs) (tail prefix)
+
+                    -- if null items
+                    --   then  -- @ leaf node, update folder size
+                    --         error "null items" -- never gets called
+
+{-
+                    ******************************************************************
+                    *                                                                *
+                    *   There are no null Folders! Apparently, all folders contain   *
+                    *   at least one file!                                           *
+                    *                                                                *
+                    *   Cannot "update" `accu` as we might be returning from sub-    *
+                    *   dir to a folder that was added a while ago!                  *
+                    *                                                                *
+                    *   ... IOW, we've added other subdirs before returning to the   *
+                    *   current one and the one we're editing isn't the curr one!    *
+                    *                                                                *
+                    ******************************************************************
+-}
+
+                    let size = dirSize fsz
+                        initAccu = init accu
+                        lastAccu = (last accu) ++ " (" ++ (show size) ++ ")"
+                        -- lastAccu = (last accu) --  ++ " (" ++ show size ++ ")")
+                        newAccu  = initAccu ++ [lastAccu]
+                        newFsz  = (Folder currDir size items, bs)
+                    in go (newAccu) (fsUp newFsz) (dir:dirs) (tail prefix)
+                    --   else
+                    --         let size = dirSize fsz
+                    --             initAccu = init accu
+                    --             -- lastAccu = (last accu ++ " (" ++ show size ++ ")")
+                    --             lastAccu = (last accu) --  ++ " (" ++ show size ++ ")")
+                    --             newAccu  = initAccu ++ [lastAccu]
+                    --         in go (newAccu) (fsUp fsz) (dir:dirs) (tail prefix)
 
   in unlines $ go [] fszipper (subDirNames fszipper) ["+-- "]
 
@@ -103,9 +145,44 @@ parseTermLine ("dir":[dir])    fszipper = fsNewItem (Folder dir (-1) []) fszippe
 parseTermLine (size:[file])    fszipper = fsNewItem (File file (read size :: Int)) fszipper
 parseTermLine _                fszipper = error "unexpected data"
 
--- parseTermHistory
+parseTermHistory :: String -> FSZipper
 parseTermHistory termHist = foldl (flip parseTermLine) emptyFSZipper
                             $ map words $ lines termHist
+
+type Path = [String]
+type Dir  = String
+
+-- partAtake2 :: String -> [Int]
+-- partAtake2 termHist =
+  -- let wrdsPerLine = map words $ lines termHist
+{-      
+      ... keep track of "base path" & "curr dir" then "curr path == base + curr"
+      ... probably use a Map [String] Int to start then see if a List is possible
+      ... key *CAN* be a [String] (List of Strings) ... idea being the curr path "backwards"
+      ... so maybe a foldl ?
+      ... if not reading ahead:
+        ... if "<size> <fileName>"  -> update currDir's size
+        ... if "cd .."              -> update basePath's size & pop basePath
+        ... if "cd <dirName>"       -> update path (including "/")
+        ... if "dir <dirName>"      -> create new node
+        ... otherwise ignore it ?! ( ignore "$ ls" !! )
+      ---
+      ... could also keep accumulator summing dirs <= 100K
+-}
+
+-- parse :: [String] -> (Path, Dir, Map Path Int) -> (Path, Dir, Map Path Int)
+
+-- parse :: [String] -> (Path, Map Path Int) -> (Path, Map Path Int)
+parse :: [String] -> (Path, Map Path Int) -> String
+parse ("$":cmd:[dir]) (path, totals) =
+  case dir of
+    ".."  -> "adjust/alter (+) curr dir's size into parent dir's size, move up | " ++ show (path, totals)
+    _     -> "change path | " ++ show (path, totals)
+
+parse ("$":_) (path, totals) = show (path, totals) -- for "$ ls" or any other "$" cmd
+
+parse ("dir":[dir]) (path, totals) = "add: (\"" ++ dir ++ "\":path) to tree ... | "  ++ show (path, totals)
+parse (size:[file]) (path, totals) = "adjust/alter (+) curr dir's size by " ++ size ++ " | " ++ show (path, totals)
 
 main :: IO ()
 main = do
@@ -125,10 +202,17 @@ main = do
   putStrLn $ replicate 42 '-'
 
   let root = fsToRoot $ parseTermHistory f
-  putStrLn $ show $ root
+  -- putStrLn $ show $ root
 
   putStrLn $ replicate 42 '-'
 
   -- DFS output WIP: Directory structure only ( no files )
-  putStrLn $ dfsFSZipper root
+  -- putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
+
+  putStrLn $ parse (words "dir mydir") ([], Map.empty)
+  putStrLn $ parse (words "$ cd ..") ([], Map.empty)
+  putStrLn $ parse (words "$ cd /") ([], Map.empty)
+  putStrLn $ parse (words "$ cd mydir") ([], Map.empty)
+  putStrLn $ parse (words "$ ls") ([], Map.empty)
+  putStrLn $ parse (words "42 myfile") ([], Map.empty)

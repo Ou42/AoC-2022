@@ -262,3 +262,17 @@
 - Part A
   - DFS working, can now traverse the "Zipper"
   - To Do carried fwd: keep track of folder sizes
+
+## 2023-03-04
+
+### Day 07
+
+- Part A
+  - Not sure if my traversal was a DFS
+  - Could be that it was a "preorder traversal"  
+    to create the directory tree output
+  - but then appeared to need a "postorder taraversal"  
+    to store the sizes
+  - So, I'd need to traverse the tree 2x
+  - For now, I'm going to table that.
+  - New alg: Using a Data.Map
