@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List (break)
+import Data.List (break, sort)
 -- import Debug.Trace (trace)
 import qualified Data.Map.Lazy as Map
 import Data.Map.Lazy (Map)
@@ -22,6 +22,15 @@ import Data.Maybe (fromJust)
         . Find all of the directories with a total size of at
           most 100K, then calculate the sum of their total sizes.
               . directories include sub-directory totals
+
+      Part B
+        . The total disk space available to the filesystem is 70 000 000.
+          To run the update, you need unused space of at least 30 000 000.
+          You need to find a directory you can delete that will free up
+          enough space to run the update.
+        . Find the smallest directory that, if deleted, would free up
+          enough space on the filesystem to run the update. What is the
+          total size of that directory?
 -}
 
 -- from LYAH:
@@ -197,6 +206,10 @@ parse (sizeStr:[file]) (path, totals) =
       newTotals = Map.adjust (sizeInt +) path totals
   in (path, newTotals)
 
+backToRoot :: (Path, Map Path Int) -> Map Path Int
+backToRoot (["/"], totals) = totals
+backToRoot (path, totals) = backToRoot $ parse ["$", "cd", ".."] (path, totals)
+
 main :: IO ()
 main = do
   f <- readFile "input-07.txt"
@@ -223,11 +236,31 @@ main = do
   -- putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
 
-  let cmdLineTerms = map words $ lines f
+  let cmdLineTerms = map words $ "dir /":(lines f)
+  let dirSizes = backToRoot $ foldl (flip parse) ([], Map.empty) cmdLineTerms
+
+  -- Part A
+
   let totals =  sum
                 $ Map.elems
                 $ Map.filter (<= 100000)
-                $ snd
-                $ foldl (flip parse) ([], Map.empty) cmdLineTerms
+                $ dirSizes
 
-  putStrLn $ "The answer to Day-07 Part A is: " ++ show totals
+  putStrLn $ "The answer to Day-07 Part A is: \n\t" ++ show totals -- == 1770595
+  
+  -- Part B
+  
+  let dirSizesTotals =  sort $ Map.elems $ dirSizes
+  let dirSizesTotal  = fromJust $ Map.lookup ["/"] dirSizes
+  let amtReqToFree   =  30 * 10^6 - (70 * 10^6 - dirSizesTotal)
+  --                       70 000 000 == 70 * 10^6 ( max fs size )
+  --                       30 000 000 == 30 * 10^6 ( min free space req )
+  let candidates     = filter (>= amtReqToFree) dirSizesTotals
+
+  putStrLn $  "The answer to Day-07 Part B is: \n\t"
+              -- ++ show dirSizes ++ "\n\t"
+              ++ show dirSizesTotals ++ "\n\t"
+              ++ show dirSizesTotal ++ "\n\t"
+              ++ show amtReqToFree ++ "\n\t"
+              ++ show candidates ++ "\n\t"
+              ++ show (head candidates)

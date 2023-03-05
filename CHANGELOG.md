@@ -282,3 +282,16 @@
   - using `Data.Maybe.fromJust` to extract Int
   - there might be a better/more robust way!
   - SUCCESS!!
+- Part B
+  - Started ...
+  - Noticed I wasn't moving back to root
+  - therefore dir totals weren't accurate in Part A!
+  - luck that it didn't matter for Part A, but it will for Part B
+  - created `backToRoot` to `cd ..` until back at root
+  - Now file system total(s) are accurate for Part B
+  - finding the smallest folder >= amount need to be freed
+  - where `amtReqToFree = 30 * 10^6 - (70 * 10^6 - dirSizesTotal)`
+  - sorting the candidates & filtering puts the answer at the head
+  - SUCCESS!!
+  - TO-DO: Code cleanup ...
+  
