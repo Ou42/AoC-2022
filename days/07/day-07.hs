@@ -223,19 +223,11 @@ main = do
   -- putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
 
-  -- putStrLn $ parse (words "dir mydir") ([], Map.empty)
-  -- putStrLn $ parse (words "$ cd ..") ([], Map.empty)
-  -- putStrLn $ parse (words "$ cd /") ([], Map.empty)
-  -- putStrLn $ parse (words "$ cd mydir") ([], Map.empty)
-  -- putStrLn $ parse (words "$ ls") ([], Map.empty)
-  -- putStrLn $ parse (words "42 myfile") ([], Map.empty)
-
   let cmdLineTerms = map words $ lines f
+  let totals =  sum
+                $ Map.elems
+                $ Map.filter (<= 100000)
+                $ snd
+                $ foldl (flip parse) ([], Map.empty) cmdLineTerms
 
-  -- putStrLn $ show $ parse (cmdLineTerms !! 0) ([], Map.empty)
-  -- putStrLn $ show $ parse (cmdLineTerms !! 1) ([], Map.empty)
-  -- putStrLn $ show $ parse (cmdLineTerms !! 2) ([], Map.empty)
-  -- putStrLn $ show $ parse (cmdLineTerms !! 12) ([], Map.empty)
-  -- putStrLn $ show $ parse (cmdLineTerms !! 13) ([], Map.empty)
-  
-  putStrLn $ show $ parse (cmdLineTerms !! 0) ([], Map.empty)
+  putStrLn $ "The answer to Day-07 Part A is: " ++ show totals
