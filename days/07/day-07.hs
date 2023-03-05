@@ -2,8 +2,9 @@ module Main where
 
 import Data.List (break)
 -- import Debug.Trace (trace)
-import qualified Data.Map as Map
-import Data.Map (Map)
+import qualified Data.Map.Lazy as Map
+import Data.Map.Lazy (Map)
+import Data.Maybe (fromJust)
 
 {-
     Day 07
@@ -172,17 +173,29 @@ type Dir  = String
 
 -- parse :: [String] -> (Path, Dir, Map Path Int) -> (Path, Dir, Map Path Int)
 
--- parse :: [String] -> (Path, Map Path Int) -> (Path, Map Path Int)
-parse :: [String] -> (Path, Map Path Int) -> String
-parse ("$":cmd:[dir]) (path, totals) =
+-- parse :: [String] -> (Path, Map Path Int) -> String
+parse :: [String] -> (Path, Map Path Int) -> (Path, Map Path Int)
+parse ("$":"cd":[dir]) (path, totals) =
   case dir of
-    ".."  -> "adjust/alter (+) curr dir's size into parent dir's size, move up | " ++ show (path, totals)
-    _     -> "change path | " ++ show (path, totals)
+    ".."  -> -- "adjust/alter (+) curr dir's size into parent dir's size, move up | " ++ show (path, totals)
+              let newPath = tail path
+                  currDirSize = fromJust (Map.lookup path totals)
+                  newTotals = Map.adjust (currDirSize +) newPath totals
+              in (newPath, newTotals)
+    _     -> -- "change path | " ++ show (path, totals)
+              (dir:path, totals)
 
-parse ("$":_) (path, totals) = show (path, totals) -- for "$ ls" or any other "$" cmd
+parse ("$":_) (path, totals) = (path, totals) -- show (path, totals) -- for "$ ls" or any other "$" cmd
 
-parse ("dir":[dir]) (path, totals) = "add: (\"" ++ dir ++ "\":path) to tree ... | "  ++ show (path, totals)
-parse (size:[file]) (path, totals) = "adjust/alter (+) curr dir's size by " ++ size ++ " | " ++ show (path, totals)
+parse ("dir":[dir]) (path, totals) =
+  -- "add: (\"" ++ dir ++ "\":path) to tree ... | "  ++ show (path, totals)
+  (path, Map.insert (dir:path) 0 totals)
+
+parse (sizeStr:[file]) (path, totals) =
+  -- "adjust/alter (+) curr dir's size by " ++ size ++ " | " ++ show (path, totals)
+  let sizeInt = read sizeStr :: Int
+      newTotals = Map.adjust (sizeInt +) path totals
+  in (path, newTotals)
 
 main :: IO ()
 main = do
@@ -210,9 +223,19 @@ main = do
   -- putStrLn $ dfsFSZipper root
   putStrLn $ replicate 42 '-'
 
-  putStrLn $ parse (words "dir mydir") ([], Map.empty)
-  putStrLn $ parse (words "$ cd ..") ([], Map.empty)
-  putStrLn $ parse (words "$ cd /") ([], Map.empty)
-  putStrLn $ parse (words "$ cd mydir") ([], Map.empty)
-  putStrLn $ parse (words "$ ls") ([], Map.empty)
-  putStrLn $ parse (words "42 myfile") ([], Map.empty)
+  -- putStrLn $ parse (words "dir mydir") ([], Map.empty)
+  -- putStrLn $ parse (words "$ cd ..") ([], Map.empty)
+  -- putStrLn $ parse (words "$ cd /") ([], Map.empty)
+  -- putStrLn $ parse (words "$ cd mydir") ([], Map.empty)
+  -- putStrLn $ parse (words "$ ls") ([], Map.empty)
+  -- putStrLn $ parse (words "42 myfile") ([], Map.empty)
+
+  let cmdLineTerms = map words $ lines f
+
+  -- putStrLn $ show $ parse (cmdLineTerms !! 0) ([], Map.empty)
+  -- putStrLn $ show $ parse (cmdLineTerms !! 1) ([], Map.empty)
+  -- putStrLn $ show $ parse (cmdLineTerms !! 2) ([], Map.empty)
+  -- putStrLn $ show $ parse (cmdLineTerms !! 12) ([], Map.empty)
+  -- putStrLn $ show $ parse (cmdLineTerms !! 13) ([], Map.empty)
+  
+  putStrLn $ show $ parse (cmdLineTerms !! 0) ([], Map.empty)

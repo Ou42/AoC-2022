@@ -275,4 +275,9 @@
     to store the sizes
   - So, I'd need to traverse the tree 2x
   - For now, I'm going to table that.
-  - New alg: Using a Data.Map
+  - New alg: Using a `Data.Map`
+  - `parse` is my new alg
+  - Using `Data.Map.insert`, `adjust` & `lookup`
+  - `Data.Map.lookup` returns a Maybe !!
+  - using `Data.Maybe.fromJust` to extract Int
+  - there might be a better/more robust way!
