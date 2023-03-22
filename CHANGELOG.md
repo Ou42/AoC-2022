@@ -295,3 +295,10 @@
   - SUCCESS!!
   - TO-DO: Code cleanup ...
   
+  ## 2023-03-21
+
+  ### Part A
+
+  - Solved!
+  - Feels a bit heavy computationally.
+  
