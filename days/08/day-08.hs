@@ -1,10 +1,8 @@
 module Main where
 
 import Data.List (transpose)
--- import Debug.Trace (trace)
--- import qualified Data.Map.Lazy as Map
--- import Data.Map.Lazy (Map)
--- import Data.Maybe (fromJust)
+import qualified Data.Map as Map
+import Data.Map (Map(..))
 
 {-
     Day 08
@@ -14,22 +12,36 @@ import Data.List (transpose)
               . find the number of trees visible from the outside looking in
               . A tree is visible if all of the other trees between it and
                   an edge of the grid are shorter than it.
+
+      Part B
+        . find the tree with the greatest "visibility"
+        . where "visibility" is the product of each visible distance before
+          being blocked by a tree of equal or greater height in each of the
+          4 directions (NSEW/up,down,right,left)
+
+      input-08-test.txt
+        30373
+        25512
+        65332
+        33549
+        35390
 -}
 
 -- Part A
 
--- chkRowOfTreesR2L :: String -> [Bool]
+chkRowOfTreesR2L :: String -> [Bool]
 chkRowOfTreesR2L row =
+    {-
+       - build a List of T/F based on whether the Tree is smaller
+         than the up to then max height tree
+       - start comparison against `firstTestTree` then update testTree
+         to be the max of those 2.
+       - FIRST & LAST rows should be ALL True
+          - they will become all True due to the transposing but is there
+            a more efficient way? Taking out the head, yes, but `last`?
+    -}
   let firstTestTree = '.' -- Tree "shorter" than '0'
   in
-    -- [True]
-    -- build a List of T/F based on whether the Tree is smaller
-    -- than the up to then max height tree
-    -- start comparison against `firstTestTree` then update testTree
-    -- to be the max of those 2.
-    -- FIRST & LAST rows should be ALL True
-    -- ... they will become all True due to the tranposing but is
-    -- ... there are more efficient way? Taking out the head, yes, but `last`?
     fst $ foldr (\a b -> ((a > (snd b)):(fst b),(max a (snd b)))) ([], firstTestTree) row
 
 zip2DWithOR ts1 ts2 = go [] ts1 ts2
@@ -53,9 +65,6 @@ chkAllTrees trees =
       zip2DWithOR (zip2DWithOR chkR2L chkL2R)
                   (zip2DWithOR chkRot chkBth)
 
-  -- in chkR2L
-     -- chkRot chkBth
-
 areVisiblePartA :: [String] -> Int
 areVisiblePartA trees =
   length
@@ -63,13 +72,81 @@ areVisiblePartA trees =
   $ concat
   $ chkAllTrees trees
 
-myShow :: [[Bool]] -> [[Char]]
-myShow visTrees = map (map (\a -> if a then 'T' else 'f')) visTrees
+myShow :: [[Bool]] -> String
+myShow visTrees = unlines $ map (map (\a -> if a then 'T' else 'f')) visTrees
+
+-- Part B
+
+{-
+    . take a 2D grid of trees ...
+
+      . assign to Left 2 Right ( or West 2 East )
+      . take the transpose & assign to Down 2 Up ( South 2 North )
+
+      . moving L 2 R, calc & store the L & R Visibilty Lists & dists
+      . calc & store the North & South Visibility Lists & distances
+
+      . where, Linear Visibility is:
+            Number of trees until same height or edge
+
+      . calc Total Visibility for current tree
+      . if (>) prev max, replace max
+
+      . where, Total Visibility is:
+            Product of all 4 Linear Visibility values
+
+      . return max Total Visibility
+
+      NOTE: trees on the outside edge have at least 1 Distance of ZERO
+            and would therefore have a Visibility of ZERO. Ignore them!
+-}
+
+type Dist = ([Char],Int)
+
+takeUntil :: (a -> Bool) -> [a] -> [a]
+takeUntil f trees = go trees
+  where
+        go [] = []
+        go (t:ts) = if f t then [t]
+                           else t : go ts
+
+type Row = Int
+type Col = Int
+type EastWest = Map (Row, Col) (String, String)
+type NorthSouth = Map (Row, Col) (String, String)
+
+-- m - Map.empty :: EastWest
+
+-- visL2R :: String -> Int
+visL2R rowNum treeRow = zip (zip (repeat rowNum) [0..]) $ go [] treeRow
+  -- let emptyDist = ([],0)
+  -- in
+      -- foldr (\tree (prevStuff:_) -> ???) (emptyDist,emptyDist) treeRow
+  -- less efficient first. Get it done!
+  where
+        go accu []     = []
+        go accu (t:ts) = ((takeUntil (>= t) accu), (takeUntil (>= t) ts)) : go (t:accu) ts
+        -- go accu (t:ts) = ( accu, (takeUntil (>= t) ts)) : go (t:accu) ts
+
+genAllVisL2R :: [String] -> EastWest
+genAllVisL2R trees = go 0 (Map.empty :: EastWest) trees
+  where 
+        go _ allVisL2R [] = allVisL2R
+        go row allVisL2R (tRow:tRs) = go (row+1) (Map.union allVisL2R $ Map.fromList $ visL2R row tRow) tRs
+
+partB trees =
+  let allVisL2R = genAllVisL2R trees
+      treesNS   = transpose trees
+  in
+      go 0 0 (Map.empty :: NorthSouth) treesNS
+      where
+            go _ maxVis allVisN2S [] = maxVis
+            go _ maxVis allVisN2S = maxVis
 
 main :: IO ()
 main = do
-  f <- readFile "input-08.txt"
-  -- f <- readFile "input-08-test.txt"
+  -- f <- readFile "input-08.txt"
+  f <- readFile "input-08-test.txt"
 
   let trees = lines f
 
@@ -79,7 +156,6 @@ main = do
 
   putStrLn $ trees !! 0
 
-  -- putStrLn $ foldr () []
   putStrLn "Although `zip (0:b) b` is cool, I don't think it works for the whole row"
   putStrLn "Maybe if it short-circuits, but not `map` over the entire row"
 
@@ -91,9 +167,9 @@ main = do
   
   putStrLn $ replicate 42 '-'
 
-  putStrLn $ unlines $ myShow $ chkAllTrees trees
+  putStrLn $ myShow $ chkAllTrees trees
 
   putStrLn $ replicate 42 '-'
   
-  putStrLn $ "Answer ( for 'test' should be 21 ) == " ++ (show $ areVisiblePartA trees)
+  putStrLn $ "Answer for Part A ( for 'test' should be 21 ) == " ++ (show $ areVisiblePartA trees)
   

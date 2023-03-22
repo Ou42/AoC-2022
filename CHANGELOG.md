@@ -302,3 +302,8 @@
   - Solved!
   - Feels a bit heavy computationally.
   
+  ### Part B
+
+  - Started
+  - WIP
+  
