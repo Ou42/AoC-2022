@@ -114,34 +114,39 @@ type Row = Int
 type Col = Int
 type EastWest = Map (Row, Col) (String, String)
 type NorthSouth = Map (Row, Col) (String, String)
+type TwoDist = Map (Row, Col) Int
 
 -- m - Map.empty :: EastWest
 
+prodOf2Dist :: (String, String) -> Int
+prodOf2Dist (l, r) = length l * length r
+
 -- visL2R :: String -> Int
-visL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) $ go [] treeRow
+-- visL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) $ go [] treeRow
+visL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) $ map prodOf2Dist $ go [] treeRow
   -- let emptyDist = ([],0)
   -- in
       -- foldr (\tree (prevStuff:_) -> ???) (emptyDist,emptyDist) treeRow
   -- less efficient first. Get it done!
   where
+        go :: String -> String -> [(String, String)]
         go accu []     = []
         go accu (t:ts) = ((takeUntil (>= t) accu), (takeUntil (>= t) ts)) : go (t:accu) ts
-        -- go accu (t:ts) = ( accu, (takeUntil (>= t) ts)) : go (t:accu) ts
 
-genAllVisL2R :: [String] -> EastWest
-genAllVisL2R trees = go 0 (Map.empty :: EastWest) trees
+-- genAllVisL2R :: [String] -> EastWest
+genAllVisL2R :: [String] -> TwoDist
+genAllVisL2R trees = go 0 (Map.empty) trees
   where 
         go _ allVisL2R [] = allVisL2R
         go row allVisL2R (tRow:tRs) = go (row+1) (Map.union allVisL2R $ Map.fromList $ visL2R id row tRow) tRs
 
-partB trees =
-  let allVisL2R = genAllVisL2R trees
-      treesNS   = transpose trees
-  in
-      go 0 0 (Map.empty :: NorthSouth) treesNS
-      where
-            go _ maxVis allVisN2S [] = maxVis
-            go row maxVis allVisN2S (tRow:tRs) = go (row+1) maxVis (Map.fromList $ visL2R flip row tRow) tRs
+partB trees = maximum . snd . unzip $ Map.toList $ go 0 (allVisL2R) treesNS
+  where
+        allVisL2R = genAllVisL2R trees
+        treesNS   = transpose trees
+
+        go _ allVis [] = allVis
+        go row allVis (tRow:tRs) = go (row+1) (Map.unionWith (*) allVis $ Map.fromList $ visL2R flip row tRow) tRs
 
 
 coordL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) treeRow
@@ -171,6 +176,28 @@ genAllL2R trees = go 0 (Map.empty) trees
     id zip :: [a] -> [b] -> [(a, b)]
     *Main> :t flip zip
     flip zip :: [b] -> [a] -> [(a, b)]
+
+
+    *Main> putStrLn $ unlines ts
+    30373
+    25512
+    65332
+    33549
+    35390
+
+    ** NOTE: the following are now `prodOf2Dist` values! **
+
+    *Main> take 5 $ Map.toList all
+    [((0,0),0),((0,1),1),((0,2),2),((0,3),3),((0,4),0)]
+    *Main> take 5 $ drop 5 $ Map.toList all
+    [((1,0),0),((1,1),1),((1,2),2),((1,3),1),((1,4),0)]
+    *Main> take 5 $ drop 10 $ Map.toList all
+    [((2,0),0),((2,1),3),((2,2),1),((2,3),1),((2,4),0)]
+    *Main> take 5 $ drop 15 $ Map.toList all
+    [((3,0),0),((3,1),1),((3,2),4),((3,3),1),((3,4),0)]
+    *Main> take 5 $ drop 20 $ Map.toList all
+    [((4,0),0),((4,1),2),((4,2),1),((4,3),3),((4,4),0)]
+
 -}
 
 -- ** NOT sure if flip-ing the zip is correct. Need Row, Col to match up for L2R and NS **

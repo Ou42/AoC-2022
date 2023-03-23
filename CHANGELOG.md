@@ -309,5 +309,7 @@
   - having trouble visualizing how to implement my "alg"
   - copy/pasted code and removed "computation" and returned original input
   - this proved passing in `id` & `flip` to `visL2R` is working
-  
-  
+  - got it!
+  - not the most efficient solution, but fast enough!
+  - would be interesting to keep track of "max" visibility along the way
+    
