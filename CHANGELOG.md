@@ -306,4 +306,8 @@
 
   - Started
   - WIP
+  - having trouble visualizing how to implement my "alg"
+  - copy/pasted code and removed "computation" and returned original input
+  - this proved passing in `id` & `flip` to `visL2R` is working
+  
   

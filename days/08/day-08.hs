@@ -118,7 +118,7 @@ type NorthSouth = Map (Row, Col) (String, String)
 -- m - Map.empty :: EastWest
 
 -- visL2R :: String -> Int
-visL2R rowNum treeRow = zip (zip (repeat rowNum) [0..]) $ go [] treeRow
+visL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) $ go [] treeRow
   -- let emptyDist = ([],0)
   -- in
       -- foldr (\tree (prevStuff:_) -> ???) (emptyDist,emptyDist) treeRow
@@ -132,7 +132,7 @@ genAllVisL2R :: [String] -> EastWest
 genAllVisL2R trees = go 0 (Map.empty :: EastWest) trees
   where 
         go _ allVisL2R [] = allVisL2R
-        go row allVisL2R (tRow:tRs) = go (row+1) (Map.union allVisL2R $ Map.fromList $ visL2R row tRow) tRs
+        go row allVisL2R (tRow:tRs) = go (row+1) (Map.union allVisL2R $ Map.fromList $ visL2R id row tRow) tRs
 
 partB trees =
   let allVisL2R = genAllVisL2R trees
@@ -141,7 +141,39 @@ partB trees =
       go 0 0 (Map.empty :: NorthSouth) treesNS
       where
             go _ maxVis allVisN2S [] = maxVis
-            go _ maxVis allVisN2S = maxVis
+            go row maxVis allVisN2S (tRow:tRs) = go (row+1) maxVis (Map.fromList $ visL2R flip row tRow) tRs
+
+
+coordL2R f rowNum treeRow = zip (f zip (repeat rowNum) [0..]) treeRow
+
+genAllL2R :: [String] -> Map (Row, Col) Char
+genAllL2R trees = go 0 (Map.empty) trees
+  where 
+        go _ allL2R [] = allL2R
+        go row allL2R (tRow:tRs) = go (row+1) (Map.union allL2R $ Map.fromList $ coordL2R id row tRow) tRs
+
+{-
+    *Main> f <- readFile "input-08-test.txt" 
+    *Main> ts = lines f
+    *Main> ts
+    ["30373","25512","65332","33549","35390"]
+    *Main> tts
+    ["32633","05535","35353","71349","32290"]
+    *Main> coordL2R id 0 (head ts)
+    [((0,0),'3'),((0,1),'0'),((0,2),'3'),((0,3),'7'),((0,4),'3')]
+    *Main> coordL2R flip 0 (head tts)
+    [((0,0),'3'),((1,0),'2'),((2,0),'6'),((3,0),'3'),((4,0),'3')]
+    *Main> :t id
+    id :: a -> a
+    *Main> :t flip
+    flip :: (a -> b -> c) -> b -> a -> c
+    *Main> :t id zip
+    id zip :: [a] -> [b] -> [(a, b)]
+    *Main> :t flip zip
+    flip zip :: [b] -> [a] -> [(a, b)]
+-}
+
+-- ** NOT sure if flip-ing the zip is correct. Need Row, Col to match up for L2R and NS **
 
 main :: IO ()
 main = do
