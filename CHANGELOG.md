@@ -242,3 +242,56 @@
   - SUCCESS! simple /naive solution (again)
   - did refactor Part A's code to be useful for both A & B
   - DRY principle
+
+## 2023-02-25
+
+### Day 07
+
+- Part A
+  - started
+  - start of parsing via pattern matching
+  - more parsing
+  - parsing appears to be working
+  - To Do: keep track of folder sizes
+  - To Do: traverse the "Zipper"
+  - `fsToRoot` moves up to the root of the Zipper
+  - DFS WIP
+
+## 2023-03-01
+
+- Part A
+  - DFS working, can now traverse the "Zipper"
+  - To Do carried fwd: keep track of folder sizes
+
+## 2023-03-04
+
+### Day 07
+
+- Part A
+  - Not sure if my traversal was a DFS
+  - Could be that it was a "preorder traversal"  
+    to create the directory tree output
+  - but then appeared to need a "postorder taraversal"  
+    to store the sizes
+  - So, I'd need to traverse the tree 2x
+  - For now, I'm going to table that.
+  - New alg: Using a `Data.Map`
+  - `parse` is my new alg
+  - Using `Data.Map.insert`, `adjust` & `lookup`
+  - `Data.Map.lookup` returns a Maybe !!
+  - using `Data.Maybe.fromJust` to extract Int
+  - there might be a better/more robust way!
+  - SUCCESS!!
+- Part B
+  - Started ...
+  - Noticed I wasn't moving back to root
+  - therefore dir totals weren't accurate in Part A!
+  - luck that it didn't matter for Part A, but it will for Part B
+  - created `backToRoot` to `cd ..` until back at root
+  - Now file system total(s) are accurate for Part B
+  - finding the smallest folder >= amount need to be freed
+  - where `amtReqToFree = 30 * 10^6 - (70 * 10^6 - dirSizesTotal)`
+  - sorting the candidates & filtering puts the answer at the head
+  - SUCCESS!!
+  - TO-DO: Code cleanup ...
+  
