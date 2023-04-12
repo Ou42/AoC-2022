@@ -1,6 +1,5 @@
 module Main where
 
--- import Data.List (transpose)
 import qualified Data.Map as Map
 import Data.Map (Map(..))
 
@@ -32,21 +31,31 @@ type Visited =  Map (Row,Col) Bool
 type MoveDir = Char
 type MoveAmt = Int
 
-data MoveInstruction = MI MoveDir MoveAmt
+type MoveInstruction = (MoveDir, MoveAmt)
 
--- parseInput :: String -> [MoveInstruction]
+
+parseInput :: String -> [MoveInstruction]
 parseInput fileInput =
   let l = lines fileInput
+      parseLine :: String -> MoveInstruction
+      parseLine (mvDir:mvAmtStr) =
+        (mvDir, read mvAmtStr :: Int)
   in
-     map (words) l
+     map (parseLine) l
+
+doMove :: MoveInstruction -> Visited -> Visited
+doMove (mvDir, mvAmt) visited = visited
 
 main :: IO ()
 main = do
   f <- readFile "input-09.txt"
 
-  let moves = lines f
+  let moves = parseInput f
 
   putStrLn $ replicate 42 '-'
-  putStrLn $ unlines $ take 5 $ moves
+  putStrLn $ unlines $ map show $ take 5 $ moves
   putStrLn $ replicate 42 '-'
 
+  let (hLoc:tLoc:startLoc:_) = repeat (0,0)
+
+  putStrLn $ show $ doMove (head moves) $ Map.fromList [((0,0),True)]
