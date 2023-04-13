@@ -62,6 +62,42 @@ updateLoc mvDir (r, c) =
             ie: T should not move
         - ex: H & T are at the same Loc, H moves
             - T should not move as it is within one unit of H
+
+  =================================================================
+
+    * Following above insight:
+        - Test for "must move" is only necessary on FIRST step
+        - Subsequent steps will mimic Head's movement.
+        - change doOneStep to doFirstStep
+        - convert remaining steps to a List, then Map.fromList
+        - calculate destination of Head and Tail
+
+  =================================================================
+
+    * Need to check the above against the rules for dealing with
+        the situation when Head and Tail are diagonally apart
+
+    * It's slightly different than I assumed:
+
+        "Otherwise, if the head and tail aren't touching and aren't
+         in the same row or column, the tail always moves one step
+         diagonally to keep up:
+
+              .....    .....    .....
+              .....    ..H..    ..H..
+              ..H.. -> ..... -> ..T..
+              .T...    .T...    .....
+              .....    .....    .....
+
+              .....    .....    .....
+              .....    .....    .....
+              ..H.. -> ...H. -> ..TH.
+              .T...    .T...    .....
+              .....    .....    ....."
+
+    * So, it's OK for H & T to be diagonally apart by 1 unit in both dimensions
+    * But they cannot be apart by more than 1 unit in any direction.
+    * Now it looks like T just goes to where H was previously IF it mustMove
 -}
 
 doOneStep :: MoveInstruction -> Loc -> Loc -> Visited -> Visited

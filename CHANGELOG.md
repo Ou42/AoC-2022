@@ -320,4 +320,8 @@
   - Started
   - doOneStep => one iteration of a MoveInstruction
   - updateLoc => given a MoveDir, update a Loc
-  
+  - better grasp of movement
+    - Tail can be diagonally away from Head
+    - but not by more than 1 unit in either dimension
+    - Only need to check if `mustMove` on "first step"
+    - subsequent steps can be precalculated
