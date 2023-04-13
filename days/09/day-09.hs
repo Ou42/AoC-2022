@@ -25,8 +25,9 @@ import Data.Map (Map(..))
 
 type Row = Int
 type Col = Int
+type Loc = (Row, Col)
 
-type Visited =  Map (Row,Col) Bool
+type Visited =  Map Loc Bool
 
 type MoveDir = Char
 type MoveAmt = Int
@@ -43,8 +44,28 @@ parseInput fileInput =
   in
      map (parseLine) l
 
-doMove :: MoveInstruction -> Visited -> Visited
-doMove (mvDir, mvAmt) visited = visited
+updateLoc :: MoveDir -> Loc -> Loc
+updateLoc mvDir (r, c) =
+  case mvDir of
+    'U' -> (r,   c-1)
+    'D' -> (r,   c+1)
+    'L' -> (r-1, c)
+    'R' -> (r+1, c)
+    otherwise -> error "Invalid Move. Not in ['U','D','L','R']"
+
+{- 
+    * Move the head
+    * Tail follows
+        - is the FIRST step per move instruction,
+          the ONLY time Tail might not move?
+        - ex: H moves L then R and now H & T have the same Loc
+            ie: T should not move
+        - ex: H & T are at the same Loc, H moves
+            - T should not move as it is within one unit of H
+-}
+
+doOneStep :: MoveInstruction -> Loc -> Loc -> Visited -> Visited
+doOneStep (mvDir, mvAmt) hLoc tLoc visited = visited
 
 main :: IO ()
 main = do
@@ -58,4 +79,5 @@ main = do
 
   let (hLoc:tLoc:startLoc:_) = repeat (0,0)
 
-  putStrLn $ show $ doMove (head moves) $ Map.fromList [((0,0),True)]
+  putStrLn $ show $ doOneStep (head moves) hLoc tLoc $ Map.fromList [((0,0),True)]
+  -- putStrLn $ doMove (head moves) hLoc tLoc $ Map.fromList [((0,0),True)]

@@ -312,4 +312,12 @@
   - got it!
   - not the most efficient solution, but fast enough!
   - would be interesting to keep track of "max" visibility along the way
-    
+
+  ## 2023-04-12
+
+  ### Day-09 - Part A
+
+  - Started
+  - doOneStep => one iteration of a MoveInstruction
+  - updateLoc => given a MoveDir, update a Loc
+  
