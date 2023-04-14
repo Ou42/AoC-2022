@@ -339,3 +339,4 @@
 - `doOneStep` is now `doFirstStep`
 - added `mustMove` to check if Tail should move
 - added `doFullMove` which *will* do a full Move Instruction
+- `scanl` FTW?!

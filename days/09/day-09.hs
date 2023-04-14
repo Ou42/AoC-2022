@@ -128,7 +128,7 @@ doFullMove moveInstr@(mvDir, mvAmt) moveRec@(MoveRec {hLoc, tLoc, visited}) =
   let movesToMake = [1..(mvAmt-1)]
       afterFirst  = doFirstStep moveInstr moveRec
   in
-     undefined
+     error "scanl FTW?!"
 
 main :: IO ()
 main = do
@@ -161,3 +161,6 @@ main = do
   putStrLn ""
   putStrLn $ show $ moveRec3
   putStrLn $ " ==> " ++ show (doFirstStep (head moves) moveRec3)
+
+  putStrLn $ show (doFullMove ('D',10) (MoveRec (0,0) (1,1) Set.empty))
+  
