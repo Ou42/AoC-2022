@@ -340,3 +340,17 @@
 - added `mustMove` to check if Tail should move
 - added `doFullMove` which *will* do a full Move Instruction
 - `scanl` FTW?!
+
+## 2023-04-14
+
+### Day-09 - Part A
+
+- `scanl` does work!
+- But, ***My premise/assumption is wrong!!***
+- It **IS** possible that T won't move for 2 steps of a Move Instr
+- So, now is it only the first 2 moves? or 3?
+- It currently seems that T might not move on steps 1 and 2
+- But it must start following H on step 3
+- Also, once T starts following H, it continues to do so for the  
+  remainder of the Move Instruction
+- changed doFirstStep to doStepWithCheck
