@@ -295,33 +295,47 @@
   - SUCCESS!!
   - TO-DO: Code cleanup ...
   
-  ## 2023-03-21
+## 2023-03-21
 
-  ### Part A
+### Part A
 
-  - Solved!
-  - Feels a bit heavy computationally.
+- Solved!
+- Feels a bit heavy computationally.
   
-  ### Part B
+### Part B
 
-  - Started
-  - WIP
-  - having trouble visualizing how to implement my "alg"
-  - copy/pasted code and removed "computation" and returned original input
-  - this proved passing in `id` & `flip` to `visL2R` is working
-  - got it!
-  - not the most efficient solution, but fast enough!
-  - would be interesting to keep track of "max" visibility along the way
+- Started
+- WIP
+- having trouble visualizing how to implement my "alg"
+- copy/pasted code and removed "computation" and returned original input
+- this proved passing in `id` & `flip` to `visL2R` is working
+- got it!
+- not the most efficient solution, but fast enough!
+- would be interesting to keep track of "max" visibility along the way
 
-  ## 2023-04-12
+## 2023-04-12
 
-  ### Day-09 - Part A
+### Day-09 - Part A
 
-  - Started
-  - doOneStep => one iteration of a MoveInstruction
-  - updateLoc => given a MoveDir, update a Loc
-  - better grasp of movement
-    - Tail can be diagonally away from Head
-    - but not by more than 1 unit in either dimension
-    - Only need to check if `mustMove` on "first step"
-    - subsequent steps can be precalculated
+- Started
+- doOneStep => one iteration of a MoveInstruction
+- updateLoc => given a MoveDir, update a Loc
+- better grasp of movement
+  - Tail can be diagonally away from Head
+  - but not by more than 1 unit in either dimension
+  - Only need to check if `mustMove` on "first step"
+  - subsequent steps can be precalculated
+
+## 2023-04-13
+
+### Day-09 - Part A
+
+- refactored to use Sets not Maps
+  - the keys are important, no need for a value
+  - and still don't want duplicates
+- Using a Record to hold/pass fwd Head & Tail Loc's
+  - in addition to storing Tails history in `visited`
+- `NamedFieldPuns` LANGUAGE pragma
+- `doOneStep` is now `doFirstStep`
+- added `mustMove` to check if Tail should move
+- added `doFullMove` which *will* do a full Move Instruction

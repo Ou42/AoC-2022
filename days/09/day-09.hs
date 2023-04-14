@@ -1,7 +1,9 @@
+{-# LANGUAGE NamedFieldPuns #-}
+
 module Main where
 
-import qualified Data.Map as Map
-import Data.Map (Map(..))
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 {-
     Day 09
@@ -27,7 +29,13 @@ type Row = Int
 type Col = Int
 type Loc = (Row, Col)
 
-type Visited =  Map Loc Bool
+type Visited =  Set Loc
+
+data MoveRec = MoveRec
+  { hLoc :: Loc
+  , tLoc :: Loc
+  , visited :: Visited
+  } deriving Show
 
 type MoveDir = Char
 type MoveAmt = Int
@@ -37,20 +45,20 @@ type MoveInstruction = (MoveDir, MoveAmt)
 
 parseInput :: String -> [MoveInstruction]
 parseInput fileInput =
-  let l = lines fileInput
+  let lns = lines fileInput
       parseLine :: String -> MoveInstruction
       parseLine (mvDir:mvAmtStr) =
         (mvDir, read mvAmtStr :: Int)
   in
-     map (parseLine) l
+     map (parseLine) lns
 
 updateLoc :: MoveDir -> Loc -> Loc
 updateLoc mvDir (r, c) =
   case mvDir of
-    'U' -> (r,   c-1)
-    'D' -> (r,   c+1)
-    'L' -> (r-1, c)
-    'R' -> (r+1, c)
+    'U' -> (r-1, c)
+    'D' -> (r+1, c)
+    'L' -> (r, c-1)
+    'R' -> (r, c+1)
     otherwise -> error "Invalid Move. Not in ['U','D','L','R']"
 
 {- 
@@ -69,7 +77,7 @@ updateLoc mvDir (r, c) =
         - Test for "must move" is only necessary on FIRST step
         - Subsequent steps will mimic Head's movement.
         - change doOneStep to doFirstStep
-        - convert remaining steps to a List, then Map.fromList
+        - convert remaining steps to a List, then Set.fromList
         - calculate destination of Head and Tail
 
   =================================================================
@@ -100,8 +108,27 @@ updateLoc mvDir (r, c) =
     * Now it looks like T just goes to where H was previously IF it mustMove
 -}
 
-doOneStep :: MoveInstruction -> Loc -> Loc -> Visited -> Visited
-doOneStep (mvDir, mvAmt) hLoc tLoc visited = visited
+mustMove :: Loc -> Loc -> Bool
+mustMove (r1,c1) (r2,c2) = abs (r1-r2) > 1 || abs (c1-c2) > 1
+
+doFirstStep :: MoveInstruction -> MoveRec -> MoveRec
+doFirstStep (mvDir, mvAmt) moveRec@(MoveRec {hLoc, tLoc, visited}) =
+  let newHLoc = updateLoc mvDir hLoc
+  in
+     if mustMove newHLoc tLoc
+      then moveRec { hLoc = newHLoc
+                   , tLoc = hLoc
+                   , visited = Set.insert hLoc visited
+                   }
+      else moveRec { hLoc = newHLoc }
+
+doFullMove :: MoveInstruction -> MoveRec -> MoveRec
+doFullMove moveInstr@(mvDir, mvAmt) moveRec@(MoveRec {hLoc, tLoc, visited}) =
+  -- mvAmt will always be > 1
+  let movesToMake = [1..(mvAmt-1)]
+      afterFirst  = doFirstStep moveInstr moveRec
+  in
+     undefined
 
 main :: IO ()
 main = do
@@ -115,5 +142,22 @@ main = do
 
   let (hLoc:tLoc:startLoc:_) = repeat (0,0)
 
-  putStrLn $ show $ doOneStep (head moves) hLoc tLoc $ Map.fromList [((0,0),True)]
-  -- putStrLn $ doMove (head moves) hLoc tLoc $ Map.fromList [((0,0),True)]
+  let moveRec = MoveRec hLoc tLoc $ Set.fromList [tLoc]
+
+  putStrLn $ show $ doFirstStep (head moves) moveRec
+
+  let moveRec1 = MoveRec (5,5) (5,5) $ Set.fromList [(5,5)]
+  let moveRec2 = MoveRec (5,5) (4,5) $ Set.fromList [(4,5)]
+  let moveRec3 = MoveRec (5,5) (4,4) $ Set.fromList [(4,4)]
+
+  putStrLn $ replicate 42 '-'
+  putStrLn $ show $ head moves
+  putStrLn ""
+  putStrLn $ show $ moveRec1
+  putStrLn $ " ==> " ++ show (doFirstStep (head moves) moveRec1)
+  putStrLn ""
+  putStrLn $ show $ moveRec2
+  putStrLn $ " ==> " ++ show (doFirstStep (head moves) moveRec2)
+  putStrLn ""
+  putStrLn $ show $ moveRec3
+  putStrLn $ " ==> " ++ show (doFirstStep (head moves) moveRec3)
