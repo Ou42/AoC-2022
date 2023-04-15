@@ -142,17 +142,27 @@ doStepWithCheck mvDir moveRec@(MoveRec {hLoc, tLoc, visited}) =
 doFullMove :: MoveInstruction -> MoveRec -> MoveRec
 doFullMove (mvDir, mvAmt) moveRec@(MoveRec {hLoc, tLoc, visited}) =
   -- mvAmt will always be >= 1
-  let afterFirst2 = undefined -- doStepWithCheck mvDir moveRec
-      newTLocs    = scanl (flip updateLoc) tLoc $ replicate (mvAmt-1) mvDir
-      newTLoc     = last newTLocs
-      -- newHLoc     = undefined
-      newHLoc     = foldl (flip updateLoc) hLoc $ replicate mvAmt mvDir
+  let twoSteps = undefined -- doStepWithCheck mvDir moveRec
+      newTLocs = scanl (flip updateLoc) tLoc $ replicate (mvAmt-1) mvDir
+      newTLoc  = last newTLocs
+      -- newHLoc  = undefined
+      newHLoc  = foldl (flip updateLoc) hLoc $ replicate mvAmt mvDir
   in
-      error "afterFirst2 not used?! must start w/ updated hLoc & tLoc ..."
+      -- slow way -- check each step:
+      foldl (flip doStepWithCheck) moveRec $ replicate mvAmt mvDir
+      {-
+      error "twoSteps not used?! must start w/ updated hLoc & tLoc ..."
       moveRec { hLoc = newHLoc
               , tLoc = newTLoc
               , visited = Set.union visited $ Set.fromList newTLocs
               }
+      -}
+
+doAllMoves :: [MoveInstruction] -> MoveRec -> MoveRec
+-- do I need to send in a MoveRec?!
+-- could I set this up Point Free? Should I?
+doAllMoves moveIntrs moveRec = foldl (flip doFullMove) moveRec moveIntrs
+
 
 main :: IO ()
 main = do
@@ -186,7 +196,13 @@ main = do
   putStrLn $ show $ moveRec3
   putStrLn $ " ==> " ++ show (doStepWithCheck (fst $ head moves) moveRec3)
 
-  let moveRec4 = MoveRec (0,0) (1,1) $ Set.fromList [(1,1)]
-  putStrLn ""
-  putStrLn $ show $ moveRec4
-  putStrLn $ " ==> " ++ show (doFullMove ('U', 10) moveRec4)
+  -- let moveRec4 = MoveRec (0,0) (1,1) $ Set.fromList [(1,1)]
+  -- putStrLn ""
+  -- putStrLn $ show $ moveRec4
+  -- putStrLn $ " ==> " ++ show (doFullMove ('U', 10) moveRec4)
+
+  putStrLn $ replicate 42 '-'
+  putStrLn $ show $ moveRec
+  let partA = doAllMoves moves moveRec
+  putStrLn $ "Part A ==> " ++ show (Set.size $ visited partA)
+  putStrLn $ "  ( should == 6494 )"

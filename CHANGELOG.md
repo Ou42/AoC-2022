@@ -354,3 +354,7 @@
 - Also, once T starts following H, it continues to do so for the  
   remainder of the Move Instruction
 - changed doFirstStep to doStepWithCheck
+- SUCCESS!
+- code is a mess, needs clean-up / refactor
+- went w/ *simpler* less "optimal"?! alg
+- maybe my "optimization" isn't that much of performance boost?!
