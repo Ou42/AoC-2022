@@ -21,6 +21,14 @@ import qualified Data.Set as Set
 
         . After following all movement instructions, how many locations did the
             Tail visit at least once?
+
+      Part B
+        . Rather than two knots, you now must simulate a rope consisting of ten
+          knots. One knot is still the head of the rope and moves according to
+          the series of motions. Each knot further down the rope follows the knot
+          in front of it using the same rules as before.
+        . Instead of H(ead) and T(ail), it is suggested to use H(ead) and [1..9]
+        . How many positions does the tail (9) of the rope visit at least once?
 -}
 
 -- Part A
@@ -35,6 +43,11 @@ data MoveRec = MoveRec
   { hLoc :: Loc
   , tLoc :: Loc
   , visited :: Visited
+  } deriving Show
+
+data MoveRecB = MoveRecB
+  { locs :: [Loc]
+  , visitedB :: Visited
   } deriving Show
 
 type MoveDir = Char
@@ -141,28 +154,26 @@ doStepWithCheck mvDir moveRec@(MoveRec {hLoc, tLoc, visited}) =
 
 doFullMove :: MoveInstruction -> MoveRec -> MoveRec
 doFullMove (mvDir, mvAmt) moveRec@(MoveRec {hLoc, tLoc, visited}) =
-  -- mvAmt will always be >= 1
-  let twoSteps = undefined -- doStepWithCheck mvDir moveRec
-      newTLocs = scanl (flip updateLoc) tLoc $ replicate (mvAmt-1) mvDir
-      newTLoc  = last newTLocs
-      -- newHLoc  = undefined
-      newHLoc  = foldl (flip updateLoc) hLoc $ replicate mvAmt mvDir
-  in
-      -- slow way -- check each step:
-      foldl (flip doStepWithCheck) moveRec $ replicate mvAmt mvDir
-      {-
-      error "twoSteps not used?! must start w/ updated hLoc & tLoc ..."
-      moveRec { hLoc = newHLoc
-              , tLoc = newTLoc
-              , visited = Set.union visited $ Set.fromList newTLocs
-              }
-      -}
+  -- slow way -- check each step:
+  foldl (flip doStepWithCheck) moveRec $ replicate mvAmt mvDir
 
 doAllMoves :: [MoveInstruction] -> MoveRec -> MoveRec
 -- do I need to send in a MoveRec?!
 -- could I set this up Point Free? Should I?
 doAllMoves moveIntrs moveRec = foldl (flip doFullMove) moveRec moveIntrs
 
+-- Part B
+
+-- check to see if each of the Tails should follow it's predecessor
+doStepWithCheckB :: MoveDir -> MoveRecB -> MoveRecB
+doStepWithCheckB mvDir moveRecB@(MoveRecB (hLoc:tLoc:tLocs) visitedB) =
+  let newHLoc = updateLoc mvDir hLoc
+  in
+     if mustMove newHLoc tLoc
+      then moveRecB { locs = newHLoc:hLoc:tLocs
+                    , visited = Set.insert hLoc visited
+                    }
+      else moveRecB { locs = newHLoc:tLoc:tLocs }
 
 main :: IO ()
 main = do
@@ -170,39 +181,18 @@ main = do
 
   let moves = parseInput f
 
-  putStrLn $ replicate 42 '-'
-  putStrLn $ unlines $ map show $ take 5 $ moves
-  putStrLn $ replicate 42 '-'
+  -- putStrLn $ replicate 42 '-'
+  -- putStrLn $ unlines $ map show $ take 5 $ moves
+  -- putStrLn $ replicate 42 '-'
 
   let (hLoc:tLoc:startLoc:_) = repeat (0,0)
 
   let moveRec = MoveRec hLoc tLoc $ Set.fromList [tLoc]
 
-  putStrLn $ show $ doStepWithCheck (fst $ head moves) moveRec
-
-  let moveRec1 = MoveRec (5,5) (5,5) $ Set.fromList [(5,5)]
-  let moveRec2 = MoveRec (5,5) (4,5) $ Set.fromList [(4,5)]
-  let moveRec3 = MoveRec (5,5) (4,4) $ Set.fromList [(4,4)]
+  -- putStrLn $ show $ doStepWithCheck (fst $ head moves) moveRec
 
   putStrLn $ replicate 42 '-'
-  putStrLn $ show $ head moves
-  putStrLn ""
-  putStrLn $ show $ moveRec1
-  putStrLn $ " ==> " ++ show (doStepWithCheck (fst $ head moves) moveRec1)
-  putStrLn ""
-  putStrLn $ show $ moveRec2
-  putStrLn $ " ==> " ++ show (doStepWithCheck (fst $ head moves) moveRec2)
-  putStrLn ""
-  putStrLn $ show $ moveRec3
-  putStrLn $ " ==> " ++ show (doStepWithCheck (fst $ head moves) moveRec3)
-
-  -- let moveRec4 = MoveRec (0,0) (1,1) $ Set.fromList [(1,1)]
-  -- putStrLn ""
-  -- putStrLn $ show $ moveRec4
-  -- putStrLn $ " ==> " ++ show (doFullMove ('U', 10) moveRec4)
-
-  putStrLn $ replicate 42 '-'
-  putStrLn $ show $ moveRec
+  -- putStrLn $ show $ moveRec
   let partA = doAllMoves moves moveRec
   putStrLn $ "Part A ==> " ++ show (Set.size $ visited partA)
   putStrLn $ "  ( should == 6494 )"

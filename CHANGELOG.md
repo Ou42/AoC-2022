@@ -358,3 +358,10 @@
 - code is a mess, needs clean-up / refactor
 - went w/ *simpler* less "optimal"?! alg
 - maybe my "optimization" isn't that much of performance boost?!
+
+## 2023-04-27
+
+### Day-09 - Part B
+
+- started Part B
+- cleaned up some of the code
