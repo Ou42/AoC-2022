@@ -5,17 +5,18 @@ module Day09B where
 
         Alg for (moving) H & T
 
-        Function moveHead (H) a Direction & Distance
+        Function moveHeadTail' (H) a Direction & Distance
 
-        moveHead :: Knot -> Knot -> Dir -> (Knot, Knot)
-        moveHead h t dir =
+        moveHeadTail :: Knot -> Knot -> Dir -> (Knot, Knot)
+        moveHeadTail h t dir =
             -- Remember Head position.
             let oldH = h
-            Move Head once in Direction.
-            If <something>  then Do Something
-                            else Do Something else
+                newH = moveHead h dir
+            in
+                If (adjacent newH t) then (newH, t)
+                                     else (newH, oldH)
 
-            If <something>  then Do Something
-                            else Do Something else
+
+
 
 -}
