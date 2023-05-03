@@ -2,17 +2,16 @@ module Day09B where
 
 import Prelude hiding (Left, Right) 
 
-{-
-    Part A
-
-        Alg for (moving) H & T
--}
+-- Part A - Alg for (moving) H & T
 
 data Dir = Left | Right | Up | Down
 
-data Knot = Knot { row :: Int, col :: Int }
+type Knot = (Int, Int)
 
--- Function moveHeadTail' (H) a Direction & Distance
+moveHeadTailDist :: Knot -> Knot -> Dir -> Int -> (Knot, Knot)
+moveHeadTailDist h t dir dist =
+    take dist $ iterate $ moveHeadTail h t dir
+
 
 moveHeadTail :: Knot -> Knot -> Dir -> (Knot, Knot)
 moveHeadTail h t dir =
@@ -23,14 +22,21 @@ moveHeadTail h t dir =
                            else (newH, oldH)
 
 moveHead :: Knot -> Dir -> Knot
-moveHead h Left  = h { row = row h- 1 }
-moveHead h Right = h { row = row h + 1 }
-moveHead h Up    = h { col = col h + 1 }
-moveHead h Down  = h { col = col h - 1 }
+moveHead (r, c) Left  = (r-1, c)
+moveHead (r, c) Right = (r+1, c)
+moveHead (r, c) Up    = (r, c+1)
+moveHead (r, c) Down  = (r, c-1)
 
 adjacent :: Knot -> Knot -> Bool
-adjacent _ _ = True
+adjacent (r1, c1) (r2, c2) =
+    abs (r1 - r2) <= 2 && abs (c1 - c2) <= 2
 
+-- Part B - Alg for (moving) H & a List of T's
 
+moveKnotList :: [Knot] -> [Knot]
+moveKnotList (k0:k1:knots) =
+    foldl moveHeadTailPair (k0, k1) knots
 
-
+moveHeadTailPair :: (Knot, Knot) -> Knot -> (Knot, Knot)
+moveHeadTailPair (h, t1) t2 =
+    moveHeadTail h t1 
