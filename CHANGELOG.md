@@ -365,3 +365,29 @@
 
 - started Part B
 - cleaned up some of the code
+
+## 2023-05-02
+
+### Day-09 - Part B
+
+- pair coded with OFD
+- WIP
+- see: `day-09-B.hs`
+
+## 2023-05-06
+
+### Day-09 - Part B
+
+- using `Knot` data type from pair coding session
+- tweaking it a bit, added constructor `PrevKnotPrevPos Pos`
+- in *this* version, not including `Dir` in `Knot` constructor
+- `doStepWithCheckB` split into: `moveHeadKnot` & `moveTails`
+- `moveHeadKnot` still takes a `MoveDir`
+- `moveTails` doesn't need it
+- `mustMoveTail` helped *reduce* pattern matching code
+- probably need to repeat that elsewhere
+- need to test: `moveHeadKnot`, `moveTails` & `oneMovePartB`
+- `oneMovePartB` is one "step" that ripples thru the [Knot]
+- onced that is (proven) working, need:
+  - a "full" move func
+  - an "all" moves func

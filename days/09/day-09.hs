@@ -37,6 +37,14 @@ type Row = Int
 type Col = Int
 type Loc = (Row, Col)
 
+-- for Part B
+type Pos = (Row, Col)
+type KnotPrevPos = Pos
+-- data Knot = HeadKnot Pos | TailKnot Pos | PrevKnotPrevPos Pos | NoPrevKnotPos
+data Knot = HeadKnot Pos | TailKnot Pos deriving Show
+-- newtype Prev = Prev Pos
+-- data Knot = HeadKnot Pos | TailKnot Pos | PrevKnotPrevPos Prev | NoPrevKnotPos
+
 type Visited =  Set Loc
 
 data MoveRec = MoveRec
@@ -46,7 +54,7 @@ data MoveRec = MoveRec
   } deriving Show
 
 data MoveRecB = MoveRecB
-  { locs :: [Loc]
+  { knots :: [Knot]
   , visitedB :: Visited
   } deriving Show
 
@@ -164,16 +172,43 @@ doAllMoves moveIntrs moveRec = foldl (flip doFullMove) moveRec moveIntrs
 
 -- Part B
 
--- check to see if each of the Tails should follow it's predecessor
-doStepWithCheckB :: MoveDir -> MoveRecB -> MoveRecB
-doStepWithCheckB mvDir moveRecB@(MoveRecB (hLoc:tLoc:tLocs) visitedB) =
+mustMoveTail :: Knot -> Knot -> Bool
+mustMoveTail (HeadKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
+mustMoveTail (TailKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
+
+moveHeadKnot :: MoveDir -> MoveRecB -> MoveRecB
+moveHeadKnot mvDir moveRecB@(MoveRecB (HeadKnot hLoc:tKnots) _) =
   let newHLoc = updateLoc mvDir hLoc
   in
-     if mustMove newHLoc tLoc
-      then moveRecB { locs = newHLoc:hLoc:tLocs
-                    , visited = Set.insert hLoc visited
-                    }
-      else moveRecB { locs = newHLoc:tLoc:tLocs }
+      moveRecB { knots = HeadKnot newHLoc:tKnots }
+
+-- check to see if the *next* Tail should follow it's predecessor
+moveTails :: (Knot, KnotPrevPos) -> MoveRecB -> MoveRecB
+moveTails prevKnotInfo moveRecB = go [] prevKnotInfo moveRecB
+  where
+    go :: [Knot] -> (Knot, KnotPrevPos) -> MoveRecB -> MoveRecB
+    go knotAccu (TailKnot tKnotPos, _) moveRecB@(MoveRecB [] visitedB) =
+      moveRecB { knots = knotAccu
+                , visitedB = Set.insert tKnotPos visitedB
+                }
+
+    go knotAccu (knot, knotPrevPos) moveRecB@(MoveRecB (tKnot:tKnots) visitedB) =
+      let newTail = TailKnot knotPrevPos
+          (TailKnot nextPrevPos) = tKnot
+      in
+          if mustMoveTail knot tKnot
+            then go (knotAccu ++ [newTail]) (newTail, nextPrevPos) moveRecB { knots = newTail:tKnots }
+            else -- tKnot2 doesn't move. No more tail moves! Can short-circuit!
+                moveRecB { knots = knotAccu ++ tKnot:tKnots }
+
+oneMovePartB :: MoveDir -> MoveRecB -> MoveRecB
+oneMovePartB mvDir moveRecB@(MoveRecB (hKnot:tKnots) _) =
+  let (HeadKnot prevHPos) = hKnot
+      newMoveRecB = moveHeadKnot mvDir moveRecB
+      newHKnot = head $ knots newMoveRecB
+      newTails = moveTails (newHKnot, prevHPos) newMoveRecB
+  in
+      newTails { knots = newHKnot:knots newTails }
 
 main :: IO ()
 main = do
