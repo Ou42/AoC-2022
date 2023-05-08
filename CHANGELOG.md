@@ -406,3 +406,5 @@
   - `print ...` instead of `putStrLn $ show ...`
   - instead of: `let moveR10 = head $ drop 9 $ iterate (oneMovePartB 'R') moveRecB`  
     use: `let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10`
+- `doFullMoveB` & `doAllMovesB` ... but there's a bug!
+  - ... produces from answer.

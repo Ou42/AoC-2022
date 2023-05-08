@@ -211,6 +211,17 @@ oneMovePartB mvDir moveRecB@(MoveRecB (hKnot:tKnots) _) =
   in
       newTails { knots = newHKnot:knots newTails }
 
+doFullMoveB :: MoveInstruction -> MoveRecB -> MoveRecB
+doFullMoveB (mvDir, mvAmt) moveRecB =
+  -- slow way -- check each step:
+  foldl (flip oneMovePartB) moveRecB $ replicate mvAmt mvDir
+
+doAllMovesB :: [MoveInstruction] -> MoveRecB -> MoveRecB
+-- do I need to send in a MoveRec?!
+-- could I set this up Point Free? Should I?
+doAllMovesB moveIntrs moveRecB = foldl (flip doFullMoveB) moveRecB moveIntrs
+
+
 main :: IO ()
 main = do
   f <- readFile "input-09.txt"
@@ -238,9 +249,9 @@ main = do
   putStrLn $ replicate 42 '-'
 
   let knotPos = replicate 10 (0,0)
-  let knots   = HeadKnot (head knotPos) : map TailKnot (tail knotPos)
+  let knotList   = HeadKnot (head knotPos) : map TailKnot (tail knotPos)
 
-  let moveRecB = MoveRecB knots $ Set.fromList [last knotPos]
+  let moveRecB = MoveRecB knotList $ Set.fromList [last knotPos]
 
   print moveRecB
 
@@ -263,3 +274,20 @@ main = do
   MoveRecB {knots = [HeadKnot (0,-1),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0)], visitedB = fromList [(0,0)]}
   MoveRecB {knots = [HeadKnot (0,10),TailKnot (0,9),TailKnot (0,8),TailKnot (0,7),TailKnot (0,6),TailKnot (0,5),TailKnot (0,4),TailKnot (0,3),TailKnot (0,2),TailKnot (0,1)], visitedB = fromList [(0,0),(0,1)]}
 -}
+
+  let partB = doAllMovesB moves moveRecB
+  putStrLn $ "Part B ==> " ++ show (Set.size $ visitedB partB)
+
+{-
+  That's not the right answer; your answer is too high. If you're stuck, make
+  sure you're using the full input data; there are also some general tips on
+  the about page, or you can ask for hints on the subreddit. Please wait one
+  minute before trying again. (You guessed 5143.) [Return to Day 9]
+-}
+
+  -- let ks = knots partB
+
+  print (knots partB)
+  -- print moveRecB
+
+
