@@ -71,7 +71,7 @@ parseInput fileInput =
       parseLine (mvDir:mvAmtStr) =
         (mvDir, read mvAmtStr :: Int)
   in
-     map (parseLine) lns
+     map parseLine lns
 
 updateLoc :: MoveDir -> Loc -> Loc
 updateLoc mvDir (r, c) =
@@ -80,7 +80,7 @@ updateLoc mvDir (r, c) =
     'D' -> (r-1, c)
     'L' -> (r, c-1)
     'R' -> (r, c+1)
-    otherwise -> error "Invalid Move. Not in ['U','D','L','R']"
+    _ -> error "Invalid Move. Not in ['U','D','L','R']"
 
 {- 
     * Move the head
@@ -175,6 +175,7 @@ doAllMoves moveIntrs moveRec = foldl (flip doFullMove) moveRec moveIntrs
 mustMoveTail :: Knot -> Knot -> Bool
 mustMoveTail (HeadKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
 mustMoveTail (TailKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
+mustMoveTail k1 k2 = error $ "k1 = " ++ show k1 ++ ", k2 = " ++ show k2
 
 moveHeadKnot :: MoveDir -> MoveRecB -> MoveRecB
 moveHeadKnot mvDir moveRecB@(MoveRecB (HeadKnot hLoc:tKnots) _) =
@@ -197,7 +198,7 @@ moveTails prevKnotInfo moveRecB = go [] prevKnotInfo moveRecB
           (TailKnot nextPrevPos) = tKnot
       in
           if mustMoveTail knot tKnot
-            then go (knotAccu ++ [newTail]) (newTail, nextPrevPos) moveRecB { knots = newTail:tKnots }
+            then go (knotAccu ++ [newTail]) (newTail, nextPrevPos) moveRecB { knots = tKnots }
             else -- tKnot2 doesn't move. No more tail moves! Can short-circuit!
                 moveRecB { knots = knotAccu ++ tKnot:tKnots }
 
@@ -206,7 +207,7 @@ oneMovePartB mvDir moveRecB@(MoveRecB (hKnot:tKnots) _) =
   let (HeadKnot prevHPos) = hKnot
       newMoveRecB = moveHeadKnot mvDir moveRecB
       newHKnot = head $ knots newMoveRecB
-      newTails = moveTails (newHKnot, prevHPos) newMoveRecB
+      newTails = moveTails (newHKnot, prevHPos) newMoveRecB { knots = tail $ knots newMoveRecB }
   in
       newTails { knots = newHKnot:knots newTails }
 
@@ -230,4 +231,35 @@ main = do
   -- putStrLn $ show $ moveRec
   let partA = doAllMoves moves moveRec
   putStrLn $ "Part A ==> " ++ show (Set.size $ visited partA)
-  putStrLn $ "  ( should == 6494 )"
+  putStrLn   "  ( should == 6494 )"
+
+  putStrLn $ replicate 42 '='
+  putStrLn "  -- Part B"
+  putStrLn $ replicate 42 '-'
+
+  let knotPos = replicate 10 (0,0)
+  let knots   = HeadKnot (head knotPos) : map TailKnot (tail knotPos)
+
+  let moveRecB = MoveRecB knots $ Set.fromList [last knotPos]
+
+  print moveRecB
+
+  print $ oneMovePartB 'L' moveRecB
+
+  -- let moveR10 = head $ drop 9 $ iterate (oneMovePartB 'R') moveRecB
+  let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10
+
+  print moveR10
+
+{-
+  ghci> main
+  ------------------------------------------
+  Part A ==> 6494
+    ( should == 6494 )
+  ==========================================
+    -- Part B
+  ------------------------------------------
+  MoveRecB {knots = [HeadKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0)], visitedB = fromList [(0,0)]}
+  MoveRecB {knots = [HeadKnot (0,-1),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0),TailKnot (0,0)], visitedB = fromList [(0,0)]}
+  MoveRecB {knots = [HeadKnot (0,10),TailKnot (0,9),TailKnot (0,8),TailKnot (0,7),TailKnot (0,6),TailKnot (0,5),TailKnot (0,4),TailKnot (0,3),TailKnot (0,2),TailKnot (0,1)], visitedB = fromList [(0,0),(0,1)]}
+-}

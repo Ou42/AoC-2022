@@ -391,3 +391,18 @@
 - onced that is (proven) working, need:
   - a "full" move func
   - an "all" moves func
+
+## 2023-05-08
+
+### Day-09 - Part B
+
+- test `oneMovePartB` = **PASS** &check;
+- test `iterate` `oneMovePartB` (10x) = **FAIL!**
+  - wasn't reducing `[Knot]`
+  - interesting that it still terminated!
+- hlint suggestions:
+  - remove redundant brackets
+  - use `_` instead of `otherwise`
+  - `print ...` instead of `putStrLn $ show ...`
+  - instead of: `let moveR10 = head $ drop 9 $ iterate (oneMovePartB 'R') moveRecB`  
+    use: `let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10`
