@@ -412,3 +412,12 @@
   - simplify
   - point free leads to code reduction (func removal in some cases)
   - when there's no real need for `flip` swap the order of the args and remove it
+
+## 2023-05-09
+
+### Day-09 - Part B
+
+- further refactor based on John's suggestions ( FP MU )
+- `calcNewPos` vs the *wrong* intuition of previous Knot's previous Pos
+- using `clamp` to get the row & col offset amt to move the tail knot's Pos
+- Day-09 - Part B **SOLVED!**
