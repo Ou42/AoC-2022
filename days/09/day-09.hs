@@ -4,6 +4,7 @@ module Main where
 
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.List (foldl')
 
 {-
     Day 09
@@ -42,6 +43,10 @@ type Pos = (Row, Col)
 type KnotPrevPos = Pos
 -- data Knot = HeadKnot Pos | TailKnot Pos | PrevKnotPrevPos Pos | NoPrevKnotPos
 data Knot = HeadKnot Pos | TailKnot Pos deriving Show
+
+-- rec: 
+
+
 -- newtype Prev = Prev Pos
 -- data Knot = HeadKnot Pos | TailKnot Pos | PrevKnotPrevPos Prev | NoPrevKnotPos
 
@@ -53,8 +58,17 @@ data MoveRec = MoveRec
   , visited :: Visited
   } deriving Show
 
+{-
 data MoveRecB = MoveRecB
   { knots :: [Knot]
+  , visitedB :: Visited
+  } deriving Show
+-}
+
+-- recommended:
+data MoveRecB = MoveRecB
+  { headKnot :: Pos -- Knot
+  , tailKnots :: [Pos] -- vs [Knot] -- don't need Sum type
   , visitedB :: Visited
   } deriving Show
 
@@ -172,54 +186,68 @@ doAllMoves moveIntrs moveRec = foldl (flip doFullMove) moveRec moveIntrs
 
 -- Part B
 
-mustMoveTail :: Knot -> Knot -> Bool
-mustMoveTail (HeadKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
-mustMoveTail (TailKnot (r1,c1)) (TailKnot (r2,c2)) = abs (r1-r2) > 1 || abs (c1-c2) > 1
-mustMoveTail k1 k2 = error $ "k1 = " ++ show k1 ++ ", k2 = " ++ show k2
+-- mustMoveTail :: Knot -> Knot -> Bool
+mustMoveTail :: Pos -> Pos -> Bool
+mustMoveTail (r1,c1) (r2,c2) = abs (r1-r2) > 1 || abs (c1-c2) > 1
 
-moveHeadKnot :: MoveDir -> MoveRecB -> MoveRecB
-moveHeadKnot mvDir moveRecB@(MoveRecB (HeadKnot hLoc:tKnots) _) =
-  let newHLoc = updateLoc mvDir hLoc
-  in
-      moveRecB { knots = HeadKnot newHLoc:tKnots }
+
+-- -- moveHeadKnot :: MoveDir -> MoveRecB -> MoveRecB
+-- moveHeadKnot :: MoveDir -> Pos -> Pos
+-- -- moveHeadKnot mvDir moveRecB@(MoveRecB (HeadKnot hLoc:tKnots) _) =
+-- -- moveHeadKnot mvDir hKnotPos = updateLoc mvDir hKnotPos
+-- moveHeadKnot = updateLoc
+--   -- let newHLoc = updateLoc mvDir hLoc
+  -- in
+  --     moveRecB { knots = HeadKnot newHLoc:tKnots }
 
 -- check to see if the *next* Tail should follow it's predecessor
-moveTails :: (Knot, KnotPrevPos) -> MoveRecB -> MoveRecB
+-- moveTails :: (Knot, KnotPrevPos) -> MoveRecB -> MoveRecB
+moveTails :: (Pos, Pos) -> MoveRecB -> MoveRecB
 moveTails prevKnotInfo moveRecB = go [] prevKnotInfo moveRecB
   where
-    go :: [Knot] -> (Knot, KnotPrevPos) -> MoveRecB -> MoveRecB
-    go knotAccu (TailKnot tKnotPos, _) moveRecB@(MoveRecB [] visitedB) =
-      moveRecB { knots = knotAccu
-                , visitedB = Set.insert tKnotPos visitedB
-                }
+    go :: [Pos] -> (Pos, Pos) -> MoveRecB -> MoveRecB
+    go knotAccu (tKnotPos, _) moveRecB@(MoveRecB { tailKnots = [], visitedB }) =
+      moveRecB { tailKnots = reverse knotAccu
+               , visitedB = Set.insert tKnotPos visitedB
+               }
 
-    go knotAccu (knot, knotPrevPos) moveRecB@(MoveRecB (tKnot:tKnots) visitedB) =
-      let newTail = TailKnot knotPrevPos
-          (TailKnot nextPrevPos) = tKnot
-      in
-          if mustMoveTail knot tKnot
-            then go (knotAccu ++ [newTail]) (newTail, nextPrevPos) moveRecB { knots = tKnots }
-            else -- tKnot2 doesn't move. No more tail moves! Can short-circuit!
-                moveRecB { knots = knotAccu ++ tKnot:tKnots }
+    go knotAccu (knotPos, knotPrevPos) moveRecB@(MoveRecB { tailKnots = nextPrevPos:tKnots, visitedB }) =
+      if mustMoveTail knotPos nextPrevPos
+        then go (knotPrevPos : knotAccu) (knotPrevPos, nextPrevPos) moveRecB { tailKnots = tKnots }
+        else -- tKnot2 doesn't move. No more tail moves! Can short-circuit!
+            moveRecB { tailKnots = reverse knotAccu ++ nextPrevPos:tKnots }
 
-oneMovePartB :: MoveDir -> MoveRecB -> MoveRecB
-oneMovePartB mvDir moveRecB@(MoveRecB (hKnot:tKnots) _) =
-  let (HeadKnot prevHPos) = hKnot
-      newMoveRecB = moveHeadKnot mvDir moveRecB
-      newHKnot = head $ knots newMoveRecB
-      newTails = moveTails (newHKnot, prevHPos) newMoveRecB { knots = tail $ knots newMoveRecB }
+-- rec:
+--   math is much faster
+--   but if keeping the prevHPos, just add field to Rec
+
+-- oneMovePartB :: MoveDir -> MoveRecB -> MoveRecB
+oneMovePartB :: MoveRecB -> MoveDir -> MoveRecB
+oneMovePartB moveRecB@(MoveRecB { headKnot, tailKnots }) mvDir =
+  let -- prevHPos = headKnot -- not needed because everything is immutable
+      -- newMoveRecB = moveHeadKnot mvDir moveRecB
+      -- newHKnot = head $ knots newMoveRecB
+      newHKnot = updateLoc mvDir headKnot
+      -- newTails = moveTails (newHKnot, headKnot) moveRecB { headKnot  = newHKnot }
   in
-      newTails { knots = newHKnot:knots newTails }
+      -- newTails { headKnot = newHKnot }
+      moveTails (newHKnot, headKnot) moveRecB { headKnot  = newHKnot }
 
-doFullMoveB :: MoveInstruction -> MoveRecB -> MoveRecB
-doFullMoveB (mvDir, mvAmt) moveRecB =
+-- doFullMoveB :: MoveInstruction -> MoveRecB -> MoveRecB
+doFullMoveB :: MoveRecB -> MoveInstruction -> MoveRecB
+doFullMoveB moveRecB (mvDir, mvAmt) =
   -- slow way -- check each step:
-  foldl (flip oneMovePartB) moveRecB $ replicate mvAmt mvDir
+  -- foldl' (flip oneMovePartB) moveRecB $ replicate mvAmt mvDir
+  foldl' oneMovePartB moveRecB $ replicate mvAmt mvDir
 
-doAllMovesB :: [MoveInstruction] -> MoveRecB -> MoveRecB
+-- doAllMovesB :: [MoveInstruction] -> MoveRecB -> MoveRecB
+doAllMovesB :: MoveRecB -> [MoveInstruction] -> MoveRecB
 -- do I need to send in a MoveRec?!
 -- could I set this up Point Free? Should I?
-doAllMovesB moveIntrs moveRecB = foldl (flip doFullMoveB) moveRecB moveIntrs
+-- doAllMovesB moveInstrs moveRecB = foldl' (flip doFullMoveB) moveRecB moveInstrs
+-- doAllMovesB = foldl' (flip doFullMoveB)
+doAllMovesB = foldl' doFullMoveB
+
 
 
 main :: IO ()
@@ -248,17 +276,19 @@ main = do
   putStrLn "  -- Part B"
   putStrLn $ replicate 42 '-'
 
-  let knotPos = replicate 10 (0,0)
-  let knotList   = HeadKnot (head knotPos) : map TailKnot (tail knotPos)
+  let headKnot  = (0,0)
+  let tailKnots = replicate 9 (0,0)
+  let visitedB  = Set.singleton (0,0)
 
-  let moveRecB = MoveRecB knotList $ Set.fromList [last knotPos]
+  let moveRecB = MoveRecB { headKnot, tailKnots, visitedB }
 
   print moveRecB
 
-  print $ oneMovePartB 'L' moveRecB
+  print $ oneMovePartB moveRecB 'L'
 
   -- let moveR10 = head $ drop 9 $ iterate (oneMovePartB 'R') moveRecB
-  let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10
+  -- let moveR10 = iterate (flip oneMovePartB 'R') moveRecB !! 10
+  let moveR10 = iterate (`oneMovePartB` 'R') moveRecB !! 10
 
   print moveR10
 
@@ -275,8 +305,8 @@ main = do
   MoveRecB {knots = [HeadKnot (0,10),TailKnot (0,9),TailKnot (0,8),TailKnot (0,7),TailKnot (0,6),TailKnot (0,5),TailKnot (0,4),TailKnot (0,3),TailKnot (0,2),TailKnot (0,1)], visitedB = fromList [(0,0),(0,1)]}
 -}
 
-  let partB = doAllMovesB moves moveRecB
-  putStrLn $ "Part B ==> " ++ show (Set.size $ visitedB partB)
+  let partB@MoveRecB { visitedB = vb } = doAllMovesB moveRecB moves
+  putStrLn $ "Part B ==> " ++ show (Set.size vb)
 
 {-
   That's not the right answer; your answer is too high. If you're stuck, make
@@ -287,7 +317,7 @@ main = do
 
   -- let ks = knots partB
 
-  print (knots partB)
+  -- print (tailKnots partB)
   -- print moveRecB
 
 

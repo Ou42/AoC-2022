@@ -408,3 +408,7 @@
     use: `let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10`
 - `doFullMoveB` & `doAllMovesB` ... but there's a bug!
   - ... produces from answer.
+- refactored code from input from John during FP MU
+  - simplify
+  - point free leads to code reduction (func removal in some cases)
+  - when there's no real need for `flip` swap the order of the args and remove it
