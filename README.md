@@ -22,6 +22,7 @@
 | 07    | &check; | &check; | &cross; | _           |
 | 08    | &check; | &check; | &cross; | _           |
 | 09    | &check; | &check; | &cross; | _           |
+| 10    |  WIP    |         |         | _           |
 | 23    | &check; | &check; | &cross; | &cross;     |
 
 ## Run / Build & Run Instructions:

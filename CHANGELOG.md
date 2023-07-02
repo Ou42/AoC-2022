@@ -421,3 +421,22 @@
 - `calcNewPos` vs the *wrong* intuition of previous Knot's previous Pos
 - using `clamp` to get the row & col offset amt to move the tail knot's Pos
 - Day-09 - Part B **SOLVED!**
+
+## 2023-07-01
+
+### Day-09
+
+- cleaned up my git/GitHub "mess". ***TYVM, PMD!!***
+- created a new branch, `day-09-with-OFD`
+- `git rm day-09-B.hs` from `day-09` branch
+- ( had to commit for it to "show" on that branch only. )
+- day-09-B.hs is the WIP alt solution, pair coded with OFD
+- left that file in the new branch
+- did a PR on the `day-09` branch
+- merged it into `main` branch -- 19 commits!
+
+### Day-10
+
+- started
+- for a quick start, modeled the input as `[Maybe Int]`
+- parsing input done
