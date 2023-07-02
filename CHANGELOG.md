@@ -440,3 +440,13 @@
 - started
 - for a quick start, modeled the input as `[Maybe Int]`
 - parsing input done
+
+## 2023-07-02
+
+### Day-10
+
+- created, `cmdsToRegXHist` function
+- using the test data provided
+  - it works for the 20th, 60th, 100th, 140th, & 180th cycles!
+  - it is off by one on the 220th cycle ?!
+- there may be a *different* off by one error. '*During* cycle N...'

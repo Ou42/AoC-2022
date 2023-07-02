@@ -62,7 +62,18 @@ parseInput fileInput =
      map parseLine lns
 
 -- Part A
-  -- tbd
+
+cmdsToRegXHist :: [Maybe Int] -> [Int]
+-- cmdsToRegXHist cmds = go 1 [1] cmds
+-- eta reduce
+cmdsToRegXHist = go 1 [1]
+  where
+    go _ accu [] = accu
+    go rgX accu (cmd:cmds) =
+      case cmd of
+        Nothing -> go rgX (accu ++ [rgX]) cmds
+        Just n  -> go (rgX + n) (accu ++ [rgX, rgX + n]) cmds
+
 
 main :: IO ()
 main = do
@@ -71,5 +82,21 @@ main = do
   let cmds = parseInput f
 
   putStrLn $ replicate 42 '-'
+  putStrLn "The first 15 cmds:"
   putStrLn $ unlines $ map show $ take 15 cmds
-  -- putStrLn $ replicate 42 '-'
+  putStrLn $ replicate 42 '-'
+
+  let regXHist = cmdsToRegXHist cmds
+  putStrLn "The first 25 cycles of register X:"
+  print $ take 25 regXHist
+  putStrLn $ "The  20th cycle == " ++ show (regXHist !!  20)
+  putStrLn $ "The  60th cycle == " ++ show (regXHist !!  60)
+  putStrLn $ "The 100th cycle == " ++ show (regXHist !! 100)
+  putStrLn $ "The 140th cycle == " ++ show (regXHist !! 140)
+  putStrLn $ "The 180th cycle == " ++ show (regXHist !! 180)
+  putStrLn $ "The 220th cycle == " ++ show (regXHist !! 220)
+
+  putStrLn $ replicate 42 '-'
+
+  putStrLn "... per the instructions the test data should produce:"
+  putStrLn "21, 19, 18, 21, 16, 18 <=== 18, not 19 ???"
