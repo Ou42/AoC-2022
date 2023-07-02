@@ -295,21 +295,129 @@
   - SUCCESS!!
   - TO-DO: Code cleanup ...
   
-  ## 2023-03-21
+## 2023-03-21
 
-  ### Part A
+### Part A
 
-  - Solved!
-  - Feels a bit heavy computationally.
+- Solved!
+- Feels a bit heavy computationally.
   
-  ### Part B
+### Part B
 
-  - Started
-  - WIP
-  - having trouble visualizing how to implement my "alg"
-  - copy/pasted code and removed "computation" and returned original input
-  - this proved passing in `id` & `flip` to `visL2R` is working
-  - got it!
-  - not the most efficient solution, but fast enough!
-  - would be interesting to keep track of "max" visibility along the way
-    
+- Started
+- WIP
+- having trouble visualizing how to implement my "alg"
+- copy/pasted code and removed "computation" and returned original input
+- this proved passing in `id` & `flip` to `visL2R` is working
+- got it!
+- not the most efficient solution, but fast enough!
+- would be interesting to keep track of "max" visibility along the way
+
+## 2023-04-12
+
+### Day-09 - Part A
+
+- Started
+- doOneStep => one iteration of a MoveInstruction
+- updateLoc => given a MoveDir, update a Loc
+- better grasp of movement
+  - Tail can be diagonally away from Head
+  - but not by more than 1 unit in either dimension
+  - Only need to check if `mustMove` on "first step"
+  - subsequent steps can be precalculated
+
+## 2023-04-13
+
+### Day-09 - Part A
+
+- refactored to use Sets not Maps
+  - the keys are important, no need for a value
+  - and still don't want duplicates
+- Using a Record to hold/pass fwd Head & Tail Loc's
+  - in addition to storing Tails history in `visited`
+- `NamedFieldPuns` LANGUAGE pragma
+- `doOneStep` is now `doFirstStep`
+- added `mustMove` to check if Tail should move
+- added `doFullMove` which *will* do a full Move Instruction
+- `scanl` FTW?!
+
+## 2023-04-14
+
+### Day-09 - Part A
+
+- `scanl` does work!
+- But, ***My premise/assumption is wrong!!***
+- It **IS** possible that T won't move for 2 steps of a Move Instr
+- So, now is it only the first 2 moves? or 3?
+- It currently seems that T might not move on steps 1 and 2
+- But it must start following H on step 3
+- Also, once T starts following H, it continues to do so for the  
+  remainder of the Move Instruction
+- changed doFirstStep to doStepWithCheck
+- SUCCESS!
+- code is a mess, needs clean-up / refactor
+- went w/ *simpler* less "optimal"?! alg
+- maybe my "optimization" isn't that much of performance boost?!
+
+## 2023-04-27
+
+### Day-09 - Part B
+
+- started Part B
+- cleaned up some of the code
+
+## 2023-05-02
+
+### Day-09 - Part B
+
+- pair coded with OFD
+- WIP
+- see: `day-09-B.hs`
+
+## 2023-05-06
+
+### Day-09 - Part B
+
+- using `Knot` data type from pair coding session
+- tweaking it a bit, added constructor `PrevKnotPrevPos Pos`
+- in *this* version, not including `Dir` in `Knot` constructor
+- `doStepWithCheckB` split into: `moveHeadKnot` & `moveTails`
+- `moveHeadKnot` still takes a `MoveDir`
+- `moveTails` doesn't need it
+- `mustMoveTail` helped *reduce* pattern matching code
+- probably need to repeat that elsewhere
+- need to test: `moveHeadKnot`, `moveTails` & `oneMovePartB`
+- `oneMovePartB` is one "step" that ripples thru the [Knot]
+- onced that is (proven) working, need:
+  - a "full" move func
+  - an "all" moves func
+
+## 2023-05-08
+
+### Day-09 - Part B
+
+- test `oneMovePartB` = **PASS** &check;
+- test `iterate` `oneMovePartB` (10x) = **FAIL!**
+  - wasn't reducing `[Knot]`
+  - interesting that it still terminated!
+- hlint suggestions:
+  - remove redundant brackets
+  - use `_` instead of `otherwise`
+  - `print ...` instead of `putStrLn $ show ...`
+  - instead of: `let moveR10 = head $ drop 9 $ iterate (oneMovePartB 'R') moveRecB`  
+    use: `let moveR10 = iterate (oneMovePartB 'R') moveRecB !! 10`
+- `doFullMoveB` & `doAllMovesB` ... but there's a bug!
+  - ... produces from answer.
+- refactored code from input from John during FP MU
+  - simplify
+  - point free leads to code reduction (func removal in some cases)
+  - when there's no real need for `flip` swap the order of the args and remove it
+
+## 2023-05-09
+
+### Day-09 - Part B
+
+- further refactor based on John's suggestions ( FP MU )
+- `calcNewPos` vs the *wrong* intuition of previous Knot's previous Pos
+- using `clamp` to get the row & col offset amt to move the tail knot's Pos
+- Day-09 - Part B **SOLVED!**
