@@ -450,3 +450,5 @@
   - it works for the 20th, 60th, 100th, 140th, & 180th cycles!
   - it is off by one on the 220th cycle ?!
 - there may be a *different* off by one error. '*During* cycle N...'
+- to test that theory, I output regX's History cycles 19..21, etc
+- it *does* look like I am off by one!

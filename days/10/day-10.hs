@@ -100,3 +100,16 @@ main = do
 
   putStrLn "... per the instructions the test data should produce:"
   putStrLn "21, 19, 18, 21, 16, 18 <=== 18, not 19 ???"
+
+  putStrLn $ replicate 42 '-'
+
+  putStrLn $ "The  20th cycle == " ++ show (take 3 $ drop  19 regXHist)
+  putStrLn $ "The  60th cycle == " ++ show (take 3 $ drop  59 regXHist)
+  putStrLn $ "The 100th cycle == " ++ show (take 3 $ drop  99 regXHist)
+  putStrLn $ "The 140th cycle == " ++ show (take 3 $ drop 139 regXHist)
+  putStrLn $ "The 180th cycle == " ++ show (take 3 $ drop 179 regXHist)
+  putStrLn $ "The 220th cycle == " ++ show (take 3 $ drop 219 regXHist)
+
+  putStrLn $ replicate 42 '-'
+
+  putStrLn "it sure looks like I should lookup the cycle (index-1)"
