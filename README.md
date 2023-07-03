@@ -2,12 +2,12 @@
 
 ## Using Haskell, running on Linux:
 
-| TOOL            | VERSION | via                    | notes            |
-| :---            | :------ | :--                    | :----            |
-| GHCi            | 8.8.4   | ghci --version         | Day 01-08, 23    |
-|                 | 9.2.7   |                        | Day 09 - Part B  |
-| stack           | 2.9.3   | stack --version        |                  |
-| GHC under stack | 9.2.5   | stack ghc -- --version |                  |
+| TOOL            | VERSION | via                    | notes               |
+| :---            | :------ | :--                    | :----               |
+| GHCi            | 8.8.4   | ghci --version         | Day 01-08, 23       |
+|                 | 9.2.7   |                        | Day 09 - Part B ... |
+| stack           | 2.9.3   | stack --version        |                     |
+| GHC under stack | 9.2.5   | stack ghc -- --version |                     |
 
 ## Completed: 
 
@@ -22,7 +22,7 @@
 | 07    | &check; | &check; | &cross; | _           |
 | 08    | &check; | &check; | &cross; | _           |
 | 09    | &check; | &check; | &cross; | _           |
-| 10    |  WIP    |         |         | _           |
+| 10    | &check; |         |         | _           |
 | 23    | &check; | &check; | &cross; | &cross;     |
 
 ## Run / Build & Run Instructions:

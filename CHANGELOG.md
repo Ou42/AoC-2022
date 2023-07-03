@@ -457,3 +457,4 @@
 
 - correct answer from the test data
 - off by one! lookup cycle 19, 59, 99 ...
+- SUCCESS! with puzzle data!

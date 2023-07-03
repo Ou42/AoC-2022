@@ -77,7 +77,8 @@ cmdsToRegXHist = go 1 [1]
 
 main :: IO ()
 main = do
-  f <- readFile "input-10-test.txt"
+  -- f <- readFile "input-10-test.txt"
+  f <- readFile "input-10.txt"
 
   let cmds = parseInput f
 
