@@ -113,3 +113,17 @@ main = do
   putStrLn $ replicate 42 '-'
 
   putStrLn "it sure looks like I should lookup the cycle (index-1)"
+
+  let cycle19  =  20 * regXHist !!  19
+  let cycle59  =  60 * regXHist !!  59
+  let cycle99  = 100 * regXHist !!  99
+  let cycle139 = 140 * regXHist !! 139
+  let cycle179 = 180 * regXHist !! 179
+  let cycle219 = 220 * regXHist !! 219
+
+  let sigStrength = cycle19 + cycle59 + cycle99 + cycle139 + cycle179 + cycle219
+
+  putStrLn $ replicate 42 '-'
+
+  putStrLn $ "The final signal strength = " ++ show sigStrength
+  putStrLn $ "(13140 is the correct answer for the test data)"
