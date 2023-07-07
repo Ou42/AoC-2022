@@ -465,3 +465,4 @@
 
 - started
 - some tweaks to `updateCRT` but still not working
+- created my own `chunksOf` to split the rows

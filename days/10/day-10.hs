@@ -103,6 +103,14 @@ updateCRT regHist = go 1 1 (drop 1 regHist) ""
       go (cnt + 1) (sPos + regVal) regVals
          (accu ++ if inSpriteRng sPos (getCRTpos cnt) then "#" else ".")
 
+-- my ver ... next time, INSTALL Data.List.Split !!!
+-- chunksOf :: Int -> [Char] -> [[Char]]
+chunksOf :: Int -> String -> [String]
+chunksOf _ ""  = []
+-- DANGER! DANGER! Can't call unlines "every" time thru the recursion!!
+-- chunksOf x str = unlines $ take x str:[chunksOf x (drop x str)]
+chunksOf x str = take x str:chunksOf x (drop x str)
+
 main :: IO ()
 main = do
   f <- readFile "input-10-test.txt"
@@ -164,4 +172,4 @@ main = do
 
   putStrLn "Part B\n"
 
-  putStrLn $ updateCRT regXHist
+  putStrLn $ unlines $ chunksOf 40 $ updateCRT regXHist
