@@ -27,10 +27,15 @@ module Main where
           the commands as a `Maybe Int`:
             . noop     -> Nothing
             . addx Num -> Just Num
+
+      ---
+
+      Part B - Now we track and draw a sprite
+
 -}
 
 {-
-    Using day-10-test.hs
+    Part A - Using day-10-test.hs
 
     The interesting signal strengths can be determined as follows:
 
@@ -45,6 +50,18 @@ module Main where
     - During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.
 
     The sum of these signal strengths is 13140.
+
+    ---
+
+    Part B - Now we track and draw a sprite
+
+      Cycle   1 -> ######################################## <- Cycle  40
+      Cycle  41 -> ######################################## <- Cycle  80
+      Cycle  81 -> ######################################## <- Cycle 120
+      Cycle 121 -> ######################################## <- Cycle 160
+      Cycle 161 -> ######################################## <- Cycle 200
+      Cycle 201 -> ######################################## <- Cycle 240
+
 -}
 
 parseInput :: String -> [Maybe Int]
@@ -54,18 +71,14 @@ parseInput fileInput =
       parseLine str =
         case str of
           "noop" -> Nothing
-          -- _      -> Just (read $ snd $ break (==' ') str :: Int)
-          -- _      -> Just (read $ dropWhile (not . (== ' ')) str :: Int)
           _      -> Just (read $ dropWhile (/= ' ') str :: Int)
- 
+
   in
      map parseLine lns
 
 -- Part A
 
 cmdsToRegXHist :: [Maybe Int] -> [Int]
--- cmdsToRegXHist cmds = go 1 [1] cmds
--- eta reduce
 cmdsToRegXHist = go 1 [1]
   where
     go _ accu [] = accu
@@ -74,11 +87,25 @@ cmdsToRegXHist = go 1 [1]
         Nothing -> go rgX (accu ++ [rgX]) cmds
         Just n  -> go (rgX + n) (accu ++ [rgX, rgX + n]) cmds
 
+-- Part B
+
+getCRTpos :: Int -> Int
+getCRTpos xPos = (xPos - 1) `mod` 40
+
+inSpriteRng :: Int -> Int -> Bool
+inSpriteRng sPos xCRT = sPos `elem` [(xCRT-1)..(xCRT+1)]
+
+updateCRT :: [Int] -> String
+updateCRT regHist = go 0 1 regHist ""
+  where
+    go _ _ [] accu = accu
+    go cnt sPos (regVal:regVals) accu =
+      go (cnt + 1) (sPos + regVal) regVals (accu ++ if inSpriteRng sPos regVal then "#" else ".")
 
 main :: IO ()
 main = do
-  -- f <- readFile "input-10-test.txt"
-  f <- readFile "input-10.txt"
+  f <- readFile "input-10-test.txt"
+  -- f <- readFile "input-10.txt"
 
   let cmds = parseInput f
 
@@ -127,4 +154,13 @@ main = do
   putStrLn $ replicate 42 '-'
 
   putStrLn $ "The final signal strength = " ++ show sigStrength
-  putStrLn $ "(13140 is the correct answer for the test data)"
+  putStrLn   "(13140 is the correct answer for the test data)"
+
+
+  putStrLn ""
+  putStrLn $ replicate 42 '-'
+  putStrLn ""
+
+  putStrLn "Part B\n"
+
+  putStrLn $ updateCRT regXHist

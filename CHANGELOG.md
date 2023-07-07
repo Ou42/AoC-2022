@@ -458,3 +458,9 @@
 - correct answer from the test data
 - off by one! lookup cycle 19, 59, 99 ...
 - SUCCESS! with puzzle data!
+
+## 2023-07-02
+
+### Day-10 - Part B
+
+- started
