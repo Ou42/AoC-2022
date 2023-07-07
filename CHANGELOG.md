@@ -421,3 +421,40 @@
 - `calcNewPos` vs the *wrong* intuition of previous Knot's previous Pos
 - using `clamp` to get the row & col offset amt to move the tail knot's Pos
 - Day-09 - Part B **SOLVED!**
+
+## 2023-07-01
+
+### Day-09
+
+- cleaned up my git/GitHub "mess". ***TYVM, PMD!!***
+- created a new branch, `day-09-with-OFD`
+- `git rm day-09-B.hs` from `day-09` branch
+- ( had to commit for it to "show" on that branch only. )
+- day-09-B.hs is the WIP alt solution, pair coded with OFD
+- left that file in the new branch
+- did a PR on the `day-09` branch
+- merged it into `main` branch -- 19 commits!
+
+### Day-10
+
+- started
+- for a quick start, modeled the input as `[Maybe Int]`
+- parsing input done
+
+## 2023-07-02
+
+### Day-10
+
+- created, `cmdsToRegXHist` function
+- using the test data provided
+  - it works for the 20th, 60th, 100th, 140th, & 180th cycles!
+  - it is off by one on the 220th cycle ?!
+- there may be a *different* off by one error. '*During* cycle N...'
+- to test that theory, I output regX's History cycles 19..21, etc
+- it *does* look like I am off by one!
+
+---
+
+- correct answer from the test data
+- off by one! lookup cycle 19, 59, 99 ...
+- SUCCESS! with puzzle data!
