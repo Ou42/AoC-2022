@@ -96,11 +96,12 @@ inSpriteRng :: Int -> Int -> Bool
 inSpriteRng sPos xCRT = sPos `elem` [(xCRT-1)..(xCRT+1)]
 
 updateCRT :: [Int] -> String
-updateCRT regHist = go 0 1 regHist ""
+updateCRT regHist = go 1 1 (drop 1 regHist) ""
   where
     go _ _ [] accu = accu
     go cnt sPos (regVal:regVals) accu =
-      go (cnt + 1) (sPos + regVal) regVals (accu ++ if inSpriteRng sPos regVal then "#" else ".")
+      go (cnt + 1) (sPos + regVal) regVals
+         (accu ++ if inSpriteRng sPos (getCRTpos cnt) then "#" else ".")
 
 main :: IO ()
 main = do
