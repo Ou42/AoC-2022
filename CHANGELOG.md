@@ -459,10 +459,14 @@
 - off by one! lookup cycle 19, 59, 99 ...
 - SUCCESS! with puzzle data!
 
-## 2023-07-02
+## 2023-07-07
 
 ### Day-10 - Part B
 
 - started
 - some tweaks to `updateCRT` but still not working
 - created my own `chunksOf` to split the rows
+- don't call `unlines` until *after* done splitting!
+- changed signature of `chunksOf` to be more generic
+- can now send it `[a]` ... `[Int]` and not just `String`
+- note: `unlines` only works on `[String]` ( `[[Char]]` )

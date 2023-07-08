@@ -104,11 +104,8 @@ updateCRT regHist = go 1 1 (drop 1 regHist) ""
          (accu ++ if inSpriteRng sPos (getCRTpos cnt) then "#" else ".")
 
 -- my ver ... next time, INSTALL Data.List.Split !!!
--- chunksOf :: Int -> [Char] -> [[Char]]
-chunksOf :: Int -> String -> [String]
-chunksOf _ ""  = []
--- DANGER! DANGER! Can't call unlines "every" time thru the recursion!!
--- chunksOf x str = unlines $ take x str:[chunksOf x (drop x str)]
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf _ []  = []
 chunksOf x str = take x str:chunksOf x (drop x str)
 
 main :: IO ()
