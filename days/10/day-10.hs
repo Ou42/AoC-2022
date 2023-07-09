@@ -54,6 +54,8 @@ module Main where
     ---
 
     Part B - Now we track and draw a sprite
+      # = sprite is at the CRT's current scan position
+      . = sprite isn't there
 
       Cycle   1 -> ######################################## <- Cycle  40
       Cycle  41 -> ######################################## <- Cycle  80
@@ -62,6 +64,25 @@ module Main where
       Cycle 161 -> ######################################## <- Cycle 200
       Cycle 201 -> ######################################## <- Cycle 240
 
+    using input-10-test.txt as input data, the result should be:
+
+        ##..##..##..##..##..##..##..##..##..##..
+        ###...###...###...###...###...###...###.
+        ####....####....####....####....####....
+        #####.....#####.....#####.....#####.....
+        ######......######......######......####
+        #######.......#######.......#######.....
+    
+    what are the LETTERS that show up using the real data?
+
+    ... using *MY* input data, input-10.txt, the result is:
+
+        ####...##.#..#.###..#..#.#....###..####.
+        #.......#.#..#.#..#.#..#.#....#..#....#.
+        ###.....#.#..#.###..#..#.#....#..#...#..
+        #.......#.#..#.#..#.#..#.#....###...#...
+        #....#..#.#..#.#..#.#..#.#....#.#..#....
+        #.....##...##..###...##..####.#..#.####.
 -}
 
 parseInput :: String -> [Maybe Int]
@@ -92,16 +113,22 @@ cmdsToRegXHist = go 1 [1]
 getCRTpos :: Int -> Int
 getCRTpos xPos = (xPos - 1) `mod` 40
 
-inSpriteRng :: Int -> Int -> Bool
-inSpriteRng sPos xCRT = sPos `elem` [(xCRT-1)..(xCRT+1)]
+spriteRng :: Int -> [Int]
+spriteRng xCRT =  [(xCRT-1)..(xCRT+1)]
 
-updateCRT :: [Int] -> String
-updateCRT regHist = go 1 1 (drop 1 regHist) ""
+inSpriteRng :: Int -> Int -> Bool
+inSpriteRng sPos xCRT = sPos `elem` spriteRng xCRT
+
+-- updateCRT :: [Int] -> String
+updateCRT regHist = go 1 []
   where
-    go _ _ [] accu = accu
-    go cnt sPos (regVal:regVals) accu =
-      go (cnt + 1) (sPos + regVal) regVals
-         (accu ++ if inSpriteRng sPos (getCRTpos cnt) then "#" else ".")
+    regVal c = regHist !! (c - 1)
+    go 241 accu = accu
+    go cnt accu =
+      go (cnt + 1)
+        --  (accu ++ if inSpriteRng sPos (getCRTpos cnt) then ['#'] else ['.'])
+         (accu ++ if inSpriteRng (regVal cnt) (getCRTpos cnt) then ['#'] else ['.'])
+        --  (accu ++ [(cnt, regVal cnt)])
 
 -- my ver ... next time, INSTALL Data.List.Split !!!
 chunksOf :: Int -> [a] -> [[a]]
@@ -110,8 +137,8 @@ chunksOf x str = take x str:chunksOf x (drop x str)
 
 main :: IO ()
 main = do
-  f <- readFile "input-10-test.txt"
-  -- f <- readFile "input-10.txt"
+  -- f <- readFile "input-10-test.txt"
+  f <- readFile "input-10.txt"
 
   let cmds = parseInput f
 
@@ -170,3 +197,6 @@ main = do
   putStrLn "Part B\n"
 
   putStrLn $ unlines $ chunksOf 40 $ updateCRT regXHist
+
+  -- print (take 10 regXHist)
+  -- print (take 10 $ updateCRT regXHist)
