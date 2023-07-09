@@ -27,10 +27,15 @@ module Main where
           the commands as a `Maybe Int`:
             . noop     -> Nothing
             . addx Num -> Just Num
+
+      ---
+
+      Part B - Now we track and draw a sprite
+
 -}
 
 {-
-    Using day-10-test.hs
+    Part A - Using day-10-test.hs
 
     The interesting signal strengths can be determined as follows:
 
@@ -45,6 +50,39 @@ module Main where
     - During the 220th cycle, register X has the value 18, so the signal strength is 220 * 18 = 3960.
 
     The sum of these signal strengths is 13140.
+
+    ---
+
+    Part B - Now we track and draw a sprite
+      # = sprite is at the CRT's current scan position
+      . = sprite isn't there
+
+      Cycle   1 -> ######################################## <- Cycle  40
+      Cycle  41 -> ######################################## <- Cycle  80
+      Cycle  81 -> ######################################## <- Cycle 120
+      Cycle 121 -> ######################################## <- Cycle 160
+      Cycle 161 -> ######################################## <- Cycle 200
+      Cycle 201 -> ######################################## <- Cycle 240
+
+    using input-10-test.txt as input data, the result should be:
+
+        ##..##..##..##..##..##..##..##..##..##..
+        ###...###...###...###...###...###...###.
+        ####....####....####....####....####....
+        #####.....#####.....#####.....#####.....
+        ######......######......######......####
+        #######.......#######.......#######.....
+    
+    what are the LETTERS that show up using the real data?
+
+    ... using *MY* input data, input-10.txt, the result is:
+
+        ####...##.#..#.###..#..#.#....###..####.
+        #.......#.#..#.#..#.#..#.#....#..#....#.
+        ###.....#.#..#.###..#..#.#....#..#...#..
+        #.......#.#..#.#..#.#..#.#....###...#...
+        #....#..#.#..#.#..#.#..#.#....#.#..#....
+        #.....##...##..###...##..####.#..#.####.
 -}
 
 parseInput :: String -> [Maybe Int]
@@ -54,18 +92,14 @@ parseInput fileInput =
       parseLine str =
         case str of
           "noop" -> Nothing
-          -- _      -> Just (read $ snd $ break (==' ') str :: Int)
-          -- _      -> Just (read $ dropWhile (not . (== ' ')) str :: Int)
           _      -> Just (read $ dropWhile (/= ' ') str :: Int)
- 
+
   in
      map parseLine lns
 
 -- Part A
 
 cmdsToRegXHist :: [Maybe Int] -> [Int]
--- cmdsToRegXHist cmds = go 1 [1] cmds
--- eta reduce
 cmdsToRegXHist = go 1 [1]
   where
     go _ accu [] = accu
@@ -74,6 +108,32 @@ cmdsToRegXHist = go 1 [1]
         Nothing -> go rgX (accu ++ [rgX]) cmds
         Just n  -> go (rgX + n) (accu ++ [rgX, rgX + n]) cmds
 
+-- Part B
+
+getCRTpos :: Int -> Int
+getCRTpos xPos = (xPos - 1) `mod` 40
+
+spriteRng :: Int -> [Int]
+spriteRng xCRT =  [(xCRT-1)..(xCRT+1)]
+
+inSpriteRng :: Int -> Int -> Bool
+inSpriteRng sPos xCRT = sPos `elem` spriteRng xCRT
+
+-- updateCRT :: [Int] -> String
+updateCRT regHist = go 1 []
+  where
+    regVal c = regHist !! (c - 1)
+    go 241 accu = accu
+    go cnt accu =
+      go (cnt + 1)
+        --  (accu ++ if inSpriteRng sPos (getCRTpos cnt) then ['#'] else ['.'])
+         (accu ++ if inSpriteRng (regVal cnt) (getCRTpos cnt) then ['#'] else ['.'])
+        --  (accu ++ [(cnt, regVal cnt)])
+
+-- my ver ... next time, INSTALL Data.List.Split !!!
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf _ []  = []
+chunksOf x str = take x str:chunksOf x (drop x str)
 
 main :: IO ()
 main = do
@@ -127,4 +187,16 @@ main = do
   putStrLn $ replicate 42 '-'
 
   putStrLn $ "The final signal strength = " ++ show sigStrength
-  putStrLn $ "(13140 is the correct answer for the test data)"
+  putStrLn   "(13140 is the correct answer for the test data)"
+
+
+  putStrLn ""
+  putStrLn $ replicate 42 '-'
+  putStrLn ""
+
+  putStrLn "Part B\n"
+
+  putStrLn $ unlines $ chunksOf 40 $ updateCRT regXHist
+
+  -- print (take 10 regXHist)
+  -- print (take 10 $ updateCRT regXHist)
