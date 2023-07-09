@@ -470,3 +470,14 @@
 - changed signature of `chunksOf` to be more generic
 - can now send it `[a]` ... `[Int]` and not just `String`
 - note: `unlines` only works on `[String]` ( `[[Char]]` )
+
+## 2023-07-08
+
+### Day-10 - Part B
+
+- SUCCESS!
+- I *forgot* what regXHist contained
+  - added them to an accumulator (**wrong!**)
+  - they **are** the *value* of the sprite's location!
+- tweaked `updateCRT` ( removed the func sig )
+  - to be able to see what was happening ( sprite pos )
