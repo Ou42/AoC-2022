@@ -481,3 +481,11 @@
   - they **are** the *value* of the sprite's location!
 - tweaked `updateCRT` ( removed the func sig )
   - to be able to see what was happening ( sprite pos )
+
+---
+
+## Day-11 - Part A
+
+### 2023-07-09
+
+- started
