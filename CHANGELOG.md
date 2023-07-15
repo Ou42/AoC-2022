@@ -489,3 +489,7 @@
 ### 2023-07-09
 
 - started
+
+### 2023-07-14
+
+- parsing input file started
