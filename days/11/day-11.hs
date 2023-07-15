@@ -1,3 +1,6 @@
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiWayIf #-}
+
 module Main where
 
 import qualified Data.Map as M
@@ -26,14 +29,16 @@ showMonkey :: Monkey -> String
 showMonkey m = show $ mID m
 
 monkeyInLine :: String -> Bool
-monkeyInLine str = "Monkey" `elem` words line
+monkeyInLine line = "Monkey" `elem` words line
 
 -- happyPathParser :: String -> ???
 happyPathParser str = 
   let lns = lines str
+      blankMnky = Monkey (-1) [] (+0) (-1) (-1)
   in
-    map (\ln -> if monkeyInLine ln then tempID = 0
-            _ -> undefined ) lns
+    foldl (\mnky ln -> if
+              | (monkeyInLine ln) -> blankMnky { mID = 42 }
+              | otherwise -> undefined ) blankMnky lns
 
 main :: IO ()
 main = do

@@ -493,3 +493,7 @@
 ### 2023-07-14
 
 - parsing input file started
+
+### 2023-07-15
+
+- MultiWayIf FTW - WIP
