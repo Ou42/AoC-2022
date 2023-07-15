@@ -497,3 +497,4 @@
 ### 2023-07-15
 
 - MultiWayIf FTW - WIP
+- `map $ foldl` over `monkeyStrings`
