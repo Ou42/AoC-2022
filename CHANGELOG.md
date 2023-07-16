@@ -503,4 +503,7 @@
   - started
   - so far, only the Monkey's ID is read and converted to an `Int`
   - next up: how to read a variable number of csv `Int`'s?
-  
+  - before that: quick refactor thanks to hlint:
+    - use `<$>` instead of `fmap`
+    - use `isDigit` instead of checking if the char is in a range
+    - drop the lambda

@@ -4,6 +4,7 @@ module Main where
 
 import qualified Data.Map as M
 import Text.ParserCombinators.ReadP
+import Data.Char
 
 {-
     Day 11
@@ -65,7 +66,7 @@ data ReadPMonkey = ReadPMonkey {
 readPmonkeyID :: ReadP Int
 readPmonkeyID = do
     string "Monkey "
-    mID <- fmap read $ many1 (satisfy (\char -> char >= '0' && char <= '9'))
+    mID <- read <$> many1 (satisfy isDigit)
     satisfy (== ':')
     return mID
 
@@ -75,12 +76,6 @@ readPmonkeyID = do
 --     time <- timestamp
 --     wind <- windInfo
 --     return (Report code time wind)
-
--- and this actually works!
-
--- In[43]:
-
--- λ> readP_to_S metar "BIRK 281500Z 09014G17KT CAVOK M03/M06 Q0980 R13/910195"
 
 readPMonkeyData :: ReadP ReadPMonkey
 readPMonkeyData = do
