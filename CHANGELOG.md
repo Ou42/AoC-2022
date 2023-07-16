@@ -498,3 +498,9 @@
 
 - MultiWayIf FTW - WIP
 - `map $ foldl` over `monkeyStrings`
+- changing gears: attempting Parser Combinators
+  - read: <https://two-wrongs.com/parser-combinators-parsing-for-haskell-beginners.html>
+  - started
+  - so far, only the Monkey's ID is read and converted to an `Int`
+  - next up: how to read a variable number of csv `Int`'s?
+  

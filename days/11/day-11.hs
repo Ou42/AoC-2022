@@ -1,9 +1,9 @@
-
 {-# LANGUAGE MultiWayIf #-}
 
 module Main where
 
 import qualified Data.Map as M
+import Text.ParserCombinators.ReadP
 
 {-
     Day 11
@@ -54,6 +54,39 @@ happyPathParser str =
               -- | 
               | otherwise -> mnky ) blankMnky ) ms
 
+------------------------------------------------------------
+
+-- Parser Combinator version
+data ReadPMonkey = ReadPMonkey {
+    rpmID :: Int
+  , rpitems :: [Int]
+} deriving (Show)
+
+readPmonkeyID :: ReadP Int
+readPmonkeyID = do
+    string "Monkey "
+    mID <- fmap read $ many1 (satisfy (\char -> char >= '0' && char <= '9'))
+    satisfy (== ':')
+    return mID
+
+-- metar :: ReadP Report
+-- metar = do
+--     code <- airport
+--     time <- timestamp
+--     wind <- windInfo
+--     return (Report code time wind)
+
+-- and this actually works!
+
+-- In[43]:
+
+-- λ> readP_to_S metar "BIRK 281500Z 09014G17KT CAVOK M03/M06 Q0980 R13/910195"
+
+readPMonkeyData :: ReadP ReadPMonkey
+readPMonkeyData = do
+    id <- readPmonkeyID
+    return (ReadPMonkey id [42, 42])
+
 main :: IO ()
 main = do
   f <- readFile "input-11-test.txt"
@@ -65,3 +98,5 @@ main = do
 
   -- putStrLn $ unlines $ map showMonkey $ take 3 parsedInput
   print "42"
+
+  print $ readP_to_S readPMonkeyData f
