@@ -63,12 +63,37 @@ data ReadPMonkey = ReadPMonkey {
   , rpitems :: [Int]
 } deriving (Show)
 
+--- Bing-Chat suggested solution to reading a CSV list of Ints
+
+commaSep :: ReadP a -> ReadP [a]
+commaSep p = p `sepBy` (char ',')
+
+parseInt :: ReadP Int
+parseInt = read <$> many1 (satisfy (`elem` ['0'..'9']))
+
+parseCSV :: ReadP [Int]
+parseCSV = commaSep parseInt
+
+---
+
+parseWhiteSpace :: ReadP Int
+parseWhiteSpace = read <$> many1 (satisfy isSpace)
+
 readPmonkeyID :: ReadP Int
 readPmonkeyID = do
     string "Monkey "
+    -- mID <- parseInt
     mID <- read <$> many1 (satisfy isDigit)
     satisfy (== ':')
     return mID
+
+readPmonkeyItems :: ReadP [Int]
+readPmonkeyItems = do
+    parseWhiteSpace
+    string "Starting items: "
+    items <- parseCSV
+    satisfy (== '\n')
+    return items
 
 -- metar :: ReadP Report
 -- metar = do
@@ -80,6 +105,7 @@ readPmonkeyID = do
 readPMonkeyData :: ReadP ReadPMonkey
 readPMonkeyData = do
     id <- readPmonkeyID
+    -- items <- readPmonkeyItems
     return (ReadPMonkey id [42, 42])
 
 main :: IO ()

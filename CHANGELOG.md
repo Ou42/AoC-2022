@@ -502,8 +502,11 @@
   - read: <https://two-wrongs.com/parser-combinators-parsing-for-haskell-beginners.html>
   - started
   - so far, only the Monkey's ID is read and converted to an `Int`
-  - next up: how to read a variable number of csv `Int`'s?
+  - next up: how to read a variable number of CSV `Int`'s?
   - before that: quick refactor thanks to hlint:
     - use `<$>` instead of `fmap`
     - use `isDigit` instead of checking if the char is in a range
     - drop the lambda
+  - Bing-Chat FTW -- asked how to parse CSV ( List of `Int`'s )
+    - but it only works when they are *only* separated by a ','
+    - not go when separated by ", " ( comma then a space )
