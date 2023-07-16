@@ -510,3 +510,6 @@
   - Bing-Chat FTW -- asked how to parse CSV ( List of `Int`'s )
     - but it only works when they are *only* separated by a ','
     - not go when separated by ", " ( comma then a space )
+    - fixed with `... sepBy string ", "` vs prev `... sepBy char ','`
+  - replaced my `parseWhiteSpace` with lib func `skipSpaces`
+  - a tiny bit more refactoring
