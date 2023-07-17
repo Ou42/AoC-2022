@@ -513,3 +513,9 @@
     - fixed with `... sepBy string ", "` vs prev `... sepBy char ','`
   - replaced my `parseWhiteSpace` with lib func `skipSpaces`
   - a tiny bit more refactoring
+
+### 2023-07-16
+
+- attempted to use Bing-Chat's solution for reading the "Operation" (`parseExpr`)
+- how to *test* the function?!
+- NOTE: when trying to skip some parsers, then the next parser will fail!!

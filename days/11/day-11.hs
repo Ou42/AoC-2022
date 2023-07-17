@@ -2,9 +2,20 @@
 
 module Main where
 
+import Control.Applicative ((<|>))
+import Data.Char ( isDigit )
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe)
 import Text.ParserCombinators.ReadP
-import Data.Char
+    ( char,
+      eof,
+      many1,
+      readP_to_S,
+      satisfy,
+      sepBy,
+      skipSpaces,
+      string,
+      ReadP )
 
 {-
     Day 11
@@ -61,7 +72,11 @@ happyPathParser str =
 data ReadPMonkey = ReadPMonkey {
     rpmID :: Int
   , rpitems :: [Int]
-} deriving (Show)
+  , rpop :: Int -> Int
+}
+
+instance Show ReadPMonkey where
+  show r = "ReadPMonkey { id = " ++ show (rpmID r) ++ ", items = " ++ show (rpitems r) ++ ", rpop = <function> }"
 
 --- slightly tweaked Bing-Chat suggested solution to reading a CSV list of Ints
 
@@ -79,6 +94,50 @@ parseCSV = commaSep parseInt
 
 parseCommaSpcSV :: ReadP [Int]
 parseCommaSpcSV = commaSpcSep parseInt
+
+---
+
+--- Bing-Chat suggested solution for parsing an "operation" func
+
+parseVar :: ReadP String
+parseVar = many1 (satisfy (`elem` ['a'..'z']))
+
+parseNum :: ReadP Int
+parseNum = read <$> many1 (satisfy (`elem` ['0'..'9']))
+
+parseOp :: ReadP (Int -> Int -> Int)
+parseOp =  (char '+' >> return (+))
+       <|> (char '-' >> return (-))
+       <|> (char '*' >> return (*))
+       <|> (char '/' >> return div)
+
+parseExpr :: ReadP (Int -> Int)
+parseExpr = do
+    skipSpaces
+    string "Operation: "
+    var1 <- parseVar
+    skipSpaces
+    char '='
+    skipSpaces
+    var2 <- parseVar
+    skipSpaces
+    op <- parseOp
+    skipSpaces
+    var3 <- parseVar <|> fmap show parseNum
+    -- skipSpaces
+    -- eof
+    satisfy (== '\n')
+
+    return (\x -> if var1 == "new" && var2 == "old"
+                        then op x (if var3 == "old"
+                                       then x
+                                       else read var3)
+                        else x)
+
+parseFunc :: String -> Maybe (Int -> Int)
+parseFunc str = case readP_to_S parseExpr str of
+    [(f, "")] -> Just f
+    _         -> Nothing
 
 ---
 
@@ -102,7 +161,8 @@ readPMonkeyData :: ReadP ReadPMonkey
 readPMonkeyData = do
     id <- readPmonkeyID
     items <- readPmonkeyItems
-    return (ReadPMonkey id items)
+    op <- parseExpr
+    return (ReadPMonkey id items op)
 
 main :: IO ()
 main = do
