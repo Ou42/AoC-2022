@@ -4,6 +4,7 @@ module Main where
 
 import Control.Applicative ((<|>))
 import Data.Char ( isDigit )
+import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Text.ParserCombinators.ReadP
@@ -179,11 +180,17 @@ readPmonkeyItems = do
 
 readPMonkeyData :: ReadP ReadPMonkey
 readPMonkeyData = do
+    skipSpaces
     id <- readPmonkeyID
     items <- readPmonkeyItems
     op <- parseExpr
     test <- parseTest
     return (ReadPMonkey id items op test)
+
+readPAllMonkeys :: ReadP [ReadPMonkey]
+readPAllMonkeys = many1 readPMonkeyData
+
+makeMonkeysMap = map (\m -> (rpmID m, m))
 
 main :: IO ()
 main = do
@@ -197,7 +204,12 @@ main = do
   -- putStrLn $ unlines $ map showMonkey $ take 3 parsedInput
   print "42"
 
-  print $ readP_to_S readPMonkeyData f
+  let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
+  print lsOfMonkeys
+
+  let msMap = makeMonkeysMap lsOfMonkeys
+  
+  print msMap
 
 {-
   Quick Test:

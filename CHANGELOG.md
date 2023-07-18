@@ -525,3 +525,5 @@
 - quick test instructions
 - parseTest WIP
 - parseTest working!
+- `[ReadPMonkey]` parsed
+- converted to a `Map` with MokeyID (`rpmID`) as key
