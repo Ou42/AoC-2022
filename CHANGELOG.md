@@ -519,3 +519,7 @@
 - attempted to use Bing-Chat's solution for reading the "Operation" (`parseExpr`)
 - how to *test* the function?!
 - NOTE: when trying to skip some parsers, then the next parser will fail!!
+
+### 2023-07-17
+
+- quick test instructions
