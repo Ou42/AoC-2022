@@ -73,7 +73,7 @@ data ReadPMonkey = ReadPMonkey {
     rpmID   :: Int
   , rpitems :: [Int]
   , rpop    :: Int -> Int
-  , rptest  :: Int -> Bool
+  , rptest  :: Int -> Int
 }
 
 instance Show ReadPMonkey where
@@ -141,14 +141,23 @@ parseFunc str = case readP_to_S parseExpr str of
     [(f, "")] -> Just f
     _         -> Nothing
 
-parseTest :: ReadP (Int -> Bool)
+parseTest :: ReadP (Int -> Int)
 parseTest = do
   skipSpaces
   string "Test: divisible by "
   num <- parseNum
   satisfy (== '\n')
+  skipSpaces
+  string "If true: throw to monkey "
+  trueTo <- parseNum
+  skipSpaces
+  string "If false: throw to monkey "
+  falseTo <- parseNum
+  skipSpaces
 
-  return (\x -> (x `rem` num) == 0)
+  return ( \x -> if (x `rem` num) == 0
+                   then trueTo
+                   else falseTo )
 
 ---
 
@@ -209,14 +218,8 @@ main = do
         ghci> rpop rpm 10
         190
 
-        ghci> rptest rpm 10
-        False
-        ghci> rptest rpm 23
-        True
-        ghci> rptest rpm 230
-        True
-        ghci> rptest rpm (23*5)
-        True
         ghci> rptest rpm (23*45)
-        True
+        2
+        ghci> rptest rpm (23*45+1)
+        3
 -}
