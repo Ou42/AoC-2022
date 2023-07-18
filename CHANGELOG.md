@@ -523,3 +523,5 @@
 ### 2023-07-17
 
 - quick test instructions
+- parseTest WIP
+

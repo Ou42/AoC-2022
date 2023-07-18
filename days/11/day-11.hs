@@ -70,13 +70,17 @@ happyPathParser str =
 
 -- Parser Combinator version
 data ReadPMonkey = ReadPMonkey {
-    rpmID :: Int
+    rpmID   :: Int
   , rpitems :: [Int]
-  , rpop :: Int -> Int
+  , rpop    :: Int -> Int
+  , rptest  :: Int -> Bool
 }
 
 instance Show ReadPMonkey where
-  show r = "ReadPMonkey { id = " ++ show (rpmID r) ++ ", items = " ++ show (rpitems r) ++ ", rpop = <function> }"
+  show r = "ReadPMonkey { id = "
+            ++ show (rpmID r) ++ ", items = " ++ show (rpitems r)
+            ++ ", rpop = <function>"
+            ++ ", rptest = <function> }"
 
 --- slightly tweaked Bing-Chat suggested solution to reading a CSV list of Ints
 
@@ -124,8 +128,6 @@ parseExpr = do
     op <- parseOp
     skipSpaces
     var3 <- parseVar <|> fmap show parseNum
-    -- skipSpaces
-    -- eof
     satisfy (== '\n')
 
     return (\x -> if var1 == "new" && var2 == "old"
@@ -138,6 +140,15 @@ parseFunc :: String -> Maybe (Int -> Int)
 parseFunc str = case readP_to_S parseExpr str of
     [(f, "")] -> Just f
     _         -> Nothing
+
+parseTest :: ReadP (Int -> Bool)
+parseTest = do
+  skipSpaces
+  string "Test: divisible by "
+  num <- parseNum
+  satisfy (== '\n')
+
+  return (\x -> (x `rem` num) == 0)
 
 ---
 
@@ -162,7 +173,8 @@ readPMonkeyData = do
     id <- readPmonkeyID
     items <- readPmonkeyItems
     op <- parseExpr
-    return (ReadPMonkey id items op)
+    test <- parseTest
+    return (ReadPMonkey id items op test)
 
 main :: IO ()
 main = do
@@ -196,4 +208,15 @@ main = do
         95
         ghci> rpop rpm 10
         190
-  -}
+
+        ghci> rptest rpm 10
+        False
+        ghci> rptest rpm 23
+        True
+        ghci> rptest rpm 230
+        True
+        ghci> rptest rpm (23*5)
+        True
+        ghci> rptest rpm (23*45)
+        True
+-}
