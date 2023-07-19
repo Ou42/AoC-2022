@@ -71,17 +71,23 @@ happyPathParser str =
 
 -- Parser Combinator version
 data ReadPMonkey = ReadPMonkey {
-    rpmID   :: Int
-  , rpitems :: [Int]
-  , rpop    :: Int -> Int
-  , rptest  :: Int -> Int
+    rpID    :: Int
+  , rpItems :: [Int]
+  , rpOp    :: Int -> Int
+  , rpTest  :: Int -> Bool
+  , rpIfT   :: Int
+  , rpIfF   :: Int
 }
 
 instance Show ReadPMonkey where
+  show :: ReadPMonkey -> String
   show r = "ReadPMonkey { id = "
-            ++ show (rpmID r) ++ ", items = " ++ show (rpitems r)
-            ++ ", rpop = <function>"
-            ++ ", rptest = <function> }"
+            ++ show (rpID r) ++ ", items = " ++ show (rpItems r)
+            ++ ", rpOp = <function>"
+            ++ ", rpTest = <function> }\n"
+
+-- instance Show [ReadPMonkey] where
+--   show = map show
 
 --- slightly tweaked Bing-Chat suggested solution to reading a CSV list of Ints
 
@@ -142,23 +148,33 @@ parseFunc str = case readP_to_S parseExpr str of
     [(f, "")] -> Just f
     _         -> Nothing
 
-parseTest :: ReadP (Int -> Int)
+-- parseTest :: ReadP (Int -> Int)
+parseTest :: ReadP (Int -> Bool)
 parseTest = do
   skipSpaces
   string "Test: divisible by "
   num <- parseNum
   satisfy (== '\n')
+
+  return ( \x -> (x `rem` num) == 0)
+
+parseIfTrue :: ReadP Int
+parseIfTrue = do
   skipSpaces
   string "If true: throw to monkey "
   trueTo <- parseNum
+  satisfy (== '\n')
+
+  return trueTo
+
+parseIfFalse :: ReadP Int
+parseIfFalse = do
   skipSpaces
   string "If false: throw to monkey "
   falseTo <- parseNum
-  skipSpaces
+  satisfy (== '\n')
 
-  return ( \x -> if (x `rem` num) == 0
-                   then trueTo
-                   else falseTo )
+  return falseTo
 
 ---
 
@@ -181,11 +197,14 @@ readPmonkeyItems = do
 readPMonkeyData :: ReadP ReadPMonkey
 readPMonkeyData = do
     skipSpaces
-    id <- readPmonkeyID
+    id    <- readPmonkeyID
     items <- readPmonkeyItems
-    op <- parseExpr
-    test <- parseTest
-    return (ReadPMonkey id items op test)
+    op    <- parseExpr
+    test  <- parseTest
+    ifT   <- parseIfTrue
+    ifF   <- parseIfFalse
+    skipSpaces
+    return (ReadPMonkey id items op test ifT ifF)
 
 readPAllMonkeys :: ReadP [ReadPMonkey]
 readPAllMonkeys = many1 readPMonkeyData
@@ -194,17 +213,36 @@ makeMonkeysMap :: String -> Map Int ReadPMonkey
 makeMonkeysMap f =
   let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
   in
-      M.fromList $ map (\m -> (rpmID m, m)) lsOfMonkeys
+      M.fromList $ map (\m -> (rpID m, m)) lsOfMonkeys
 
--- doOp :: ReadPMonkey -> ReadPMonkey
-doOp m mMap =
-  let op    = rpop m
-      items = map ((`div` 3) . op) $ rpitems m
-      test  = rptest m
-      dest id = fromMaybe undefined $ M.lookup id mMap
+doOneOp :: ReadPMonkey -> Map Int ReadPMonkey -> Map Int ReadPMonkey
+doOneOp m mMap =
+  -- does one operation on all items held by given Monkey
+  -- updates the Monkey Map
+
+  let op    = rpOp m
+      items = map ((`div` 3) . op) $ rpItems m
+      test  = rpTest m
+      (itemsT, itemsF) = foldl (\(t, f) i ->
+                                  if test i
+                                    then (t ++ [i], f)
+                                    else (t, f ++ [i]))
+                                ([],[])
+                                items
+      -- dest id = fromMaybe undefined $ M.lookup id mMap
+      dest id = mMap M.! id
+      mT    = dest $ rpIfT m
+      mF    = dest $ rpIfF m
+      updates = [ ( rpID m , m  { rpItems = [] })
+                , ( rpID mT, mT { rpItems = rpItems mT ++ itemsT })
+                , ( rpID mF, mF { rpItems = rpItems mF ++ itemsF })
+                ]
+      union   = M.union (M.fromList updates) mMap
   in
       -- items
-      "Should return a new mMap, updated with items inspected and thrown about"
+      -- updates
+      union
+
 
 main :: IO ()
 main = do
@@ -213,14 +251,18 @@ main = do
 
   putStrLn $ replicate 42 '-'
 
-  let parsedInput = happyPathParser fileInput
+  -- let parsedInput = happyPathParser fileInput
 
   -- putStrLn $ unlines $ map showMonkey $ take 3 parsedInput
-  print "42"
 
   let msMap = makeMonkeysMap fileInput -- lsOfMonkeys
 
+  putStrLn "before:"
   print msMap
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "after one operation:"
+  print $ doOneOp (msMap M.! 0) msMap
 
 {-
   Quick Test:
@@ -230,19 +272,19 @@ main = do
         Ok, one module loaded.
         ghci> f <- readFile "input-11-test.txt" 
         ghci> readP_to_S readPMonkeyData f
-        [(ReadPMonkey { id = 0, items = [79,98], rpop = <function> },"  Test: divisible by 23\n    If true: throw to monkey 2\n    If false: throw to monkey 3\n\nMonkey 1:\n  Starting items: 54, 65, 75, 74\n  Operation: new = old + 6\n  Test: divisible by 19\n    If true: throw to monkey 2\n    If false: throw to monkey 0\n\nMonkey 2:\n  Starting items: 79, 60, 97\n  Operation: new = old * old\n  Test: divisible by 13\n    If true: throw to monkey 1\n    If false: throw to monkey 3\n\nMonkey 3:\n  Starting items: 74\n  Operation: new = old + 3\n  Test: divisible by 17\n    If true: throw to monkey 0\n    If false: throw to monkey 1\n")]
+        [(ReadPMonkey { id = 0, items = [79,98], rpOp = <function> },"  Test: divisible by 23\n    If true: throw to monkey 2\n    If false: throw to monkey 3\n\nMonkey 1:\n  Starting items: 54, 65, 75, 74\n  Operation: new = old + 6\n  Test: divisible by 19\n    If true: throw to monkey 2\n    If false: throw to monkey 0\n\nMonkey 2:\n  Starting items: 79, 60, 97\n  Operation: new = old * old\n  Test: divisible by 13\n    If true: throw to monkey 1\n    If false: throw to monkey 3\n\nMonkey 3:\n  Starting items: 74\n  Operation: new = old + 3\n  Test: divisible by 17\n    If true: throw to monkey 0\n    If false: throw to monkey 1\n")]
         ghci> :t readP_to_S readPMonkeyData f
         readP_to_S readPMonkeyData f :: [(ReadPMonkey, String)]
         ghci> [(rpm, str)] = readP_to_S readPMonkeyData f
         ghci> rpm
-        ReadPMonkey { id = 0, items = [79,98], rpop = <function> }
-        ghci> rpop rpm 5
+        ReadPMonkey { id = 0, items = [79,98], rpOp = <function> }
+        ghci> rpOp rpm 5
         95
-        ghci> rpop rpm 10
+        ghci> rpOp rpm 10
         190
 
-        ghci> rptest rpm (23*45)
+        ghci> rpTest rpm (23*45)
         2
-        ghci> rptest rpm (23*45+1)
+        ghci> rpTest rpm (23*45+1)
         3
 -}

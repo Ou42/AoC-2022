@@ -534,3 +534,6 @@
 - `doOp` WIP
   - it *should* handle one monkey's item list
   - maybe break it down further & handle one item?
+- `doOp` renamed to `doOneOp`
+- created a list with updated Monkeys
+- used `M.union` to update MonkeysMap
