@@ -22,6 +22,10 @@ import Text.ParserCombinators.ReadP
     Day 11
 
       Part A - Monkey Business
+        . a group of monkeys have our stuff (items)
+        . they throw items between themselves based on some rules
+        . keep track of which monkey has what item based on a worry factor
+
         . focus on the two most active monkeys if you want any hope
           of getting your stuff back. Count the total number of times
           each monkey inspects items over 20 rounds
@@ -77,6 +81,7 @@ data ReadPMonkey = ReadPMonkey {
   , rpTest  :: Int -> Bool
   , rpIfT   :: Int
   , rpIfF   :: Int
+  , rpInspected :: Int
 }
 
 instance Show ReadPMonkey where
@@ -84,7 +89,8 @@ instance Show ReadPMonkey where
   show r = "ReadPMonkey { id = "
             ++ show (rpID r) ++ ", items = " ++ show (rpItems r)
             ++ ", rpOp = <function>"
-            ++ ", rpTest = <function> }\n"
+            ++ ", rpTest = <function>"
+            ++ ", rpInspected = " ++ show (rpInspected r) ++ "}\n"
 
 -- instance Show [ReadPMonkey] where
 --   show = map show
@@ -204,7 +210,7 @@ readPMonkeyData = do
     ifT   <- parseIfTrue
     ifF   <- parseIfFalse
     skipSpaces
-    return (ReadPMonkey id items op test ifT ifF)
+    return (ReadPMonkey id items op test ifT ifF 0)
 
 readPAllMonkeys :: ReadP [ReadPMonkey]
 readPAllMonkeys = many1 readPMonkeyData
@@ -233,7 +239,7 @@ doOneOp m mMap =
       dest id = mMap M.! id
       mT    = dest $ rpIfT m
       mF    = dest $ rpIfF m
-      updates = [ ( rpID m , m  { rpItems = [] })
+      updates = [ ( rpID m , m  { rpItems = [], rpInspected = rpInspected m + length items })
                 , ( rpID mT, mT { rpItems = rpItems mT ++ itemsT })
                 , ( rpID mF, mF { rpItems = rpItems mF ++ itemsF })
                 ]

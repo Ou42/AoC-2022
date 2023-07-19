@@ -537,3 +537,4 @@
 - `doOp` renamed to `doOneOp`
 - created a list with updated Monkeys
 - used `M.union` to update MonkeysMap
+- rpInspected !!! must keep tally of how many items a Monkey inspected
