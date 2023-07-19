@@ -527,3 +527,10 @@
 - parseTest working!
 - `[ReadPMonkey]` parsed
 - converted to a `Map` with MokeyID (`rpmID`) as key
+
+### 2023-07-19
+
+- `makeMonkeysMap` fixed
+- `doOp` WIP
+  - it *should* handle one monkey's item list
+  - maybe break it down further & handle one item?

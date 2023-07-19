@@ -190,25 +190,36 @@ readPMonkeyData = do
 readPAllMonkeys :: ReadP [ReadPMonkey]
 readPAllMonkeys = many1 readPMonkeyData
 
-makeMonkeysMap = map (\m -> (rpmID m, m))
+makeMonkeysMap :: String -> Map Int ReadPMonkey
+makeMonkeysMap f =
+  let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
+  in
+      M.fromList $ map (\m -> (rpmID m, m)) lsOfMonkeys
+
+-- doOp :: ReadPMonkey -> ReadPMonkey
+doOp m mMap =
+  let op    = rpop m
+      items = map ((`div` 3) . op) $ rpitems m
+      test  = rptest m
+      dest id = fromMaybe undefined $ M.lookup id mMap
+  in
+      -- items
+      "Should return a new mMap, updated with items inspected and thrown about"
 
 main :: IO ()
 main = do
-  f <- readFile "input-11-test.txt"
-  -- f <- readFile "input-11.txt"
+  fileInput <- readFile "input-11-test.txt"
+  -- fileInput <- readFile "input-11.txt"
 
   putStrLn $ replicate 42 '-'
 
-  let parsedInput = happyPathParser f
+  let parsedInput = happyPathParser fileInput
 
   -- putStrLn $ unlines $ map showMonkey $ take 3 parsedInput
   print "42"
 
-  let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
-  print lsOfMonkeys
+  let msMap = makeMonkeysMap fileInput -- lsOfMonkeys
 
-  let msMap = makeMonkeysMap lsOfMonkeys
-  
   print msMap
 
 {-
