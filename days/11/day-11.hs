@@ -73,6 +73,8 @@ happyPathParser str =
 
 ------------------------------------------------------------
 
+type MonkeyKey = Int
+
 -- Parser Combinator version
 data ReadPMonkey = ReadPMonkey {
     rpID    :: Int
@@ -221,42 +223,48 @@ makeMonkeysMap f =
   in
       M.fromList $ map (\m -> (rpID m, m)) lsOfMonkeys
 
--- doOneOp :: ReadPMonkey -> Map Int ReadPMonkey -> Map Int ReadPMonkey
-doOneOp :: Map Int ReadPMonkey -> ReadPMonkey -> Map Int ReadPMonkey
--- doOneOp m mMap =
-doOneOp mMap m =
-  -- does one operation on all items held by given Monkey
-  -- updates the Monkey Map
-  --    
+doOneOp :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
+doOneOp monkeysMap monkeyKey =
+  -- given a Key, looks up the monkey from the Map
+  -- performs operation on all items held by given Monkey
+  -- ... and divides by 3 and rounds down
+  -- then, based on a Test func, throws item to:
+  --        destTrueMonkey
+  --     of destFalseMonkey
+  -- therefore, no items will remain with the current Monkey
+  -- updates the Monkey Map with changes to these 3 Monkeys
 
-  let op    = rpOp m
-      items = map ((`div` 3) . op) $ rpItems m
-      test  = rpTest m
-      (itemsT, itemsF) = foldl (\(t, f) i ->
-                                  if test i
-                                    then (t ++ [i], f)
-                                    else (t, f ++ [i]))
-                                ([],[])
-                                items
-      -- dest id = fromMaybe undefined $ M.lookup id mMap
-      dest id = mMap M.! id
-      mT    = dest $ rpIfT m
-      mF    = dest $ rpIfF m
-      updates = [ ( rpID m , m  { rpItems = [], rpInspected = rpInspected m + length items })
-                , ( rpID mT, mT { rpItems = rpItems mT ++ itemsT })
-                , ( rpID mF, mF { rpItems = rpItems mF ++ itemsF })
+  let monkey    = monkeysMap M.! monkeyKey
+      operation = rpOp monkey
+      items     = map ((`div` 3) . operation) $ rpItems monkey
+      test      = rpTest monkey
+      (itemsT, itemsF)
+                = foldl (\(t, f) i -> if test i
+                                        then (t ++ [i], f)
+                                        else (t, f ++ [i]))
+                        ([],[])
+                        items
+
+      destTrueMonkey  = monkeysMap M.! rpIfT monkey
+      destFalseMonkey = monkeysMap M.! rpIfF monkey
+
+      newInspectedCnt = rpInspected monkey + length items
+
+      (currMonkeyID, trueMonkeyID, falseMonkeyID)
+                = (rpID monkey, rpID destTrueMonkey, rpID destFalseMonkey )
+
+      destTrueItems  = rpItems destTrueMonkey ++ itemsT
+      destFalseItems = rpItems destFalseMonkey ++ itemsF
+
+      updates = [ ( currMonkeyID, monkey { rpItems = [], rpInspected = newInspectedCnt })
+                , ( trueMonkeyID, destTrueMonkey { rpItems = destTrueItems })
+                , ( falseMonkeyID, destFalseMonkey { rpItems = destFalseItems })
                 ]
-      union   = M.union (M.fromList updates) mMap
   in
-      -- items
-      -- updates
-      union
+      M.union (M.fromList updates) monkeysMap
 
 doOneRound :: Map Int ReadPMonkey -> Map Int ReadPMonkey
--- doOneRound mMap = M.foldl (flip doOneOp) mMap mMap
--- doOneRound mMap = foldl (flip doOneOp) mMap $ M.elems mMap
-doOneRound mMap = M.foldl doOneOp mMap mMap
--- doOneRound mMap = foldl doOneOp mMap $ M.elems mMap
+doOneRound monkeysMap = foldl doOneOp monkeysMap $ M.keys monkeysMap
 
 main :: IO ()
 main = do
@@ -265,40 +273,11 @@ main = do
 
   putStrLn $ replicate 42 '-'
 
-  -- let parsedInput = happyPathParser fileInput
-
-  -- putStrLn $ unlines $ map showMonkey $ take 3 parsedInput
-
-  let msMap = makeMonkeysMap fileInput -- lsOfMonkeys
+  let msMap = makeMonkeysMap fileInput
 
   putStrLn "before:"
   print msMap
 
   putStrLn $ replicate 42 '-'
   putStrLn "after one operation:"
-  print $ doOneOp msMap (msMap M.! 0)
-
-{-
-  Quick Test:
-
-        ghci> :l day-11.hs 
-        [1 of 1] Compiling Main             ( day-11.hs, interpreted )
-        Ok, one module loaded.
-        ghci> f <- readFile "input-11-test.txt" 
-        ghci> readP_to_S readPMonkeyData f
-        [(ReadPMonkey { id = 0, items = [79,98], rpOp = <function> },"  Test: divisible by 23\n    If true: throw to monkey 2\n    If false: throw to monkey 3\n\nMonkey 1:\n  Starting items: 54, 65, 75, 74\n  Operation: new = old + 6\n  Test: divisible by 19\n    If true: throw to monkey 2\n    If false: throw to monkey 0\n\nMonkey 2:\n  Starting items: 79, 60, 97\n  Operation: new = old * old\n  Test: divisible by 13\n    If true: throw to monkey 1\n    If false: throw to monkey 3\n\nMonkey 3:\n  Starting items: 74\n  Operation: new = old + 3\n  Test: divisible by 17\n    If true: throw to monkey 0\n    If false: throw to monkey 1\n")]
-        ghci> :t readP_to_S readPMonkeyData f
-        readP_to_S readPMonkeyData f :: [(ReadPMonkey, String)]
-        ghci> [(rpm, str)] = readP_to_S readPMonkeyData f
-        ghci> rpm
-        ReadPMonkey { id = 0, items = [79,98], rpOp = <function> }
-        ghci> rpOp rpm 5
-        95
-        ghci> rpOp rpm 10
-        190
-
-        ghci> rpTest rpm (23*45)
-        2
-        ghci> rpTest rpm (23*45+1)
-        3
--}
+  print $ doOneOp msMap 0

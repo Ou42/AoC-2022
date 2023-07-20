@@ -542,4 +542,5 @@
   - When folding over the MonkeyMap the Monkey being sent in is the *original* Monkey
   - ***not*** the updated Monkey
   - so its Item list ( worry list ) is stale
-  
+- `doOneRound` fixed! iterates over keys, not values (Monkeys)
+- `doOneOp` changed to work with keys, not values (Monkeys)
