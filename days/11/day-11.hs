@@ -4,6 +4,7 @@ module Main where
 
 import Control.Applicative ((<|>))
 import Data.Char ( isDigit )
+import Data.List ( sort )
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
@@ -266,10 +267,26 @@ doOneOp monkeysMap monkeyKey =
 doOneRound :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 doOneRound monkeysMap = foldl doOneOp monkeysMap $ M.keys monkeysMap
 
+do_20_Rounds :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+do_20_Rounds monkeyMap = foldl (\monkeyMap' i -> doOneRound monkeyMap') monkeyMap [1..20]
+
+partA :: Map Int ReadPMonkey -> Int
+partA monkeyMap =
+  -- find the top 2 Inspections
+  -- multiply them together
+
+  let [firstMax, secondMax] = take 2 
+                              $ reverse
+                              $ sort
+                              $ M.foldr ((:) . rpInspected) [] $ do_20_Rounds monkeyMap
+  in
+     firstMax * secondMax
+
+
 main :: IO ()
 main = do
-  fileInput <- readFile "input-11-test.txt"
-  -- fileInput <- readFile "input-11.txt"
+  -- fileInput <- readFile "input-11-test.txt"
+  fileInput <- readFile "input-11.txt"
 
   putStrLn $ replicate 42 '-'
 
@@ -281,3 +298,7 @@ main = do
   putStrLn $ replicate 42 '-'
   putStrLn "after one operation:"
   print $ doOneOp msMap 0
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part A -- answer:"
+  print $ partA msMap
