@@ -1,5 +1,3 @@
-{-# LANGUAGE MultiWayIf #-}
-
 module Main where
 
 import Control.Applicative ((<|>))
@@ -34,45 +32,6 @@ import Text.ParserCombinators.ReadP
         . what is the result of multiplying the number of items inspected
           by the two most active monkeys?
 -}
-
-data Monkey = Monkey {
-    mID :: Int
-  , items :: [Int]
-  , op :: Int -> Int
-  , ifT :: Int
-  , ifF :: Int
-}
-
-showMonkey :: Monkey -> String
-showMonkey m = show $ mID m
-
-monkeyInLine :: String -> Bool
-monkeyInLine line = "Monkey" `elem` words line
-
-getMonkeyID :: String -> Int
-getMonkeyID line = read $ init (words line !! 1)
-
-startsWithStarting :: String -> Bool
-startsWithStarting line = "Starting" == head (words line)
-
-monkeyStrings :: String -> [[String]]
-monkeyStrings str =
-  let lns = lines str
-  in
-    foldl (\ms ln -> (if ln == "" then []:ms else (head ms ++ [ln]):tail ms) ) [[]] lns
-
--- happyPathParser :: String -> ???
-happyPathParser str =
-  let -- lns = lines str
-      ms = monkeyStrings str
-      blankMnky = Monkey (-1) [] (+0) (-1) (-1)
-  in
-    map ( foldl (\mnky ln -> if
-              | (monkeyInLine ln) -> mnky { mID = getMonkeyID ln }
-              -- | 
-              | otherwise -> mnky ) blankMnky ) ms
-
-------------------------------------------------------------
 
 type MonkeyKey = Int
 
@@ -157,7 +116,6 @@ parseFunc str = case readP_to_S parseExpr str of
     [(f, "")] -> Just f
     _         -> Nothing
 
--- parseTest :: ReadP (Int -> Int)
 parseTest :: ReadP (Int -> Bool)
 parseTest = do
   skipSpaces
