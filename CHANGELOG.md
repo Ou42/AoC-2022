@@ -538,3 +538,8 @@
 - created a list with updated Monkeys
 - used `M.union` to update MonkeysMap
 - rpInspected !!! must keep tally of how many items a Monkey inspected
+- created a bug in `doOneRound`
+  - When folding over the MonkeyMap the Monkey being sent in is the *original* Monkey
+  - ***not*** the updated Monkey
+  - so its Item list ( worry list ) is stale
+  

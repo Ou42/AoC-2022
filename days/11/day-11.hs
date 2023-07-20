@@ -221,10 +221,13 @@ makeMonkeysMap f =
   in
       M.fromList $ map (\m -> (rpID m, m)) lsOfMonkeys
 
-doOneOp :: ReadPMonkey -> Map Int ReadPMonkey -> Map Int ReadPMonkey
-doOneOp m mMap =
+-- doOneOp :: ReadPMonkey -> Map Int ReadPMonkey -> Map Int ReadPMonkey
+doOneOp :: Map Int ReadPMonkey -> ReadPMonkey -> Map Int ReadPMonkey
+-- doOneOp m mMap =
+doOneOp mMap m =
   -- does one operation on all items held by given Monkey
   -- updates the Monkey Map
+  --    
 
   let op    = rpOp m
       items = map ((`div` 3) . op) $ rpItems m
@@ -249,6 +252,11 @@ doOneOp m mMap =
       -- updates
       union
 
+doOneRound :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+-- doOneRound mMap = M.foldl (flip doOneOp) mMap mMap
+-- doOneRound mMap = foldl (flip doOneOp) mMap $ M.elems mMap
+doOneRound mMap = M.foldl doOneOp mMap mMap
+-- doOneRound mMap = foldl doOneOp mMap $ M.elems mMap
 
 main :: IO ()
 main = do
@@ -268,7 +276,7 @@ main = do
 
   putStrLn $ replicate 42 '-'
   putStrLn "after one operation:"
-  print $ doOneOp (msMap M.! 0) msMap
+  print $ doOneOp msMap (msMap M.! 0)
 
 {-
   Quick Test:
