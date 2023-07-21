@@ -252,16 +252,20 @@ doOneOpPartB monkeysMap monkeyKey =
   let monkey    = monkeysMap M.! monkeyKey
       operation = rpOp monkey
       -- items     = map operation $ rpItems monkey
-      itemsCalc    = map operation $ rpItems monkey
+      -- itemsCalc = map operation $ rpItems monkey
+      itemsCalc = map ((`rem` (13*17*19*23)) . operation) $ rpItems monkey
       items     = if any (> toInteger (maxBound :: Int)) itemsCalc
-                    then 
-                          -- error $ "oops!\n"
-                          --      ++ replicate 75 '-' ++ "\n"
-                          --      ++ "items = \t\t" ++ show itemsCalc ++ "\n"
-                          --      ++ "maxBound :: Int == \t  " ++ show (maxBound :: Int) ++ "\n"
-                          --      ++ replicate 75 '=' ++ "\n"
-                         itemsCalc
+                    then
+                        --   trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc)
+                        --     error $ "oops!\n"
+                        --         ++ replicate 75 '-' ++ "\n"
+                        --         ++ "items = \t\t" ++ show itemsCalc ++ "\n"
+                        --         ++ "maxBound :: Int == \t  " ++ show (maxBound :: Int) ++ "\n"
+                        --         ++ replicate 75 '=' ++ "\n"
+                        itemsCalc
+                   -- else trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc) itemsCalc
                     else itemsCalc
+
       test      = rpTest monkey
       (itemsT, itemsF)
                 = foldl' (\(t, f) i -> if test i
@@ -286,7 +290,9 @@ doOneOpPartB monkeysMap monkeyKey =
                 , ( falseMonkeyID, destFalseMonkey { rpItems = destFalseItems })
                 ]
   in
-      M.union (M.fromList updates) monkeysMap
+      if null $ rpItems monkey
+        then monkeysMap
+        else M.union (M.fromList updates) monkeysMap
 
 doOneRoundPartA :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 doOneRoundPartA monkeysMap = foldl doOneOpPartA monkeysMap $ M.keys monkeysMap
@@ -354,4 +360,17 @@ main = do
   putStrLn $ replicate 42 '-'
   putStrLn "Part B -- answer:"
   -- print $ "skipped" -- partB msMap
-  print $ partB msMap
+  let partB_test_ans = 2713310158
+  let my_partB_ans = partB msMap
+  putStrLn $ "my Part B answer = " ++ show my_partB_ans
+
+  -- repeated due to trace output showing before number printed
+  putStrLn $ "my Part B answer = " ++ show my_partB_ans
+
+  putStrLn $ "Part B *test* data-set answer = " ++ show partB_test_ans
+  putStrLn $ "are they equal? " ++ show (my_partB_ans == partB_test_ans)
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part B -- test data-set magic number: (13*17*19*23)"
+  putStrLn "                                change ^^^^^^^^^^^ for my puzzle input!"
+  putStrLn "  (consider parsing the file and extrating and calculating this number?!)"
