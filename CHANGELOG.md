@@ -481,3 +481,69 @@
   - they **are** the *value* of the sprite's location!
 - tweaked `updateCRT` ( removed the func sig )
   - to be able to see what was happening ( sprite pos )
+
+---
+
+## Day-11 - Part A
+
+### 2023-07-09
+
+- started
+
+### 2023-07-14
+
+- parsing input file started
+
+### 2023-07-15
+
+- MultiWayIf FTW - WIP
+- `map $ foldl` over `monkeyStrings`
+- changing gears: attempting Parser Combinators
+  - read: <https://two-wrongs.com/parser-combinators-parsing-for-haskell-beginners.html>
+  - started
+  - so far, only the Monkey's ID is read and converted to an `Int`
+  - next up: how to read a variable number of CSV `Int`'s?
+  - before that: quick refactor thanks to hlint:
+    - use `<$>` instead of `fmap`
+    - use `isDigit` instead of checking if the char is in a range
+    - drop the lambda
+  - Bing-Chat FTW -- asked how to parse CSV ( List of `Int`'s )
+    - but it only works when they are *only* separated by a ','
+    - not go when separated by ", " ( comma then a space )
+    - fixed with `... sepBy string ", "` vs prev `... sepBy char ','`
+  - replaced my `parseWhiteSpace` with lib func `skipSpaces`
+  - a tiny bit more refactoring
+
+### 2023-07-16
+
+- attempted to use Bing-Chat's solution for reading the "Operation" (`parseExpr`)
+- how to *test* the function?!
+- NOTE: when trying to skip some parsers, then the next parser will fail!!
+
+### 2023-07-17
+
+- quick test instructions
+- parseTest WIP
+- parseTest working!
+- `[ReadPMonkey]` parsed
+- converted to a `Map` with MokeyID (`rpmID`) as key
+
+### 2023-07-19
+
+- `makeMonkeysMap` fixed
+- `doOp` WIP
+  - it *should* handle one monkey's item list
+  - maybe break it down further & handle one item?
+- `doOp` renamed to `doOneOp`
+- created a list with updated Monkeys
+- used `M.union` to update MonkeysMap
+- rpInspected !!! must keep tally of how many items a Monkey inspected
+- created a bug in `doOneRound`
+  - When folding over the MonkeyMap the Monkey being sent in is the *original* Monkey
+  - ***not*** the updated Monkey
+  - so its Item list ( worry list ) is stale
+- `doOneRound` fixed! iterates over keys, not values (Monkeys)
+- `doOneOp` changed to work with keys, not values (Monkeys)
+- `PartA` success!
+- minor code cleanup
+  - removed by hand file parsing WIP dead code
