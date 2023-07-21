@@ -547,3 +547,25 @@
 - `PartA` success!
 - minor code cleanup
   - removed by hand file parsing WIP dead code
+
+## Day-11 - Part B
+
+### 2023-07-20
+
+- started
+- worry level no longer lowered via (`div` 3)
+- 10,000 rounds instead of 20
+- my result /= theirs
+- suspect `Int` isn't sufficient
+- attempting to convert to using `Integer`
+  - but it's slower
+  - and my implementation has a space-leak(s)
+  - ... and the OS will enventually Kill it
+- I've tried to prove Integer is required
+  - from the straight, calculations are going > than maxBound :: Int, yes!
+  - perhaps some math-magic can allow use of `Int`, but I don't see it (yet)
+- I've tried `foldr` and `foldl'` in `do_10K_RoundsPartB`
+  - interestingly, the`foldr` ver runs for a long time before being Killed
+  - the `foldl'` ver *slowly* spits out the trace!!
+ - simply put, this alg is too slow. What am I missing?
+ 

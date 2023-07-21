@@ -1,11 +1,14 @@
+{-# LANGUAGE StrictData #-}
+
 module Main where
 
 import Control.Applicative ((<|>))
 import Data.Char ( isDigit )
-import Data.List ( sort )
-import Data.Map (Map)
-import qualified Data.Map as M
+import Data.List ( foldl', sort )
+import Data.Map.Strict (Map) -- Data.Map (Map)
+import qualified Data.Map.Strict as M -- Data.Map as M
 import Data.Maybe (fromMaybe)
+import Debug.Trace (trace)
 import Text.ParserCombinators.ReadP
     ( char,
       eof,
@@ -31,6 +34,14 @@ import Text.ParserCombinators.ReadP
 
         . what is the result of multiplying the number of items inspected
           by the two most active monkeys?
+
+      Part B -
+        . this time, worry doesn't go down! there is no (`div` 3)
+        . also, run for 10,000 rounds
+
+        . what is the result of multiplying the number of items inspected
+          by the two most active monkeys?
+
 -}
 
 type MonkeyKey = Int
@@ -38,9 +49,9 @@ type MonkeyKey = Int
 -- Parser Combinator version
 data ReadPMonkey = ReadPMonkey {
     rpID    :: Int
-  , rpItems :: [Int]
-  , rpOp    :: Int -> Int
-  , rpTest  :: Int -> Bool
+  , rpItems :: [Integer] -- [Int]
+  , rpOp    :: Integer -> Integer
+  , rpTest  :: Integer -> Bool
   , rpIfT   :: Int
   , rpIfF   :: Int
   , rpInspected :: Int
@@ -68,11 +79,15 @@ commaSpcSep p = p `sepBy` string ", "
 parseInt :: ReadP Int
 parseInt = read <$> many1 (satisfy isDigit)
 
+parseInteger :: ReadP Integer
+parseInteger = read <$> many1 (satisfy isDigit)
+
 parseCSV :: ReadP [Int]
 parseCSV = commaSep parseInt
 
-parseCommaSpcSV :: ReadP [Int]
-parseCommaSpcSV = commaSpcSep parseInt
+-- parseCommaSpcSV :: ReadP [Int]
+parseCommaSpcSV :: ReadP [Integer]
+parseCommaSpcSV = commaSpcSep parseInteger -- parseInt
 
 ---
 
@@ -84,13 +99,13 @@ parseVar = many1 (satisfy (`elem` ['a'..'z']))
 parseNum :: ReadP Int
 parseNum = read <$> many1 (satisfy (`elem` ['0'..'9']))
 
-parseOp :: ReadP (Int -> Int -> Int)
+parseOp :: ReadP (Integer -> Integer -> Integer)
 parseOp =  (char '+' >> return (+))
        <|> (char '-' >> return (-))
        <|> (char '*' >> return (*))
        <|> (char '/' >> return div)
 
-parseExpr :: ReadP (Int -> Int)
+parseExpr :: ReadP (Integer -> Integer)
 parseExpr = do
     skipSpaces
     string "Operation: "
@@ -111,19 +126,19 @@ parseExpr = do
                                        else read var3)
                         else x)
 
-parseFunc :: String -> Maybe (Int -> Int)
-parseFunc str = case readP_to_S parseExpr str of
-    [(f, "")] -> Just f
-    _         -> Nothing
+-- parseFunc :: String -> Maybe (Int -> Int)
+-- parseFunc str = case readP_to_S parseExpr str of
+--     [(f, "")] -> Just f
+--     _         -> Nothing
 
-parseTest :: ReadP (Int -> Bool)
+parseTest :: ReadP (Integer -> Bool)
 parseTest = do
   skipSpaces
   string "Test: divisible by "
   num <- parseNum
   satisfy (== '\n')
 
-  return ( \x -> (x `rem` num) == 0)
+  return ( \x -> (x `rem` toInteger num) == 0)
 
 parseIfTrue :: ReadP Int
 parseIfTrue = do
@@ -153,7 +168,8 @@ readPmonkeyID = do
     satisfy (== '\n')
     return mID
 
-readPmonkeyItems :: ReadP [Int]
+-- readPmonkeyItems :: ReadP [Int]
+readPmonkeyItems :: ReadP [Integer]
 readPmonkeyItems = do
     skipSpaces
     string "Starting items: "
@@ -182,8 +198,8 @@ makeMonkeysMap f =
   in
       M.fromList $ map (\m -> (rpID m, m)) lsOfMonkeys
 
-doOneOp :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
-doOneOp monkeysMap monkeyKey =
+doOneOpPartA :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
+doOneOpPartA monkeysMap monkeyKey =
   -- given a Key, looks up the monkey from the Map
   -- performs operation on all items held by given Monkey
   -- ... and divides by 3 and rounds down
@@ -222,29 +238,99 @@ doOneOp monkeysMap monkeyKey =
   in
       M.union (M.fromList updates) monkeysMap
 
-doOneRound :: Map Int ReadPMonkey -> Map Int ReadPMonkey
-doOneRound monkeysMap = foldl doOneOp monkeysMap $ M.keys monkeysMap
+doOneOpPartB :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
+doOneOpPartB monkeysMap monkeyKey =
+  -- given a Key, looks up the monkey from the Map
+  -- performs operation on all items held by given Monkey
+  -- ... and divides by 3 and rounds down
+  -- then, based on a Test func, throws item to:
+  --        destTrueMonkey
+  --     of destFalseMonkey
+  -- therefore, no items will remain with the current Monkey
+  -- updates the Monkey Map with changes to these 3 Monkeys
 
-do_20_Rounds :: Map Int ReadPMonkey -> Map Int ReadPMonkey
-do_20_Rounds monkeyMap = foldl (\monkeyMap' i -> doOneRound monkeyMap') monkeyMap [1..20]
+  let monkey    = monkeysMap M.! monkeyKey
+      operation = rpOp monkey
+      -- items     = map operation $ rpItems monkey
+      itemsCalc    = map operation $ rpItems monkey
+      items     = if any (> toInteger (maxBound :: Int)) itemsCalc
+                    then 
+                          -- error $ "oops!\n"
+                          --      ++ replicate 75 '-' ++ "\n"
+                          --      ++ "items = \t\t" ++ show itemsCalc ++ "\n"
+                          --      ++ "maxBound :: Int == \t  " ++ show (maxBound :: Int) ++ "\n"
+                          --      ++ replicate 75 '=' ++ "\n"
+                         itemsCalc
+                    else itemsCalc
+      test      = rpTest monkey
+      (itemsT, itemsF)
+                = foldl' (\(t, f) i -> if test i
+                                         then (t ++ [i], f)
+                                         else (t, f ++ [i]))
+                         ([],[])
+                         items
+
+      destTrueMonkey  = monkeysMap M.! rpIfT monkey
+      destFalseMonkey = monkeysMap M.! rpIfF monkey
+
+      newInspectedCnt = rpInspected monkey + length items
+
+      (currMonkeyID, trueMonkeyID, falseMonkeyID)
+                = (rpID monkey, rpID destTrueMonkey, rpID destFalseMonkey )
+
+      destTrueItems  = rpItems destTrueMonkey ++ itemsT
+      destFalseItems = rpItems destFalseMonkey ++ itemsF
+
+      updates = [ ( currMonkeyID, monkey { rpItems = [], rpInspected = newInspectedCnt })
+                , ( trueMonkeyID, destTrueMonkey { rpItems = destTrueItems })
+                , ( falseMonkeyID, destFalseMonkey { rpItems = destFalseItems })
+                ]
+  in
+      M.union (M.fromList updates) monkeysMap
+
+doOneRoundPartA :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+doOneRoundPartA monkeysMap = foldl doOneOpPartA monkeysMap $ M.keys monkeysMap
+
+doOneRoundPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+doOneRoundPartB monkeysMap = foldl' doOneOpPartB monkeysMap $ M.keys monkeysMap
+
+do_20_RoundsPartA :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+do_20_RoundsPartA monkeyMap = foldl (\monkeyMap' i -> doOneRoundPartA monkeyMap') monkeyMap [1..20]
+
+do_10K_RoundsPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
+-- do_10K_RoundsPartB monkeyMap = foldl' (\monkeyMap' i -> doOneRoundPartB monkeyMap') monkeyMap [1..10000]
+do_10K_RoundsPartB monkeyMap = 
+  -- foldr (\i monkeyMap' -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
+  foldl' (\monkeyMap' i -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
 
 partA :: Map Int ReadPMonkey -> Int
 partA monkeyMap =
   -- find the top 2 Inspections
   -- multiply them together
 
-  let [firstMax, secondMax] = take 2 
+  let [firstMax, secondMax] = take 2
                               $ reverse
                               $ sort
-                              $ M.foldr ((:) . rpInspected) [] $ do_20_Rounds monkeyMap
+                              $ M.foldr ((:) . rpInspected) [] $ do_20_RoundsPartA monkeyMap
   in
      firstMax * secondMax
 
+partB :: Map Int ReadPMonkey -> Int
+partB monkeyMap =
+  -- find the top 2 Inspections
+  -- multiply them together
+
+  let [firstMax, secondMax] = take 2
+                              $ reverse
+                              $ sort
+                              $ M.foldr ((:) . rpInspected) [] $ do_10K_RoundsPartB monkeyMap
+  in
+     firstMax * secondMax
 
 main :: IO ()
 main = do
-  -- fileInput <- readFile "input-11-test.txt"
-  fileInput <- readFile "input-11.txt"
+  fileInput <- readFile "input-11-test.txt"
+  -- fileInput <- readFile "input-11.txt"
 
   putStrLn $ replicate 42 '-'
 
@@ -255,8 +341,17 @@ main = do
 
   putStrLn $ replicate 42 '-'
   putStrLn "after one operation:"
-  print $ doOneOp msMap 0
+  print $ doOneOpPartA msMap 0
 
   putStrLn $ replicate 42 '-'
   putStrLn "Part A -- answer:"
   print $ partA msMap
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Monkey Map:"
+  print msMap
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part B -- answer:"
+  -- print $ "skipped" -- partB msMap
+  print $ partB msMap
