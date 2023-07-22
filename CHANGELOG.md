@@ -588,4 +588,6 @@
   - changed `parseTest` func
   - it now *returns* `(testNum, testFunc)`
   - nope, I'm wrong. It ***has*** to be a mulitple of all the `rpTextNum`'s
-  
+- SUCCESS!
+  - calculated `rpTestNumsMult` == Multiple of all `rpTestNum`'s
+  - left in `trace` code in `doOneOpPartB`

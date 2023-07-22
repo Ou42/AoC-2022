@@ -52,6 +52,7 @@ data ReadPMonkey = ReadPMonkey {
   , rpItems :: [Integer] -- [Int]
   , rpOp    :: Integer -> Integer
   , rpTestNum   :: Int
+  , rpTestNumsMultiple :: Int
   , rpTestFunc  :: Integer -> Bool
   -- , rpTest  :: Integer -> Bool
   , rpIfT   :: Int
@@ -65,6 +66,7 @@ instance Show ReadPMonkey where
             ++ show (rpID r) ++ ", items = " ++ show (rpItems r)
             ++ ", rpOp = <function>"
             ++ ", rpTestNum = " ++ show (rpTestNum r)
+            ++ ", rpTestNumsMultiple = " ++ show (rpTestNumsMultiple r)
             ++ ", rpTest = <function>"
             ++ ", rpInspected = " ++ show (rpInspected r) ++ "}\n"
 
@@ -193,7 +195,7 @@ readPMonkeyData = do
     ifF   <- parseIfFalse
     skipSpaces
     -- return (ReadPMonkey id items op test ifT ifF 0)
-    return (ReadPMonkey id items op testNum testFunc ifT ifF 0)
+    return (ReadPMonkey id items op testNum (-1) testFunc ifT ifF 0)
 
 readPAllMonkeys :: ReadP [ReadPMonkey]
 readPAllMonkeys = many1 readPMonkeyData
@@ -201,8 +203,9 @@ readPAllMonkeys = many1 readPMonkeyData
 makeMonkeysMap :: String -> Map Int ReadPMonkey
 makeMonkeysMap f =
   let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
+      testNumsMult     = product $ map rpTestNum lsOfMonkeys
   in
-      M.fromList $ map (\m -> (rpID m, m)) lsOfMonkeys
+      M.fromList $ map (\m -> (rpID m, m { rpTestNumsMultiple = testNumsMult })) lsOfMonkeys
 
 doOneOpPartA :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
 doOneOpPartA monkeysMap monkeyKey =
@@ -256,13 +259,10 @@ doOneOpPartB monkeysMap monkeyKey =
   -- therefore, no items will remain with the current Monkey
   -- updates the Monkey Map with changes to these 3 Monkeys
 
-  let monkey    = monkeysMap M.! monkeyKey
-      operation = rpOp monkey
-      testNum   = rpTestNum monkey
-      -- items     = map operation $ rpItems monkey
-      -- itemsCalc = map operation $ rpItems monkey
-      -- itemsCalc = map ((`rem` (13*17*19*23)) . operation) $ rpItems monkey
-      itemsCalc = map ((`rem` toInteger testNum) . operation) $ rpItems monkey
+  let monkey       = monkeysMap M.! monkeyKey
+      operation    = rpOp monkey
+      testNumsMult = rpTestNumsMultiple monkey
+      itemsCalc = map ((`rem` toInteger testNumsMult) . operation) $ rpItems monkey
       items     = if any (> toInteger (maxBound :: Int)) itemsCalc
                     then
                         --   trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc)
@@ -314,15 +314,13 @@ do_20_RoundsPartA :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 do_20_RoundsPartA monkeyMap = foldl (\monkeyMap' i -> doOneRoundPartA monkeyMap') monkeyMap [1..20]
 
 do_10K_RoundsPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
--- do_10K_RoundsPartB monkeyMap = foldl' (\monkeyMap' i -> doOneRoundPartB monkeyMap') monkeyMap [1..10000]
 do_10K_RoundsPartB monkeyMap =
-  -- foldr (\i monkeyMap' -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
   foldl' (\monkeyMap' i -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
 
 partA :: Map Int ReadPMonkey -> Int
 partA monkeyMap =
   -- find the top 2 Inspections
-  -- multiply them together
+  -- what is their product?
 
   let [firstMax, secondMax] = take 2
                               $ reverse
@@ -345,8 +343,8 @@ partB monkeyMap =
 
 main :: IO ()
 main = do
-  fileInput <- readFile "input-11-test.txt"
-  -- fileInput <- readFile "input-11.txt"
+  -- fileInput <- readFile "input-11-test.txt"
+  fileInput <- readFile "input-11.txt"
 
   putStrLn $ replicate 42 '-'
 
@@ -383,4 +381,4 @@ main = do
   putStrLn $ replicate 42 '-'
   putStrLn "Part B -- test data-set magic number: (13*17*19*23)"
   putStrLn "                                change ^^^^^^^^^^^ for my puzzle input!"
-  putStrLn "  (consider parsing the file and extrating and calculating this number?!)"
+  putStrLn "  >>> rpTestNumsMult is now calculated!"
