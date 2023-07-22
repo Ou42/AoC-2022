@@ -5,8 +5,8 @@ module Main where
 import Control.Applicative ((<|>))
 import Data.Char ( isDigit )
 import Data.List ( foldl', sort )
-import Data.Map.Strict (Map) -- Data.Map (Map)
-import qualified Data.Map.Strict as M -- Data.Map as M
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as M
 import Data.Maybe (fromMaybe)
 import Debug.Trace (trace)
 import Text.ParserCombinators.ReadP
@@ -39,6 +39,9 @@ import Text.ParserCombinators.ReadP
         . this time, worry doesn't go down! there is no (`div` 3)
         . also, run for 10,000 rounds
 
+        . using strict folds (`foldl'`), Data.Map.Strict
+          and keeping the numbers small is key
+
         . what is the result of multiplying the number of items inspected
           by the two most active monkeys?
 
@@ -69,9 +72,6 @@ instance Show ReadPMonkey where
             ++ ", rpTestNumsMultiple = " ++ show (rpTestNumsMultiple r)
             ++ ", rpTest = <function>"
             ++ ", rpInspected = " ++ show (rpInspected r) ++ "}\n"
-
--- instance Show [ReadPMonkey] where
---   show = map show
 
 --- slightly tweaked Bing-Chat suggested solution to reading a CSV list of Ints
 
@@ -205,7 +205,8 @@ makeMonkeysMap f =
   let (lsOfMonkeys, _) = last $ readP_to_S readPAllMonkeys f
       testNumsMult     = product $ map rpTestNum lsOfMonkeys
   in
-      M.fromList $ map (\m -> (rpID m, m { rpTestNumsMultiple = testNumsMult })) lsOfMonkeys
+      M.fromList $ map (\m -> (rpID m, m { rpTestNumsMultiple = testNumsMult }))
+                       lsOfMonkeys
 
 doOneOpPartA :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
 doOneOpPartA monkeysMap monkeyKey =
@@ -214,14 +215,13 @@ doOneOpPartA monkeysMap monkeyKey =
   -- ... and divides by 3 and rounds down
   -- then, based on a Test func, throws item to:
   --        destTrueMonkey
-  --     of destFalseMonkey
+  --     or destFalseMonkey
   -- therefore, no items will remain with the current Monkey
   -- updates the Monkey Map with changes to these 3 Monkeys
 
   let monkey    = monkeysMap M.! monkeyKey
       operation = rpOp monkey
       items     = map ((`div` 3) . operation) $ rpItems monkey
-      -- test      = rpTest monkey
       test      = rpTestFunc monkey
       (itemsT, itemsF)
                 = foldl (\(t, f) i -> if test i
@@ -252,10 +252,11 @@ doOneOpPartB :: Map Int ReadPMonkey -> MonkeyKey -> Map Int ReadPMonkey
 doOneOpPartB monkeysMap monkeyKey =
   -- given a Key, looks up the monkey from the Map
   -- performs operation on all items held by given Monkey
-  -- ... and divides by 3 and rounds down
+  -- >>> and applies modulo arithmetic using `product [rpTestNum]`
+  --     ... to keep the numbers small
   -- then, based on a Test func, throws item to:
   --        destTrueMonkey
-  --     of destFalseMonkey
+  --     or destFalseMonkey
   -- therefore, no items will remain with the current Monkey
   -- updates the Monkey Map with changes to these 3 Monkeys
 
@@ -263,19 +264,10 @@ doOneOpPartB monkeysMap monkeyKey =
       operation    = rpOp monkey
       testNumsMult = rpTestNumsMultiple monkey
       itemsCalc = map ((`rem` toInteger testNumsMult) . operation) $ rpItems monkey
-      items     = if any (> toInteger (maxBound :: Int)) itemsCalc
-                    then
-                        --   trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc)
-                        --     error $ "oops!\n"
-                        --         ++ replicate 75 '-' ++ "\n"
-                        --         ++ "items = \t\t" ++ show itemsCalc ++ "\n"
-                        --         ++ "maxBound :: Int == \t  " ++ show (maxBound :: Int) ++ "\n"
-                        --         ++ replicate 75 '=' ++ "\n"
-                        itemsCalc
-                   -- else trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc) itemsCalc
-                    else itemsCalc
+      items     = itemsCalc
+      -- check to see if > max Int:
+      --   items = if any (> toInteger (maxBound :: Int)) itemsCalc ...
 
-      -- test      = rpTest monkey
       test      = rpTestFunc monkey
       (itemsT, itemsF)
                 = foldl' (\(t, f) i -> if test i
@@ -311,11 +303,14 @@ doOneRoundPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 doOneRoundPartB monkeysMap = foldl' doOneOpPartB monkeysMap $ M.keys monkeysMap
 
 do_20_RoundsPartA :: Map Int ReadPMonkey -> Map Int ReadPMonkey
-do_20_RoundsPartA monkeyMap = foldl (\monkeyMap' i -> doOneRoundPartA monkeyMap') monkeyMap [1..20]
+do_20_RoundsPartA monkeyMap =
+  foldl (\monkeyMap' i -> doOneRoundPartA monkeyMap') monkeyMap [1..20]
 
 do_10K_RoundsPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 do_10K_RoundsPartB monkeyMap =
-  foldl' (\monkeyMap' i -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
+  foldl' (\monkeyMap' i -> trace ("calling doOneRoundPartB with Rnd = " ++ show i)
+                             doOneRoundPartB monkeyMap')
+          monkeyMap [1..10000]
 
 partA :: Map Int ReadPMonkey -> Int
 partA monkeyMap =
@@ -367,7 +362,7 @@ main = do
 
   putStrLn $ replicate 42 '-'
   putStrLn "Part B -- answer:"
-  -- print $ "skipped" -- partB msMap
+
   let partB_test_ans = 2713310158
   let my_partB_ans = partB msMap
   putStrLn $ "my Part B answer = " ++ show my_partB_ans

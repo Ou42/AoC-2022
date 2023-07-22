@@ -591,3 +591,4 @@
 - SUCCESS!
   - calculated `rpTestNumsMult` == Multiple of all `rpTestNum`'s
   - left in `trace` code in `doOneOpPartB`
+- code cleanup
