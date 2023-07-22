@@ -587,4 +587,5 @@
 - started alt modulo arithemtic ver
   - changed `parseTest` func
   - it now *returns* `(testNum, testFunc)`
+  - nope, I'm wrong. It ***has*** to be a mulitple of all the `rpTextNum`'s
   

@@ -64,6 +64,7 @@ instance Show ReadPMonkey where
   show r = "ReadPMonkey { id = "
             ++ show (rpID r) ++ ", items = " ++ show (rpItems r)
             ++ ", rpOp = <function>"
+            ++ ", rpTestNum = " ++ show (rpTestNum r)
             ++ ", rpTest = <function>"
             ++ ", rpInspected = " ++ show (rpInspected r) ++ "}\n"
 
@@ -257,9 +258,11 @@ doOneOpPartB monkeysMap monkeyKey =
 
   let monkey    = monkeysMap M.! monkeyKey
       operation = rpOp monkey
+      testNum   = rpTestNum monkey
       -- items     = map operation $ rpItems monkey
       -- itemsCalc = map operation $ rpItems monkey
-      itemsCalc = map ((`rem` (13*17*19*23)) . operation) $ rpItems monkey
+      -- itemsCalc = map ((`rem` (13*17*19*23)) . operation) $ rpItems monkey
+      itemsCalc = map ((`rem` toInteger testNum) . operation) $ rpItems monkey
       items     = if any (> toInteger (maxBound :: Int)) itemsCalc
                     then
                         --   trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc)
