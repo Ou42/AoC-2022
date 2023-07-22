@@ -569,18 +569,22 @@
   - the `foldl'` ver *slowly* spits out the trace!!
  - simply put, this alg is too slow. What am I missing?
  
- ### 2023-07-21
+### 2023-07-21
 
- - I cheated. Pfffft.
- - I was ( and still am?! ) missing ... modulus arithmetic
-    - <https://www.reddit.com/r/adventofcode/comments/14zr6uo/2022_day_11_part_2/>
-   - <https://chasingdings.com/2022/12/11/advent-of-code-day-11-monkey-in-the-middle/>
- - apparently, taking the mod or `rem` of a magic number is OK
- - in this case the magic number is the LCM of all the test numbers
- - This number is different per data set
- - For the test data-set it is `(13*17*19*23)`
- - What I can't wrap my mind around is how this still works with addition
- - Again, using the **test data-set**
-   - Monkey 1: has the op: `new = old + 6`
-   - Monkey 3: has the op: `new = old + 3`
-   - how can taking the `rem` work in those cases?!
+- I cheated. Pfffft.
+- I was ( and still am?! ) missing ... modulo arithmetic
+  - <https://www.reddit.com/r/adventofcode/comments/14zr6uo/2022_day_11_part_2/>
+  - <https://chasingdings.com/2022/12/11/advent-of-code-day-11-monkey-in-the-middle/>
+- apparently, taking the mod or `rem` of a magic number is OK
+- in this case the magic number is the LCM of all the test numbers
+- This number is different per data set
+- For the test data-set it is `(13*17*19*23)`
+- What I can't wrap my mind around is how this still works with addition
+- Again, using the **test data-set**
+  - Monkey 1: has the op: `new = old + 6`
+  - Monkey 3: has the op: `new = old + 3`
+  - how can taking the `rem` work in those cases?!
+- started alt modulo arithemtic ver
+  - changed `parseTest` func
+  - it now *returns* `(testNum, testFunc)`
+  

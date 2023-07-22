@@ -51,7 +51,9 @@ data ReadPMonkey = ReadPMonkey {
     rpID    :: Int
   , rpItems :: [Integer] -- [Int]
   , rpOp    :: Integer -> Integer
-  , rpTest  :: Integer -> Bool
+  , rpTestNum   :: Int
+  , rpTestFunc  :: Integer -> Bool
+  -- , rpTest  :: Integer -> Bool
   , rpIfT   :: Int
   , rpIfF   :: Int
   , rpInspected :: Int
@@ -131,14 +133,15 @@ parseExpr = do
 --     [(f, "")] -> Just f
 --     _         -> Nothing
 
-parseTest :: ReadP (Integer -> Bool)
+-- parseTest :: ReadP (Integer -> Bool)
 parseTest = do
   skipSpaces
   string "Test: divisible by "
   num <- parseNum
   satisfy (== '\n')
 
-  return ( \x -> (x `rem` toInteger num) == 0)
+  -- return ( \x -> (x `rem` toInteger num) == 0)
+  return (num, \x -> (x `rem` toInteger num) == 0)
 
 parseIfTrue :: ReadP Int
 parseIfTrue = do
@@ -183,11 +186,13 @@ readPMonkeyData = do
     id    <- readPmonkeyID
     items <- readPmonkeyItems
     op    <- parseExpr
-    test  <- parseTest
+    testNum_and_testFunc  <- parseTest
+    let (testNum, testFunc) = testNum_and_testFunc
     ifT   <- parseIfTrue
     ifF   <- parseIfFalse
     skipSpaces
-    return (ReadPMonkey id items op test ifT ifF 0)
+    -- return (ReadPMonkey id items op test ifT ifF 0)
+    return (ReadPMonkey id items op testNum testFunc ifT ifF 0)
 
 readPAllMonkeys :: ReadP [ReadPMonkey]
 readPAllMonkeys = many1 readPMonkeyData
@@ -212,7 +217,8 @@ doOneOpPartA monkeysMap monkeyKey =
   let monkey    = monkeysMap M.! monkeyKey
       operation = rpOp monkey
       items     = map ((`div` 3) . operation) $ rpItems monkey
-      test      = rpTest monkey
+      -- test      = rpTest monkey
+      test      = rpTestFunc monkey
       (itemsT, itemsF)
                 = foldl (\(t, f) i -> if test i
                                         then (t ++ [i], f)
@@ -266,7 +272,8 @@ doOneOpPartB monkeysMap monkeyKey =
                    -- else trace ("\t Monkey " ++ show monkeyKey ++ " newItems = " ++ show itemsCalc) itemsCalc
                     else itemsCalc
 
-      test      = rpTest monkey
+      -- test      = rpTest monkey
+      test      = rpTestFunc monkey
       (itemsT, itemsF)
                 = foldl' (\(t, f) i -> if test i
                                          then (t ++ [i], f)
@@ -305,7 +312,7 @@ do_20_RoundsPartA monkeyMap = foldl (\monkeyMap' i -> doOneRoundPartA monkeyMap'
 
 do_10K_RoundsPartB :: Map Int ReadPMonkey -> Map Int ReadPMonkey
 -- do_10K_RoundsPartB monkeyMap = foldl' (\monkeyMap' i -> doOneRoundPartB monkeyMap') monkeyMap [1..10000]
-do_10K_RoundsPartB monkeyMap = 
+do_10K_RoundsPartB monkeyMap =
   -- foldr (\i monkeyMap' -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
   foldl' (\monkeyMap' i -> trace ("calling doOneRoundPartB with Rnd = " ++ show i) doOneRoundPartB monkeyMap') monkeyMap [1..10000]
 
