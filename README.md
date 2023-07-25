@@ -11,20 +11,21 @@
 
 ## Completed: 
 
-| DAY   | Part A  | Part B  | ghci    | stack build |
-| :---: | :---:   | :---:   | :--:    | :---:       |
-| 01    | &check; | &check; | &cross; | _           |
-| 02    | &check; | &check; | &cross; | _           |
-| 03    | &check; | &check; | &cross; | _           |
-| 04    | &check; | &check; | &cross; | _           |
-| 05    | &check; | &check; | &cross; | _           |
-| 06    | &check; | &check; | &cross; | _           |
-| 07    | &check; | &check; | &cross; | _           |
-| 08    | &check; | &check; | &cross; | _           |
-| 09    | &check; | &check; | &cross; | _           |
-| 10    | &check; | &check; | &cross; | _           |
-| 11    | &check; | &check; | &cross; | _           |
-| 23    | &check; | &check; | &cross; | &cross;     |
+| DAY | Part A  | Part B  | ghci    | stack build |
+| :-: | :-----: | :-----: | :-----: | :---------: |
+| 01  | &check; | &check; | &cross; | _           |
+| 02  | &check; | &check; | &cross; | _           |
+| 03  | &check; | &check; | &cross; | _           |
+| 04  | &check; | &check; | &cross; | _           |
+| 05  | &check; | &check; | &cross; | _           |
+| 06  | &check; | &check; | &cross; | _           |
+| 07  | &check; | &check; | &cross; | _           |
+| 08  | &check; | &check; | &cross; | _           |
+| 09  | &check; | &check; | &cross; | _           |
+| 10  | &check; | &check; | &cross; | _           |
+| 11  | &check; | &check; | &cross; | _           |
+| 12  |         |         |         | _           |
+| 23  | &check; | &check; | &cross; | &cross;     |
 
 ## Run / Build & Run Instructions:
 

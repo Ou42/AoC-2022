@@ -592,3 +592,9 @@
   - calculated `rpTestNumsMult` == Multiple of all `rpTestNum`'s
   - left in `trace` code in `doOneOpPartB`
 - code cleanup
+
+## Day-12 - Part A
+
+### 2023-07-24
+
+- started
