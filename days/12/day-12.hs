@@ -57,6 +57,16 @@ module Main where
     the location that should get the best signal?
 -}
 
+import Data.Vector (Vector)
+import qualified Data.Vector as V
+
+-- type Array2D = Vector (Vector Int)
+type Array2D = Vector (Vector Char)
+
+createArray2D :: Int -> Int -> Array2D
+-- createArray2D n m = V.replicate n (V.replicate m 0)
+createArray2D n m = V.replicate n (V.replicate m '.')
+
 
 main :: IO ()
 main = do
@@ -66,3 +76,8 @@ main = do
   putStrLn $ replicate 42 '-'
 
   putStrLn fileInput
+
+  putStrLn $ replicate 42 '-'
+
+  print $ createArray2D 5 5
+  

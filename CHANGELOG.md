@@ -599,3 +599,27 @@
 
 - started
 - instructions
+
+### 2023-08-02
+
+- $ cabal update
+- $ cabal install linear
+- but probably only needed vector:
+- $ cabal install vector
+- `import Data.Vector (Vector)`
+- `type Array2D = Vector (Vector Char)`
+
+```
+Warning:
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ WARNING: Installation might not be completed as desired! @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+The command "cabal install [TARGETS]" doesn't expose libraries.
+* You might have wanted to add them as dependencies to your package. In this
+case add "vector" to the build-depends field(s) of your package's .cabal file.
+* You might have wanted to add them to a GHC environment. In this case use
+"cabal install --lib vector". The "--lib" flag is provisional: see
+https://github.com/haskell/cabal/issues/6481 for more information.
+```
+
+- $ cabal install --lib vector
