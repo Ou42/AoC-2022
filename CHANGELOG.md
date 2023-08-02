@@ -607,6 +607,7 @@
 - but probably only needed vector:
 - $ cabal install vector
 - `import Data.Vector (Vector)`
+- `import qualified Data.Vector as V`
 - `type Array2D = Vector (Vector Char)`
 
 ```
@@ -623,3 +624,13 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 ```
 
 - $ cabal install --lib vector
+- Data.Vector vs Data.Array ?!
+- sticking to Data.Vector for now
+- `import qualified Data.Vector as V`
+- (V.!?) :: Vector a -> Int -> Maybe a
+- got help w/ pointfree
+- pointfree.io was too agressive. Wish it had steps
+- *Was* able to ask Bing to keep `row` and `col`
+- `getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)`  
+  becomes:  
+  `getElevation row col = (V.!? row) >=> (V.!? col)`

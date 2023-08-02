@@ -57,15 +57,35 @@ module Main where
     the location that should get the best signal?
 -}
 
+import Control.Monad ((>=>))
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 
--- type Array2D = Vector (Vector Int)
 type Array2D = Vector (Vector Char)
 
 createArray2D :: Int -> Int -> Array2D
--- createArray2D n m = V.replicate n (V.replicate m 0)
 createArray2D n m = V.replicate n (V.replicate m '.')
+
+array2DfromString :: String -> Array2D
+array2DfromString str =
+  let rows = lines str
+      vecRows = map V.fromList rows
+  in
+      V.fromList vecRows
+
+getElevRow :: Int -> Array2D -> Maybe (Vector Char)
+-- getElevRow row arr2d = arr2d V.!? row
+-- pointfree ver via Bing
+getElevRow row = (V.!? row)
+
+
+getElevation :: Int -> Int -> Array2D -> Maybe Char
+-- getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)
+-- getElevation row col = \arr2d -> (arr2d V.!? row) >>= (V.!? col)
+-- used pointfree.ioError
+--    gave it: getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)
+--   got back: getElevation = (. flip (V.!?)) . flip . ((>>=) .) . flip (V.!?)
+getElevation row col = (V.!? row) >=> (V.!? col)
 
 
 main :: IO ()
@@ -80,4 +100,3 @@ main = do
   putStrLn $ replicate 42 '-'
 
   print $ createArray2D 5 5
-  
