@@ -58,6 +58,7 @@ module Main where
 -}
 
 import Control.Monad ((>=>))
+import Data.Maybe ( fromJust, fromMaybe ) 
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 
@@ -66,12 +67,14 @@ type Array2D = Vector (Vector Char)
 createArray2D :: Int -> Int -> Array2D
 createArray2D n m = V.replicate n (V.replicate m '.')
 
+
 array2DfromString :: String -> Array2D
 array2DfromString str =
   let rows = lines str
       vecRows = map V.fromList rows
   in
       V.fromList vecRows
+
 
 getElevRow :: Int -> Array2D -> Maybe (Vector Char)
 -- getElevRow row arr2d = arr2d V.!? row
@@ -80,12 +83,32 @@ getElevRow row = (V.!? row)
 
 
 getElevation :: Int -> Int -> Array2D -> Maybe Char
--- getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)
--- getElevation row col = \arr2d -> (arr2d V.!? row) >>= (V.!? col)
--- used pointfree.ioError
---    gave it: getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)
---   got back: getElevation = (. flip (V.!?)) . flip . ((>>=) .) . flip (V.!?)
+-- >=> (aka "fish") is the Kleisli composition operator,
+--     which is used to compose two functions that return monadic values
+-- (!?) :: Vector a -> Int -> Maybe a
+--     O(1) Safe indexing.
 getElevation row col = (V.!? row) >=> (V.!? col)
+
+
+hasAvailableNextStep :: Int -> Int -> Array2D -> Bool
+-- doesn't take into consideration 'S' and 'E'
+-- ... will need to convert them for currElevation & possibleNextSteps
+hasAvailableNextStep row col arr2D = 
+  let currElevation = fromJust $ getElevation row col arr2D
+      possibleNextSteps = [ getElevation (row+1) col     arr2D 
+                          , getElevation (row-1) col     arr2D 
+                          , getElevation row     (col+1) arr2D 
+                          , getElevation row     (col-1) arr2D 
+                          ]
+  in
+      -- possibleNextSteps
+      any ((<=succ currElevation) . fromMaybe 'z') possibleNextSteps
+
+
+deadEnds :: Array2D -> Vector (Vector Bool)
+-- doesn't take into consideration 'S' and 'E' (see above)
+deadEnds arr2D = V.imap (\row a -> V.imap (\col b -> hasAvailableNextStep row col arr2D) a) arr2D
+-- deadEnds = V.imap (\row a -> row)
 
 
 main :: IO ()

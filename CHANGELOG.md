@@ -634,3 +634,9 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - `getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)`  
   becomes:  
   `getElevation row col = (V.!? row) >=> (V.!? col)`
+
+### 2023-08-08
+
+- `hasAvailableNextStep` WIP! -- needs to deal w/ 'S' & 'E'
+- `deadEnds` also WIP. Just checking if unused locations
+- `imap` provide index & elem
