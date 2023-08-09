@@ -657,3 +657,11 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - `(row, col)`
 - backtracking?!
   - currently, it *should* stop when no available `validMoves`
+- it worked! it found a path from Start to End!
+  - but it might have extra steps due to how I'm adding them?!
+- fixed the returned path by prepending `end`
+
+```
+        if currPos == end
+          then  end:solutionPath
+```

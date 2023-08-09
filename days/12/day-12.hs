@@ -166,7 +166,7 @@ findPath fileInput =
       go [] solutionPath _ = solutionPath -- this might be where to backtrack?!
       go (currPos:todo) solutionPath visited =
         if currPos == end
-          then  solutionPath
+          then  end:solutionPath
           else 
                 let newSolPath     = currPos : solutionPath
                     newVisited     = S.insert currPos visited
