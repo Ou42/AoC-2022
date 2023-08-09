@@ -58,15 +58,16 @@ module Main where
 -}
 
 import Control.Monad ((>=>))
-import Data.Map (Map)
-import qualified Data.Map as M 
-import Data.Maybe ( fromJust, fromMaybe ) 
+import Data.Maybe ( fromJust, fromMaybe )
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import System.Console.Terminfo (Point(row))
+import qualified Control.Applicative as Set
 
 type Array2D = Vector (Vector Char)
-type Visited = Map (Int, Int) Bool
+type Visited = Set (Int, Int)
 
 createArray2D :: Int -> Int -> Array2D
 createArray2D n m = V.replicate n (V.replicate m '.')
@@ -86,35 +87,60 @@ getElevRow :: Int -> Array2D -> Maybe (Vector Char)
 getElevRow row = (V.!? row)
 
 
-getElevation :: Int -> Int -> Array2D -> Maybe Char
+getElevation :: (Int, Int) -> Array2D -> Maybe Char
+-- converts 'S' to 'a' & 'E' to 'z'
 -- >=> (aka "fish") is the Kleisli composition operator,
 --     which is used to compose two functions that return monadic values
 -- (!?) :: Vector a -> Int -> Maybe a
 --     O(1) Safe indexing.
-getElevation row col = (V.!? row) >=> (V.!? col)
+getElevation (row, col) arr2D = go $ ((V.!? row) >=> (V.!? col)) arr2D
+  where
+    go Nothing = Nothing
+    go (Just c) = case c of
+      'S' -> Just 'a'
+      'E' -> Just 'z'
+      _   -> Just c
 
 
-hasAvailableNextStep :: Int -> Int -> Array2D -> Bool
--- doesn't take into consideration 'S' and 'E'
--- ... will need to convert them for currElevation & possibleNextSteps
-hasAvailableNextStep row col arr2D = 
-  let currElevation = fromJust $ getElevation row col arr2D
-      possibleNextSteps = [ getElevation (row+1) col     arr2D 
-                          , getElevation (row-1) col     arr2D 
-                          , getElevation row     (col+1) arr2D 
-                          , getElevation row     (col-1) arr2D 
+hasAvailableNextStep :: (Int, Int) -> Array2D -> Bool
+-- getElevation converts 'S' to 'a' & 'E' to 'z'
+hasAvailableNextStep (row, col) arr2D = 
+  let currElevation = fromJust $ getElevation (row, col) arr2D
+      possibleNextSteps = [ getElevation (row+1, col) arr2D 
+                          , getElevation (row-1, col) arr2D 
+                          , getElevation (row, col+1) arr2D 
+                          , getElevation (row, col-1) arr2D 
                           ]
   in
       -- possibleNextSteps
       any ((<=succ currElevation) . fromMaybe 'z') possibleNextSteps
 
 
-deadEnds :: Array2D -> Vector (Vector Bool)
--- doesn't take into consideration 'S' and 'E' (see above)
-deadEnds arr2D = V.imap (\row a -> V.imap (\col b -> hasAvailableNextStep row col arr2D) a) arr2D
--- deadEnds = V.imap (\row a -> row)
+possNextSteps :: (Int, Int) -> [(Int, Int)]
+possNextSteps (row, col) = [(row+1, col), (row-1, col), (row, col+1), (row, col-1)]
 
--- findInArray :: Char -> Array2D -> (Int, Int)
+
+isValidElevation :: (Int, Int) -> (Int, Int) -> Array2D -> Bool
+isValidElevation currPos nextPos arr2D =
+  let currElevation = fromJust $ getElevation currPos arr2D
+      nextElevation = fromMaybe 'z' $ getElevation nextPos arr2D
+  in
+      nextElevation <= succ currElevation
+
+
+validMoves :: (Int, Int) -> Array2D -> Set (Int, Int) -> [(Int, Int)]
+validMoves currPos arr2D visited = filter (\possPos -> S.notMember possPos visited
+                                                       &&
+                                                       isValidElevation currPos possPos arr2D) possPs
+  where
+    possPs = possNextSteps currPos
+
+deadEnds :: Array2D -> Vector (Vector Bool)
+-- getElevation ( called by hasAvailableNextStep ) converts 'S' to 'a' & 'E' to 'z'
+deadEnds arr2D = V.imap (\row a -> V.imap (\col b -> hasAvailableNextStep (row, col) arr2D) a) arr2D
+
+
+findInArray :: Char -> Array2D -> (Int, Int)
 findInArray chr arr2D = 
   let row = fromJust $ V.findIndex (V.any (==chr)) arr2D
       rowVec = fromJust $ arr2D V.!? row
@@ -122,11 +148,35 @@ findInArray chr arr2D =
   in
       (row, col)
 
--- findStart :: undefined
+
+findStart :: Vector (Vector Char) -> (Int, Int)
 findStart = findInArray 'S'
 
--- findEnd :: undefined
+
+findEnd :: Vector (Vector Char) -> (Int, Int)
 findEnd = findInArray 'E'
+
+
+findPath :: String -> [(Int, Int)]
+findPath fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      start = findStart elevationArr2D
+      end   = findEnd elevationArr2D
+      go :: [(Int, Int)] -> [(Int, Int)] -> Visited -> [(Int, Int)]
+      go [] solutionPath _ = solutionPath -- this might be where to backtrack?!
+      go (currPos:todo) solutionPath visited =
+        if currPos == end
+          then  solutionPath
+          else 
+                let newSolPath     = currPos : solutionPath
+                    newVisited     = S.insert currPos visited
+                    validNextSteps = validMoves currPos elevationArr2D newVisited
+                in
+                    -- want to add the valid next steps to todo
+                    -- update solutionPath and visited
+                    go (validNextSteps ++ todo) newSolPath newVisited
+  in
+      go [start] [] S.empty
 
 main :: IO ()
 main = do

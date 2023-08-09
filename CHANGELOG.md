@@ -646,3 +646,14 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - can a recursive traversal work?
 - implemented `findStart` & `findEnd`
 - imported `Map` to keep track of visited locations
+
+### 2023-08-09
+
+- `findPath` WIP
+  - `validMoves`
+  - `isValidElevation` -- checks if (<= succ currElev) && not in visited Set
+  - `possNextSteps`
+- instead of `Int -> Int` changed to `(Int, Int)`
+  - `(row, col)`
+- backtracking?!
+  - currently, it *should* stop when no available `validMoves`
