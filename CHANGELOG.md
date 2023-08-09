@@ -665,3 +665,15 @@ https://github.com/haskell/cabal/issues/6481 for more information.
         if currPos == end
           then  end:solutionPath
 ```
+
+- definitely has extra steps:
+
+```
+> fi <- readFile "input-12.txt"
+> solution = findPath fi
+> length solution
+6547
+> s = S.fromList solution
+> S.size s
+4872
+```
