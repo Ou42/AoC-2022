@@ -58,11 +58,15 @@ module Main where
 -}
 
 import Control.Monad ((>=>))
+import Data.Map (Map)
+import qualified Data.Map as M 
 import Data.Maybe ( fromJust, fromMaybe ) 
 import Data.Vector (Vector)
 import qualified Data.Vector as V
+import System.Console.Terminfo (Point(row))
 
 type Array2D = Vector (Vector Char)
+type Visited = Map (Int, Int) Bool
 
 createArray2D :: Int -> Int -> Array2D
 createArray2D n m = V.replicate n (V.replicate m '.')
@@ -110,11 +114,27 @@ deadEnds :: Array2D -> Vector (Vector Bool)
 deadEnds arr2D = V.imap (\row a -> V.imap (\col b -> hasAvailableNextStep row col arr2D) a) arr2D
 -- deadEnds = V.imap (\row a -> row)
 
+-- findInArray :: Char -> Array2D -> (Int, Int)
+findInArray chr arr2D = 
+  let row = fromJust $ V.findIndex (V.any (==chr)) arr2D
+      rowVec = fromJust $ arr2D V.!? row
+      col = fromJust $ V.elemIndex chr rowVec
+  in
+      (row, col)
+
+-- findStart :: undefined
+findStart = findInArray 'S'
+
+-- findEnd :: undefined
+findEnd = findInArray 'E'
 
 main :: IO ()
 main = do
   fileInput <- readFile "input-12-test.txt"
   -- fileInput <- readFile "input-12.txt"
+  let elevations = array2DfromString fileInput
+      start = findStart elevations
+      end   = findEnd   elevations
 
   putStrLn $ replicate 42 '-'
 
@@ -122,4 +142,6 @@ main = do
 
   putStrLn $ replicate 42 '-'
 
-  print $ createArray2D 5 5
+--   print $ createArray2D 5 5
+  putStrLn $ "Start = " ++ show start
+  putStrLn $ "End   = " ++ show end

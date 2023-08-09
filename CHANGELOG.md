@@ -640,3 +640,9 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - `hasAvailableNextStep` WIP! -- needs to deal w/ 'S' & 'E'
 - `deadEnds` also WIP. Just checking if unused locations
 - `imap` provide index & elem
+- shortest path algorithm(s) !!
+  - Dijkstra
+  - A*
+  - can a recursive traversal work?
+- implemented `findStart` & `findEnd`
+- imported `Map` to keep track of visited locations
