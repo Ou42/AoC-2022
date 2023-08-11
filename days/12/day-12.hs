@@ -182,7 +182,7 @@ findPath fileInput =
 
 
 -- Part A: What is the distance of the shortest path?
-findShortestPathDistance :: (Int, Int) -> Vector (Vector Char) -> Set (Int, Int) -> Int -- String -> Int
+findShortestPathDistance :: (Int, Int) -> Vector (Vector Char) -> Set (Int, Int) -> Int
 findShortestPathDistance start elevationArr2D visited =
   let end   = findEnd elevationArr2D
       -- Note: BFS doesn't need to backtrack!!
@@ -191,7 +191,7 @@ findShortestPathDistance start elevationArr2D visited =
       go :: ([(Int, Int)], [(Int, Int)]) -> Int -> Visited -> Int
       -- for partA, this worked: go ([], []) depth _ = depth
       -- for partB, the 'a' might be in an island and there's no path to the goal
-      -- ... therefore, return infinity
+      -- ... therefore, return "infinity"
       go ([], []) depth _ = maxBound :: Int
       go ([], nextDepthNodes) depth visited = go (nextDepthNodes, []) (depth+1) visited
       go (currPos:todo, nextDepthNodes) depth visited =
@@ -242,8 +242,8 @@ partB fileInput =
       originalStart  = findStart elevationArr2D
       allStartSqrs   = originalStart : findAllInArray 'a' elevationArr2D
   in
-      -- findShortestPathDistance start elevationArr2D S.empty
-      allStartSqrs
+      -- allStartSqrs
+      minimum $ map (\start -> findShortestPathDistance start elevationArr2D S.empty) allStartSqrs
 
 
 main :: IO ()
@@ -271,4 +271,13 @@ main = do
   putStrLn "------"
   putStrLn $ "Shortest Path Distance = " ++ show (partA fileInput)
   putStrLn "    ( for test input (see comments above), the answer is 31 )"
+  putStrLn "    for real test data, the answer will vary dending on data set"
+
+  --
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part B"
+  putStrLn "------"
+  putStrLn $ "Shortest Path Distance = " ++ show (partB fileInput)
+  putStrLn "    ( for test input (see comments above), the answer is 29 )"
   putStrLn "    for real test data, the answer will vary dending on data set"

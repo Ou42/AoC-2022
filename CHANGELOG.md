@@ -700,3 +700,6 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     it shouldn't return `depth`, but maxBound :: Int so as to not get chosen as a solution
   - also, to boost performance a bit, include all starting sq's in visited!?
   - correction: all, but the current starting square!
+- Part B Solved!
+  - but w/o the optimization
+  - I'd still like to attempt the optimization and see if it is actually faster
