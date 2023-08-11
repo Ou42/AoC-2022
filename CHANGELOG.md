@@ -677,3 +677,11 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 > S.size s
 4872
 ```
+
+### 2023-08-10
+
+- after asking Bing AI for help w/ BFS
+- and following a couple links ( Brilliant & a SO thread )
+- I tweaked `findPath` and made `findShortestPathDistance`
+- it works for the "test data" but not the "real data"
+- I'm adding duplicate nodes to `todo` List

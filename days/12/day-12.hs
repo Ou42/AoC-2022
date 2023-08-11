@@ -104,12 +104,12 @@ getElevation (row, col) arr2D = go $ ((V.!? row) >=> (V.!? col)) arr2D
 
 hasAvailableNextStep :: (Int, Int) -> Array2D -> Bool
 -- getElevation converts 'S' to 'a' & 'E' to 'z'
-hasAvailableNextStep (row, col) arr2D = 
+hasAvailableNextStep (row, col) arr2D =
   let currElevation = fromJust $ getElevation (row, col) arr2D
-      possibleNextSteps = [ getElevation (row+1, col) arr2D 
-                          , getElevation (row-1, col) arr2D 
-                          , getElevation (row, col+1) arr2D 
-                          , getElevation (row, col-1) arr2D 
+      possibleNextSteps = [ getElevation (row+1, col) arr2D
+                          , getElevation (row-1, col) arr2D
+                          , getElevation (row, col+1) arr2D
+                          , getElevation (row, col-1) arr2D
                           ]
   in
       -- possibleNextSteps
@@ -141,7 +141,7 @@ deadEnds arr2D = V.imap (\row a -> V.imap (\col b -> hasAvailableNextStep (row, 
 
 
 findInArray :: Char -> Array2D -> (Int, Int)
-findInArray chr arr2D = 
+findInArray chr arr2D =
   let row = fromJust $ V.findIndex (V.any (==chr)) arr2D
       rowVec = fromJust $ arr2D V.!? row
       col = fromJust $ V.elemIndex chr rowVec
@@ -157,6 +157,7 @@ findEnd :: Vector (Vector Char) -> (Int, Int)
 findEnd = findInArray 'E'
 
 
+-- WIP
 findPath :: String -> [(Int, Int)]
 findPath fileInput =
   let elevationArr2D = array2DfromString fileInput
@@ -167,7 +168,7 @@ findPath fileInput =
       go (currPos:todo) solutionPath visited =
         if currPos == end
           then  end:solutionPath
-          else 
+          else
                 let newSolPath     = currPos : solutionPath
                     newVisited     = S.insert currPos visited
                     validNextSteps = validMoves currPos elevationArr2D newVisited
@@ -178,10 +179,38 @@ findPath fileInput =
   in
       go [start] [] S.empty
 
+
+-- Part A: What is the distance of the shortest path?
+findShortestPathDistance :: String -> Int
+findShortestPathDistance fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      start = findStart elevationArr2D
+      end   = findEnd elevationArr2D
+      -- Note: BFS doesn't need to backtrack!!
+      --   If it traverses the whole tree/graph and doesn't find the goal, it's not there!
+      --   & if/when it finds the goal, it found it in the shortest number of steps.
+      go :: ([(Int, Int)], [(Int, Int)]) -> Int -> Visited -> Int
+      go ([], []) depth _ = depth
+      go ([], nextDepthNodes) depth visited = go (nextDepthNodes, []) (depth+1) visited
+      go (currPos:todo, nextDepthNodes) depth visited =
+        if currPos == end
+          then  depth
+          else
+                if depth > 5
+                  then  error $ "dump info:\ntodo =\n" ++ show todo
+                  else 
+                        let newVisited     = S.insert currPos visited
+                            validNextSteps = validMoves currPos elevationArr2D newVisited
+                        in
+                            go (todo, nextDepthNodes ++ validNextSteps) depth newVisited
+  in
+      go ([start],[]) 0 S.empty
+
+
 main :: IO ()
 main = do
-  fileInput <- readFile "input-12-test.txt"
-  -- fileInput <- readFile "input-12.txt"
+  -- fileInput <- readFile "input-12-test.txt"
+  fileInput <- readFile "input-12.txt"
   let elevations = array2DfromString fileInput
       start = findStart elevations
       end   = findEnd   elevations
@@ -192,6 +221,14 @@ main = do
 
   putStrLn $ replicate 42 '-'
 
---   print $ createArray2D 5 5
+  --   print $ createArray2D 5 5
   putStrLn $ "Start = " ++ show start
   putStrLn $ "End   = " ++ show end
+
+  --
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part A"
+  putStrLn "------"
+  putStrLn $ "Shortest Path Distance = " ++ show (findShortestPathDistance fileInput)
+  putStrLn "( for test input, the answer is 31 )"
