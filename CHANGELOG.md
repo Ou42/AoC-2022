@@ -688,3 +688,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - `todo` should be like a Set. No duplicates!
 - Part A Solved!
   - bug was solved by doing a `union` op: ``nextDepthNodes `union` validNextSteps``
+- Part B Started
