@@ -58,6 +58,7 @@ module Main where
 -}
 
 import Control.Monad ((>=>))
+import Data.List ( intersect, union )
 import Data.Maybe ( fromJust, fromMaybe )
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -196,13 +197,19 @@ findShortestPathDistance fileInput =
         if currPos == end
           then  depth
           else
-                if depth > 5
-                  then  error $ "dump info:\ntodo =\n" ++ show todo
-                  else 
-                        let newVisited     = S.insert currPos visited
-                            validNextSteps = validMoves currPos elevationArr2D newVisited
-                        in
-                            go (todo, nextDepthNodes ++ validNextSteps) depth newVisited
+                let newVisited     = S.insert currPos visited
+                    validNextSteps = validMoves currPos elevationArr2D newVisited
+                in
+                    if True -- null $ validNextSteps `intersect` nextDepthNodes
+                      then go (todo, nextDepthNodes `union` validNextSteps) depth newVisited
+                      else error $ "dump info:\n"
+                                   ++ unlines [ "INTERSECTION!!! = " ++ show (validNextSteps `intersect` nextDepthNodes)
+                                              , "currPos = " ++ show currPos
+                                              , "todo =\n" ++ show todo
+                                              , "nextDepthNodes =\n" ++ show nextDepthNodes
+                                              , "depth = " ++ show depth
+                                              , "visited =\n" ++ show visited
+                                              ]
   in
       go ([start],[]) 0 S.empty
 
@@ -231,4 +238,6 @@ main = do
   putStrLn "Part A"
   putStrLn "------"
   putStrLn $ "Shortest Path Distance = " ++ show (findShortestPathDistance fileInput)
-  putStrLn "( for test input, the answer is 31 )"
+  putStrLn "    ( for test input (see comments above), the answer is 31 )"
+  putStrLn "    for real test data, the answer will vary dending on data set"
+  

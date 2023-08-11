@@ -684,4 +684,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - and following a couple links ( Brilliant & a SO thread )
 - I tweaked `findPath` and made `findShortestPathDistance`
 - it works for the "test data" but not the "real data"
-- I'm adding duplicate nodes to `todo` List
+- The bug has to do with adding duplicate nodes to `todo` List
+- `todo` should be like a Set. No duplicates!
+- Part A Solved!
+  - bug was solved by doing a `union` op: ``nextDepthNodes `union` validNextSteps``
