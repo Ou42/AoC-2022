@@ -225,8 +225,7 @@ partA fileInput =
 
 findAllInArray :: Char -> Array2D -> [(Int, Int)]
 findAllInArray chr arr2D =
-  let start = findStart arr2D
-      magic rowIdx rowVec =
+  let magic rowIdx rowVec =
         let colIndices = V.elemIndices chr rowVec
             pairs = map (rowIdx,) (V.toList colIndices)
         in
@@ -234,17 +233,17 @@ findAllInArray chr arr2D =
               then []
               else pairs
   in
-      start : snd (V.foldl' (\(rowIdx, accu) rowVec -> (rowIdx+1, accu ++ magic rowIdx rowVec)) (0,[]) arr2D)
+      snd (V.foldl' (\(rowIdx, accu) rowVec -> (rowIdx+1, accu ++ magic rowIdx rowVec)) (0, []) arr2D)
 
 
 -- partB :: String -> Int
 partB fileInput =
   let elevationArr2D = array2DfromString fileInput
-      start = findStart elevationArr2D
-      allAs = undefined
+      originalStart  = findStart elevationArr2D
+      allStartSqrs   = originalStart : findAllInArray 'a' elevationArr2D
   in
       -- findShortestPathDistance start elevationArr2D S.empty
-      allAs
+      allStartSqrs
 
 
 main :: IO ()
