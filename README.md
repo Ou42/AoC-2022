@@ -24,7 +24,7 @@
 | 09  | &check; | &check; | &cross; | _           |
 | 10  | &check; | &check; | &cross; | _           |
 | 11  | &check; | &check; | &cross; | _           |
-| 12  |         |         |         | _           |
+| 12  | &check; |         | &cross; | _           |
 | 23  | &check; | &check; | &cross; | &cross;     |
 
 ## Run / Build & Run Instructions:
