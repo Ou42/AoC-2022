@@ -592,3 +592,99 @@
   - calculated `rpTestNumsMult` == Multiple of all `rpTestNum`'s
   - left in `trace` code in `doOneOpPartB`
 - code cleanup
+
+## Day-12 - Part A
+
+### 2023-07-24
+
+- started
+- instructions
+
+### 2023-08-02
+
+- $ cabal update
+- $ cabal install linear
+- but probably only needed vector:
+- $ cabal install vector
+- `import Data.Vector (Vector)`
+- `import qualified Data.Vector as V`
+- `type Array2D = Vector (Vector Char)`
+
+```
+Warning:
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ WARNING: Installation might not be completed as desired! @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+The command "cabal install [TARGETS]" doesn't expose libraries.
+* You might have wanted to add them as dependencies to your package. In this
+case add "vector" to the build-depends field(s) of your package's .cabal file.
+* You might have wanted to add them to a GHC environment. In this case use
+"cabal install --lib vector". The "--lib" flag is provisional: see
+https://github.com/haskell/cabal/issues/6481 for more information.
+```
+
+- $ cabal install --lib vector
+- Data.Vector vs Data.Array ?!
+- sticking to Data.Vector for now
+- `import qualified Data.Vector as V`
+- (V.!?) :: Vector a -> Int -> Maybe a
+- got help w/ pointfree
+- pointfree.io was too agressive. Wish it had steps
+- *Was* able to ask Bing to keep `row` and `col`
+- `getElevation row col arr2d = (arr2d V.!? row) >>= (V.!? col)`  
+  becomes:  
+  `getElevation row col = (V.!? row) >=> (V.!? col)`
+
+### 2023-08-08
+
+- `hasAvailableNextStep` WIP! -- needs to deal w/ 'S' & 'E'
+- `deadEnds` also WIP. Just checking if unused locations
+- `imap` provide index & elem
+- shortest path algorithm(s) !!
+  - Dijkstra
+  - A*
+  - can a recursive traversal work?
+- implemented `findStart` & `findEnd`
+- imported `Map` to keep track of visited locations
+
+### 2023-08-09
+
+- `findPath` WIP
+  - `validMoves`
+  - `isValidElevation` -- checks if (<= succ currElev) && not in visited Set
+  - `possNextSteps`
+- instead of `Int -> Int` changed to `(Int, Int)`
+  - `(row, col)`
+- backtracking?!
+  - currently, it *should* stop when no available `validMoves`
+- it worked! it found a path from Start to End!
+  - but it might have extra steps due to how I'm adding them?!
+- fixed the returned path by prepending `end`
+
+```
+        if currPos == end
+          then  end:solutionPath
+```
+
+- definitely has extra steps:
+
+```
+> fi <- readFile "input-12.txt"
+> solution = findPath fi
+> length solution
+6547
+> s = S.fromList solution
+> S.size s
+4872
+```
+
+### 2023-08-10
+
+- after asking Bing AI for help w/ BFS
+- and following a couple links ( Brilliant & a SO thread )
+- I tweaked `findPath` and made `findShortestPathDistance`
+- it works for the "test data" but not the "real data"
+- The bug has to do with adding duplicate nodes to `todo` List
+- `todo` should be like a Set. No duplicates!
+- Part A Solved!
+  - bug was solved by doing a `union` op: ``nextDepthNodes `union` validNextSteps``
