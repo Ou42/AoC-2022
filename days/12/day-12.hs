@@ -236,7 +236,7 @@ findAllInArray chr arr2D =
       snd (V.foldl' (\(rowIdx, accu) rowVec -> (rowIdx+1, accu ++ magic rowIdx rowVec)) (0, []) arr2D)
 
 
--- partB :: String -> Int
+partB :: String -> Int
 partB fileInput =
   let elevationArr2D = array2DfromString fileInput
       originalStart  = findStart elevationArr2D
@@ -244,6 +244,18 @@ partB fileInput =
   in
       -- allStartSqrs
       minimum $ map (\start -> findShortestPathDistance start elevationArr2D S.empty) allStartSqrs
+
+
+-- prepopulatedVisitedPartB :: String -> Int
+prepopulatedVisitedPartB fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      originalStart  = findStart elevationArr2D
+      allStartSqrs   = originalStart : findAllInArray 'a' elevationArr2D
+      visited start   = S.delete start $ S.fromList allStartSqrs
+  in
+      -- allStartSqrs
+      -- minimum $ map (\start -> findShortestPathDistance start elevationArr2D (visited start)) allStartSqrs
+      map (\start -> (start, visited start)) allStartSqrs
 
 
 main :: IO ()

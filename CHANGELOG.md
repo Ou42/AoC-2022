@@ -703,3 +703,19 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - Part B Solved!
   - but w/o the optimization
   - I'd still like to attempt the optimization and see if it is actually faster
+- started work on semi-brute force alg perf boost:
+  - the following was to check `visited` was correct
+  - in the following, `prepopulatedVistedPartB` returned:  
+        `map (\start -> (start, visited start)) allStartSqrs`
+
+```haskell
+    ghci> fi <- readFile "input-12-test.txt" 
+    ghci> prepopulatedVisitedPartB fi
+    [((0,0),fromList [(0,1),(1,0),(2,0),(3,0),(4,0)])
+    ,((0,1),fromList [(0,0),(1,0),(2,0),(3,0),(4,0)])
+    ,((1,0),fromList [(0,0),(0,1),(2,0),(3,0),(4,0)])
+    ,((2,0),fromList [(0,0),(0,1),(1,0),(3,0),(4,0)])
+    ,((3,0),fromList [(0,0),(0,1),(1,0),(2,0),(4,0)])
+    ,((4,0),fromList [(0,0),(0,1),(1,0),(2,0),(3,0)])
+    ]
+```
