@@ -719,3 +719,5 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     ,((4,0),fromList [(0,0),(0,1),(1,0),(2,0),(3,0)])
     ]
 ```
+
+- `prepopulatedVisitedPartB` updated to use correct `visited`

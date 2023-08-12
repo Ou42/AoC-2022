@@ -254,8 +254,8 @@ prepopulatedVisitedPartB fileInput =
       visited start   = S.delete start $ S.fromList allStartSqrs
   in
       -- allStartSqrs
-      -- minimum $ map (\start -> findShortestPathDistance start elevationArr2D (visited start)) allStartSqrs
-      map (\start -> (start, visited start)) allStartSqrs
+      -- map (\start -> (start, visited start)) allStartSqrs
+      minimum $ map (\start -> findShortestPathDistance start elevationArr2D (visited start)) allStartSqrs
 
 
 main :: IO ()
@@ -291,5 +291,14 @@ main = do
   putStrLn "Part B"
   putStrLn "------"
   putStrLn $ "Shortest Path Distance = " ++ show (partB fileInput)
+  putStrLn "    ( for test input (see comments above), the answer is 29 )"
+  putStrLn "    for real test data, the answer will vary dending on data set"
+
+  --
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "prepopulatedVisitedPartB"
+  putStrLn "------"
+  putStrLn $ "Shortest Path Distance = " ++ show (prepopulatedVisitedPartB fileInput)
   putStrLn "    ( for test input (see comments above), the answer is 29 )"
   putStrLn "    for real test data, the answer will vary dending on data set"
