@@ -182,16 +182,17 @@ findPath fileInput =
 
 
 -- Part A: What is the distance of the shortest path?
-findShortestPathDistance :: String -> Int
-findShortestPathDistance fileInput =
-  let elevationArr2D = array2DfromString fileInput
-      start = findStart elevationArr2D
-      end   = findEnd elevationArr2D
+findShortestPathDistance :: (Int, Int) -> Vector (Vector Char) -> Set (Int, Int) -> Int
+findShortestPathDistance start elevationArr2D visited =
+  let end   = findEnd elevationArr2D
       -- Note: BFS doesn't need to backtrack!!
       --   If it traverses the whole tree/graph and doesn't find the goal, it's not there!
       --   & if/when it finds the goal, it found it in the shortest number of steps.
       go :: ([(Int, Int)], [(Int, Int)]) -> Int -> Visited -> Int
-      go ([], []) depth _ = depth
+      -- for partA, this worked: go ([], []) depth _ = depth
+      -- for partB, the 'a' might be in an island and there's no path to the goal
+      -- ... therefore, return "infinity"
+      go ([], []) depth _ = maxBound :: Int
       go ([], nextDepthNodes) depth visited = go (nextDepthNodes, []) (depth+1) visited
       go (currPos:todo, nextDepthNodes) depth visited =
         if currPos == end
@@ -214,6 +215,49 @@ findShortestPathDistance fileInput =
       go ([start],[]) 0 S.empty
 
 
+partA :: String -> Int
+partA fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      start = findStart elevationArr2D
+  in
+      findShortestPathDistance start elevationArr2D S.empty
+
+
+findAllInArray :: Char -> Array2D -> [(Int, Int)]
+findAllInArray chr arr2D =
+  let magic rowIdx rowVec =
+        let colIndices = V.elemIndices chr rowVec
+            pairs = map (rowIdx,) (V.toList colIndices)
+        in
+            if null colIndices
+              then []
+              else pairs
+  in
+      snd (V.foldl' (\(rowIdx, accu) rowVec -> (rowIdx+1, accu ++ magic rowIdx rowVec)) (0, []) arr2D)
+
+
+partB :: String -> Int
+partB fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      originalStart  = findStart elevationArr2D
+      allStartSqrs   = originalStart : findAllInArray 'a' elevationArr2D
+  in
+      -- allStartSqrs
+      minimum $ map (\start -> findShortestPathDistance start elevationArr2D S.empty) allStartSqrs
+
+
+-- prepopulatedVisitedPartB :: String -> Int
+prepopulatedVisitedPartB fileInput =
+  let elevationArr2D = array2DfromString fileInput
+      originalStart  = findStart elevationArr2D
+      allStartSqrs   = originalStart : findAllInArray 'a' elevationArr2D
+      visited start   = S.delete start $ S.fromList allStartSqrs
+  in
+      -- allStartSqrs
+      -- map (\start -> (start, visited start)) allStartSqrs
+      minimum $ map (\start -> findShortestPathDistance start elevationArr2D (visited start)) allStartSqrs
+
+
 main :: IO ()
 main = do
   -- fileInput <- readFile "input-12-test.txt"
@@ -222,9 +266,9 @@ main = do
       start = findStart elevations
       end   = findEnd   elevations
 
-  putStrLn $ replicate 42 '-'
+  -- putStrLn $ replicate 42 '-'
 
-  putStrLn fileInput
+  -- putStrLn fileInput
 
   putStrLn $ replicate 42 '-'
 
@@ -237,7 +281,24 @@ main = do
   putStrLn $ replicate 42 '-'
   putStrLn "Part A"
   putStrLn "------"
-  putStrLn $ "Shortest Path Distance = " ++ show (findShortestPathDistance fileInput)
+  putStrLn $ "Shortest Path Distance = " ++ show (partA fileInput)
   putStrLn "    ( for test input (see comments above), the answer is 31 )"
   putStrLn "    for real test data, the answer will vary dending on data set"
-  
+
+  --
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "Part B"
+  putStrLn "------"
+  putStrLn $ "Shortest Path Distance = " ++ show (partB fileInput)
+  putStrLn "    ( for test input (see comments above), the answer is 29 )"
+  putStrLn "    for real test data, the answer will vary dending on data set"
+
+  --
+
+  putStrLn $ replicate 42 '-'
+  putStrLn "prepopulatedVisitedPartB"
+  putStrLn "------"
+  putStrLn $ "Shortest Path Distance = " ++ show (prepopulatedVisitedPartB fileInput)
+  putStrLn "    ( for test input (see comments above), the answer is 29 )"
+  putStrLn "    for real test data, the answer will vary dending on data set"

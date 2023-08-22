@@ -688,3 +688,36 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - `todo` should be like a Set. No duplicates!
 - Part A Solved!
   - bug was solved by doing a `union` op: ``nextDepthNodes `union` validNextSteps``
+- Part B Started
+
+### 2023-08-11
+
+- Part B - start at any 'a' elevation square ( or 'S' ), what's the shortest path to the goal?
+- `findAllInArray` looks like it's working -- returns `[(row, col)]` of all starting squares
+- semi-brute force alg: run them all, return the min distance
+  - found a potential "bug" from Part-A:  
+    if this altered BFS runs out of legal moves and doesn't find the goal,  
+    it shouldn't return `depth`, but maxBound :: Int so as to not get chosen as a solution
+  - also, to boost performance a bit, include all starting sq's in visited!?
+  - correction: all, but the current starting square!
+- Part B Solved!
+  - but w/o the optimization
+  - I'd still like to attempt the optimization and see if it is actually faster
+- started work on semi-brute force alg perf boost:
+  - the following was to check `visited` was correct
+  - in the following, `prepopulatedVistedPartB` returned:  
+        `map (\start -> (start, visited start)) allStartSqrs`
+
+```haskell
+    ghci> fi <- readFile "input-12-test.txt" 
+    ghci> prepopulatedVisitedPartB fi
+    [((0,0),fromList [(0,1),(1,0),(2,0),(3,0),(4,0)])
+    ,((0,1),fromList [(0,0),(1,0),(2,0),(3,0),(4,0)])
+    ,((1,0),fromList [(0,0),(0,1),(2,0),(3,0),(4,0)])
+    ,((2,0),fromList [(0,0),(0,1),(1,0),(3,0),(4,0)])
+    ,((3,0),fromList [(0,0),(0,1),(1,0),(2,0),(4,0)])
+    ,((4,0),fromList [(0,0),(0,1),(1,0),(2,0),(3,0)])
+    ]
+```
+
+- `prepopulatedVisitedPartB` updated to use correct `visited`
