@@ -11,21 +11,21 @@
 
 ## Completed: 
 
-| DAY | Part A  | Part B  | ghci    | stack build |
-| :-: | :-----: | :-----: | :-----: | :---------: |
-| 01  | &check; | &check; | &cross; | _           |
-| 02  | &check; | &check; | &cross; | _           |
-| 03  | &check; | &check; | &cross; | _           |
-| 04  | &check; | &check; | &cross; | _           |
-| 05  | &check; | &check; | &cross; | _           |
-| 06  | &check; | &check; | &cross; | _           |
-| 07  | &check; | &check; | &cross; | _           |
-| 08  | &check; | &check; | &cross; | _           |
-| 09  | &check; | &check; | &cross; | _           |
-| 10  | &check; | &check; | &cross; | _           |
-| 11  | &check; | &check; | &cross; | _           |
-| 12  | &check; | &check; | &cross; | _           |
-| 23  | &check; | &check; | &cross; | &cross;     |
+| DAY | Part A  | Part B  | ghci    | build tool | profiling |
+| :-: | :-----: | :-----: | :-----: | :--------: | :-------: |
+| 01  | &check; | &check; | &check; | _          | _         |
+| 02  | &check; | &check; | &check; | _          | _         |
+| 03  | &check; | &check; | &check; | _          | _         |
+| 04  | &check; | &check; | &check; | _          | _         |
+| 05  | &check; | &check; | &check; | _          | _         |
+| 06  | &check; | &check; | &check; | _          | _         |
+| 07  | &check; | &check; | &check; | _          | _         |
+| 08  | &check; | &check; | &check; | _          | _         |
+| 09  | &check; | &check; | &check; | _          | _         |
+| 10  | &check; | &check; | &check; | _          | _         |
+| 11  | &check; | &check; | &check; | _          | _         |
+| 12  | &check; | &check; | &check; | `cabal`    | &check;   |
+| 23  | &check; | &check; | &check; | `stack`    | &check;   |
 
 ## Run / Build & Run Instructions:
 
@@ -33,19 +33,24 @@
 NOTE: copy & save input data into days/XX/input-XX.txt
 
 $ cd days/XX
+
+then:
+
 $ ghci
 λ :l day-XX.hs
 λ main
 
 -- or --
 
-$ cd days/XX
 $ stack build
 $ stack exec dayXX-exe
 
 -- or --
 
-$ cd days/XX
 $ stack build
 $ ./dayXX-exe
+
+-- or --
+
+$ cabal run <pkg name> && hp2ps -e8in -c <pkg name>.hp
 ```

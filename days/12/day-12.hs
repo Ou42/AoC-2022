@@ -1,4 +1,5 @@
 {-# LANGUAGE StrictData #-}
+{-# LANGUAGE TupleSections #-}
 
 module Main where
 
@@ -64,8 +65,8 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Vector (Vector)
 import qualified Data.Vector as V
-import System.Console.Terminfo (Point(row))
-import qualified Control.Applicative as Set
+--import System.Console.Terminfo (Point(row))
+--import qualified Control.Applicative as Set
 
 type Array2D = Vector (Vector Char)
 type Visited = Set (Int, Int)
