@@ -721,3 +721,8 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 ```
 
 - `prepopulatedVisitedPartB` updated to use correct `visited`
+
+### 2023-09-09
+
+- Day-12 Profiling *WIP*
+- see: /days/12/README-aoc-2022-day-12.md
