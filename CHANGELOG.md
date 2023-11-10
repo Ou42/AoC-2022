@@ -740,3 +740,8 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 ### 2023-11-10
 
 - simple WIP parse of the input data
+  - `(Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
+  - `(Packet "[[1],[2,3,4]]",Packet "[[1],4]")`
+- enumerated the list of `Pairs`:
+  - `Pairs 1 (Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
+  - `Pairs 2 (Packet "[[1],[2,3,4]]",Packet "[[1],4]")`

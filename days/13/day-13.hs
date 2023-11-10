@@ -45,16 +45,17 @@ module Main where
 -- data PacketVals = OpenBracket | CloseBracket | Val Int deriving Show
 type PacketVals = Char
 newtype Packet  = Packet [PacketVals] deriving Show
-type Pairs      = (Packet, Packet)
+-- type Pairs      = (Packet, Packet)
+data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
-go [] = []
-go ("":rest) = go rest
-go (l:r:rest) = (Packet l, Packet r):go rest
+go _ [] = []
+go c ("":rest) = go c rest
+go c (l:r:rest) = Pairs c (Packet l, Packet r):go (c+1) rest
 
--- parseInput :: String -> [Pairs]
+parseInput :: String -> [Pairs]
 parseInput input =
   let lns = lines input
-  in  go lns
+  in  go 1 lns
 
 disp pairs = putStrLn $ unlines $ map show pairs
 
