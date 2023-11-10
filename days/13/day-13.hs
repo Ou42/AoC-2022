@@ -1,5 +1,7 @@
 module Main where
 
+import Data.Char (isDigit)
+
 {-
     Day 13
 
@@ -42,11 +44,21 @@ module Main where
         the sum of these indices is 13.
 -}
 
--- data PacketVals = OpenBracket | CloseBracket | Val Int deriving Show
+data PacketVals' = OpenBracket | CloseBracket | Val Int deriving Show
 type PacketVals = Char
 newtype Packet  = Packet [PacketVals] deriving Show
 -- type Pairs      = (Packet, Packet)
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
+
+parsePacket :: String -> [PacketVals']
+parsePacket [] = []
+parsePacket (c:cs) = case c of
+  '[' -> OpenBracket  : parsePacket cs
+  ']' -> CloseBracket : parsePacket cs
+  ',' ->                parsePacket cs
+  _   -> if isDigit c
+           then Val (read [c] :: Int) : parsePacket cs
+           else error "Unexpected Char"
 
 go _ [] = []
 go c ("":rest) = go c rest
@@ -57,6 +69,7 @@ parseInput input =
   let lns = lines input
   in  go 1 lns
 
+disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
 
 main :: IO ()
