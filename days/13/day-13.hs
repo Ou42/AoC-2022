@@ -47,7 +47,7 @@ import Data.Binary.Get (label)
 -}
 
 data PacketVals = OpenBracket | CloseBracket | Val Int
-newtype Packet  = Packet [PacketVals] deriving Show
+newtype Packet  = Packet [PacketVals]
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
 instance Show PacketVals where
@@ -56,8 +56,18 @@ instance Show PacketVals where
   show CloseBracket = "]"
   show (Val i) = show i
 
--- instance Show Packet where
---   show 
+instance Show Packet where
+  show :: Packet -> String
+  show (Packet ps) =   unpack
+                     $ replace findB replB
+                     $ replace findA replA (pack $ go ps)
+    where
+      go [p]    = show p
+      go (p:ps) = show p ++ show ps
+      findA = pack "[,"
+      replA = pack "["
+      findB = pack ",]"
+      replB = pack "]"
 
 parsePacket :: String -> [PacketVals]
 parsePacket [] = []
