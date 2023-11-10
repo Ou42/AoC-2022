@@ -732,3 +732,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 ### 2023-11-09
 
 - started
+- renamed test input files: `input-XX-test.txt` to `input-XX.test`
+  - now they are saved to the repo
+  - days 08-12
+  - consider editing the .hs files to ack this change
