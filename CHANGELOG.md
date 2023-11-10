@@ -748,3 +748,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 - `parsePacket`
   - started WIP
   - now handles 10's ( or any multi-digit Int )
+- `Show` instance / parsing cleanup

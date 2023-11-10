@@ -1,6 +1,8 @@
 module Main where
 
 import Data.Char (isDigit)
+import Data.Text (pack, replace, unpack)
+import Data.Binary.Get (label)
 
 {-
     Day 13
@@ -44,12 +46,20 @@ import Data.Char (isDigit)
         the sum of these indices is 13.
 -}
 
-data PacketVals' = OpenBracket | CloseBracket | Val Int deriving Show
-type PacketVals = Char
+data PacketVals = OpenBracket | CloseBracket | Val Int
 newtype Packet  = Packet [PacketVals] deriving Show
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
-parsePacket :: String -> [PacketVals']
+instance Show PacketVals where
+  show :: PacketVals -> String
+  show OpenBracket  = "["
+  show CloseBracket = "]"
+  show (Val i) = show i
+
+-- instance Show Packet where
+--   show 
+
+parsePacket :: String -> [PacketVals]
 parsePacket [] = []
 parsePacket (c:cs) = case c of
   '[' -> OpenBracket  : parsePacket cs
@@ -61,8 +71,11 @@ parsePacket (c:cs) = case c of
 
 go :: Int -> [String] -> [Pairs]
 go _ [] = []
-go c ("":rest) = go c rest
-go c (l:r:rest) = Pairs c (Packet l, Packet r):go (c+1) rest
+go cnt ("":rest) = go cnt rest
+go cnt (l:r:rest) = Pairs cnt (Packet parseL, Packet parseR):go (cnt+1) rest
+  where
+    parseL = parsePacket l
+    parseR = parsePacket r
 
 parseInput :: String -> [Pairs]
 parseInput input =
@@ -72,9 +85,16 @@ parseInput input =
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
 
+hr :: IO ()
+hr = putStrLn $ replicate 42 '-' ++ ['\n']
+
 main :: IO ()
 main = do
   fileInput <- readFile "input-13.test" -- "input-13.txt"
 
   putStrLn "Day 13 - Part A"
   putStrLn fileInput
+
+  hr
+
+  disp $ parseInput fileInput
