@@ -47,7 +47,6 @@ import Data.Char (isDigit)
 data PacketVals' = OpenBracket | CloseBracket | Val Int deriving Show
 type PacketVals = Char
 newtype Packet  = Packet [PacketVals] deriving Show
--- type Pairs      = (Packet, Packet)
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
 parsePacket :: String -> [PacketVals']
@@ -57,9 +56,10 @@ parsePacket (c:cs) = case c of
   ']' -> CloseBracket : parsePacket cs
   ',' ->                parsePacket cs
   _   -> if isDigit c
-           then Val (read [c] :: Int) : parsePacket cs
-           else error "Unexpected Char"
+           then Val (read (c:takeWhile isDigit cs)) : parsePacket (dropWhile isDigit cs)
+           else error $ "Unexpected Char: '" ++ [c] ++ "'"
 
+go :: Int -> [String] -> [Pairs]
 go _ [] = []
 go c ("":rest) = go c rest
 go c (l:r:rest) = Pairs c (Packet l, Packet r):go (c+1) rest
