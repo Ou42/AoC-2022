@@ -726,3 +726,9 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 
 - Day-12 Profiling *WIP*
 - see: /days/12/README-aoc-2022-day-12.md
+
+## Day-13 - Part A
+
+### 2023-11-09
+
+- started
