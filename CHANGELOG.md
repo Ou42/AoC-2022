@@ -736,3 +736,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - now they are saved to the repo
   - days 08-12
   - consider editing the .hs files to ack this change
+
+### 2023-11-10
+
+- simple WIP parse of the input data

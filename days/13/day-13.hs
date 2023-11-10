@@ -42,6 +42,25 @@ module Main where
         the sum of these indices is 13.
 -}
 
+-- data PacketVals = OpenBracket | CloseBracket | Val Int deriving Show
+type PacketVals = Char
+newtype Packet  = Packet [PacketVals] deriving Show
+type Pairs      = (Packet, Packet)
+
+go [] = []
+go ("":rest) = go rest
+go (l:r:rest) = (Packet l, Packet r):go rest
+
+-- parseInput :: String -> [Pairs]
+parseInput input =
+  let lns = lines input
+  in  go lns
+
+disp pairs = putStrLn $ unlines $ map show pairs
+
 main :: IO ()
 main = do
+  fileInput <- readFile "input-13.test" -- "input-13.txt"
+
   putStrLn "Day 13 - Part A"
+  putStrLn fileInput
