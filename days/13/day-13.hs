@@ -46,32 +46,9 @@ import Data.Binary.Get (label)
         the sum of these indices is 13.
 -}
 
-data PacketVals = OpenBracket | CloseBracket | Val Int
-newtype Packet  = Packet [PacketVals]
-data Pairs      = Pairs Int (Packet, Packet) deriving Show
-
 data PacketVals'    = Val' Int | Nested [PacketVals'] deriving Show
 newtype PacketList' = Packet' [PacketVals'] deriving Show
 data Pairs'         = Pairs' Int (PacketList', PacketList') deriving Show
-
-instance Show PacketVals where
-  show :: PacketVals -> String
-  show OpenBracket  = "["
-  show CloseBracket = "]"
-  show (Val i) = show i
-
-instance Show Packet where
-  show :: Packet -> String
-  show (Packet ps) =   unpack
-                     $ replace findB replB
-                     $ replace findA replA (pack $ go ps)
-    where
-      go [p]    = show p
-      go (p:ps) = show p ++ show ps
-      findA = pack "[,"
-      replA = pack "["
-      findB = pack ",]"
-      replB = pack "]"
 
 parsePacket' :: String -> PacketList'
 parsePacket' (_:rest) = Packet' (go rest)
@@ -98,57 +75,80 @@ parseInput' input = go 1 lns
         parseL = parsePacket' l
         parseR = parsePacket' r
 
-parsePacket :: String -> [PacketVals]
-parsePacket [] = []
-parsePacket (c:cs) = case c of
-  '[' -> OpenBracket  : parsePacket cs
-  ']' -> CloseBracket : parsePacket cs
-  ',' ->                parsePacket cs
-  _   -> if isDigit c
-           then Val (read (c:takeWhile isDigit cs)) : parsePacket (dropWhile isDigit cs)
-           else error $ "Unexpected Char: '" ++ [c] ++ "'"
-
-parseInput :: String -> [Pairs]
-parseInput input = go 1 lns
-  where
-    lns = lines input
-    go :: Int -> [String] -> [Pairs]
-    go _ [] = []
-    go cnt ("":rest) = go cnt rest
-    go cnt (l:r:rest) = Pairs cnt (Packet parseL, Packet parseR):go (cnt+1) rest
-      where
-        parseL = parsePacket l
-        parseR = parsePacket r
-
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
 
 hr :: IO ()
 hr = putStrLn $ replicate 42 '-' ++ ['\n']
 
-cmpPairs :: Pairs -> Int
-cmpPairs (Pairs pNum (Packet [], Packet [])) = pNum
-cmpPairs (Pairs pNum (Packet (Val lVal:lVals), Packet (Val rVal:rVals))) =
-  case compare lVal rVal of
-    LT -> pNum
-    GT -> 0
-    EQ -> cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
+cmpPairs' :: Pairs' -> Int
+cmpPairs' (Pairs' pNum (Packet' lPacket, Packet' rPacket)) = go lPacket rPacket
+  where
+    go [] [] = -1 -- inconclusive, continue
 
-cmpPairs (Pairs pNum (Packet (CloseBracket:_), Packet (Val rVal:_))) = pNum
-cmpPairs (Pairs pNum (Packet (Val lVal:_), Packet (CloseBracket:_))) = 0
+    -- compare 2 Ints
+    go (Val' lVal:lVals) (Val' rVal:rVals) =
+      case compare lVal rVal of
+        LT -> pNum
+        GT -> 0
+        EQ -> go lVals rVals
 
-cmpPairs (Pairs pNum (Packet (OpenBracket:lVals), Packet (OpenBracket:rVals))) =
-  cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
+    -- if Left is exhausted first, the inputs are in the right order
+    go [] (Val' rVal:_) = pNum
+    -- if Right is exhausted first, the inputs are NOT in the right order
+    go (Val' lVal:_) [] = 0
 
-cmpPairs _ = -1 -- error "Not implemented yet!!"
+    -- compare 2 Nested Lists
+    go (Nested nLeft:lVals) (Nested nRight:rVals) =
+      let res = go nLeft nRight
+      in case res of
+           -1 -> go lVals rVals
+           _  -> res
+
+    -- if Left is exhausted first, the inputs are in the right order
+    go [] (Nested rVal:_) = pNum
+    -- if Right is exhausted first, the inputs are NOT in the right order
+    go (Nested lVal:_) [] = 0
+
+    -- if only one of the 2 is an Int
+    -- ... convert the Int to a Nested List and re-compare
+    go lVals (Val' rVal:rVals) = go lVals (Nested [Val' rVal]:rVals)
+    go (Val' lVal:lVals) rVals = go (Nested [Val' lVal]:lVals) rVals
+    -- go (Nested nLeft:lVals) (Val' rVal:rVals)  = go 
+    -- go (Val' lVal:lVals) (Nested nRight:rVals) =
+
+    -- Pattern match is redundant
+    -- In an equation for ‘go’: go (lVal : _) (rVal : _) = ...compile(-Woverlapping-patterns)
+    -- go (lVal:_) (rVal:_) = error "BLAH BLAH BLAH BLAH BLAH"
+
+    -- go l r = error $ "BLAH BLAH BLAH BLAH BLAH"
+    --                  ++ "\n"
+    --                  ++ "Left: " ++ show l
+    --                  ++ "\n"
+    --                  ++ "Right: " ++ show r
+
 
 main :: IO ()
 main = do
-  fileInput <- readFile "input-13.test" -- "input-13.txt"
+  fileInput <- readFile "input-13.test"
+  -- fileInput <- readFile "input-13.txt"
 
   putStrLn "Day 13 - Part A"
   putStrLn fileInput
 
   hr
 
-  disp $ parseInput fileInput
+  disp $ parseInput' fileInput
+
+  hr
+
+  print $ map cmpPairs' $ parseInput' fileInput
+  
+  hr
+
+  putStr "Sum = "
+  print $ sum $ map cmpPairs' $ parseInput' fileInput
+
+  -- using my personalized input data, I end up w/ 5486
+  -- > That's not the right answer; your answer is too high.
+  
