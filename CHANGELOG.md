@@ -784,4 +784,9 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     Pair 1: [[[6,10]],[4,3,[4]]], ... -- disp2       - parsed & converted back
 
     Packet [Nested [Nested [Val 6,Val 10]],Nested [Val 4,Val 3,Nested [Val 4]]]
+
+    -- easier test:
+    ghci> a = "[[[6,10],[4,3,[4]]]]"
+    ghci> dispPacket $ parseP2 a
+    "[[],[6,10],[4,3],[4]]"
     ```
