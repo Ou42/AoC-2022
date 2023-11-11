@@ -97,16 +97,16 @@ disp pairs = putStrLn $ unlines $ map show pairs
 hr :: IO ()
 hr = putStrLn $ replicate 42 '-' ++ ['\n']
 
-cmpPairs :: Pairs -> Bool
-cmpPairs (Pairs pNum (Packet [], Packet [])) = True
+cmpPairs :: Pairs -> Int
+cmpPairs (Pairs pNum (Packet [], Packet [])) = pNum
 cmpPairs (Pairs pNum (Packet (Val lVal:lVals), Packet (Val rVal:rVals))) =
   case compare lVal rVal of
-    LT -> True
-    GT -> False
+    LT -> pNum
+    GT -> 0
     EQ -> cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
 
-cmpPairs (Pairs pNum (Packet (CloseBracket:_), Packet (Val rVal:_))) = True
-cmpPairs (Pairs pNum (Packet (Val lVal:_), Packet (CloseBracket:_))) = False
+cmpPairs (Pairs pNum (Packet (CloseBracket:_), Packet (Val rVal:_))) = pNum
+cmpPairs (Pairs pNum (Packet (Val lVal:_), Packet (CloseBracket:_))) = 0
 
 cmpPairs (Pairs pNum (Packet (OpenBracket:lVals), Packet (OpenBracket:rVals))) =
   cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
