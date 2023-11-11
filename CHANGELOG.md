@@ -750,4 +750,6 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - now handles 10's ( or any multi-digit Int )
 - `Show` instance / parsing cleanup
   - parsing done?!
-  - does `show` and extra set of [ ]'s surrounding the Packet
+  - does `show` an extra set of [ ]'s surrounding the Packet
+- `cmpPairs` WIP
+  - works for test input data Pairs 1, 7, & 8

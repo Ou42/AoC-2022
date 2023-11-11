@@ -79,24 +79,39 @@ parsePacket (c:cs) = case c of
            then Val (read (c:takeWhile isDigit cs)) : parsePacket (dropWhile isDigit cs)
            else error $ "Unexpected Char: '" ++ [c] ++ "'"
 
-go :: Int -> [String] -> [Pairs]
-go _ [] = []
-go cnt ("":rest) = go cnt rest
-go cnt (l:r:rest) = Pairs cnt (Packet parseL, Packet parseR):go (cnt+1) rest
-  where
-    parseL = parsePacket l
-    parseR = parsePacket r
-
 parseInput :: String -> [Pairs]
-parseInput input =
-  let lns = lines input
-  in  go 1 lns
+parseInput input = go 1 lns
+  where
+    lns = lines input
+    go :: Int -> [String] -> [Pairs]
+    go _ [] = []
+    go cnt ("":rest) = go cnt rest
+    go cnt (l:r:rest) = Pairs cnt (Packet parseL, Packet parseR):go (cnt+1) rest
+      where
+        parseL = parsePacket l
+        parseR = parsePacket r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
 
 hr :: IO ()
 hr = putStrLn $ replicate 42 '-' ++ ['\n']
+
+cmpPairs :: Pairs -> Bool
+cmpPairs (Pairs pNum (Packet [], Packet [])) = True
+cmpPairs (Pairs pNum (Packet (Val lVal:lVals), Packet (Val rVal:rVals))) =
+  case compare lVal rVal of
+    LT -> True
+    GT -> False
+    EQ -> cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
+
+cmpPairs (Pairs pNum (Packet (CloseBracket:_), Packet (Val rVal:_))) = True
+cmpPairs (Pairs pNum (Packet (Val lVal:_), Packet (CloseBracket:_))) = False
+
+cmpPairs (Pairs pNum (Packet (OpenBracket:lVals), Packet (OpenBracket:rVals))) =
+  cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
+
+cmpPairs _ = error "Not implemented yet!!"
 
 main :: IO ()
 main = do
