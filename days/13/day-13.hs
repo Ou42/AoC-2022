@@ -66,6 +66,24 @@ parsePacket (_:rest) = Packet (go rest)
       in  Val (read num) : go rest
     go (_:cs) = go cs
 
+parseP2 :: String -> PacketList
+parseP2 (_:rest) = Packet (go $ init rest)
+  where
+    go :: String -> [PacketVals]
+    go [] = []
+    go ('[':cs) =
+      -- here's the bug, Luke:
+      -- let (nested, rest) = span (/= ']') cs
+      -- ... if they are "nested" then another '[' might show up first ...
+      -- let (nested, rest) = span (\x -> x /= ']' || x /= '[')  cs
+      let (nested, rest) = span (\x -> x /= ']' && x /= '[')  cs
+
+      in  Nested (go nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val (read num) : go rest
+    go (_:cs) = go cs
+
 parseInput :: String -> Pairs
 parseInput input = go 1 lns
   where
@@ -144,6 +162,17 @@ cmpPair (Pair pNum (Packet lPacket, Packet rPacket)) = go lPacket rPacket
                      ++ "Left: " ++ show l
                      ++ "\n"
                      ++ "Right: " ++ show r
+
+prettyPrintInputData :: String -> IO ()
+prettyPrintInputData input = putStrLn $ go 1 lns
+  where
+    lns = lines input
+    go :: Int -> [String] -> String
+    go _ [] = []
+    go cnt ("":rest) = go cnt rest
+    go cnt (l:r:rest) = "Pair " ++ show cnt ++ ": " ++ l ++ ", " ++ r
+                        ++ "\n"
+                        ++ go (cnt+1) rest
 
 
 main :: IO ()

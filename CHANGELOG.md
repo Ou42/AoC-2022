@@ -778,4 +778,10 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - refactor, but nothing discovered
   - `disp2` to convert (display) the parsed data back in original form
   - need to check if anything was parsed incorrectly
-  
+  - yes, yes it was:
+    ```haskell
+    Pair 1: [[[6,10],[4,3,[4]]]], ... -- prettyPrint - raw input data
+    Pair 1: [[[6,10]],[4,3,[4]]], ... -- disp2       - parsed & converted back
+
+    Packet [Nested [Nested [Val 6,Val 10]],Nested [Val 4,Val 3,Nested [Val 4]]]
+    ```
