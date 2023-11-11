@@ -755,3 +755,6 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - works for test input data Pairs 1, 7, & 8
   - instead of return `Bool`, returning `Pair #` if True and 0 if False?!
     ... so it can be `Sum`ed easily at the end
+- switching to recursive data structure
+  - [ ] parsing
+  

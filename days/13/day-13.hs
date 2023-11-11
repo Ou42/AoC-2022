@@ -50,6 +50,10 @@ data PacketVals = OpenBracket | CloseBracket | Val Int
 newtype Packet  = Packet [PacketVals]
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
+data PacketVals' = Val' Int | Nested [PacketVals'] deriving Show
+type PacketList' = [PacketVals']
+data Pairs'      = Pairs' Int (PacketList', PacketList') deriving Show
+
 instance Show PacketVals where
   show :: PacketVals -> String
   show OpenBracket  = "["
@@ -68,6 +72,19 @@ instance Show Packet where
       replA = pack "["
       findB = pack ",]"
       replB = pack "]"
+
+parsePacket' :: String -> PacketVals'
+parsePacket' str = Nested (go str)
+  where
+    go :: String -> PacketList'
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = span (/= ']') cs
+      in  Nested (go nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val' (read num) : go rest
+    go (_:cs) = go cs
 
 parsePacket :: String -> [PacketVals]
 parsePacket [] = []
@@ -111,7 +128,7 @@ cmpPairs (Pairs pNum (Packet (Val lVal:_), Packet (CloseBracket:_))) = 0
 cmpPairs (Pairs pNum (Packet (OpenBracket:lVals), Packet (OpenBracket:rVals))) =
   cmpPairs (Pairs pNum (Packet lVals, Packet rVals))
 
-cmpPairs _ = error "Not implemented yet!!"
+cmpPairs _ = -1 -- error "Not implemented yet!!"
 
 main :: IO ()
 main = do
