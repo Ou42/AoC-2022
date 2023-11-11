@@ -773,3 +773,9 @@ https://github.com/haskell/cabal/issues/6481 for more information.
       Packet' [Nested [Val' 1],Nested [Val' 2,Val' 3,Val' 4]]
       ```
 - `parseInput'`
+- it compiles! it runs! ... it doesn't produce the right answer!
+- bug hunt!
+  - refactor, but nothing discovered
+  - `disp2` to convert (display) the parsed data back in original form
+  - need to check if anything was parsed incorrectly
+  

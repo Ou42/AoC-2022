@@ -3,6 +3,7 @@ module Main where
 import Data.Char (isDigit)
 import Data.Text (pack, replace, unpack)
 import Data.Binary.Get (label)
+import Language.Haskell.TH (plainInvisTV)
 
 {-
     Day 13
@@ -46,57 +47,77 @@ import Data.Binary.Get (label)
         the sum of these indices is 13.
 -}
 
-data PacketVals'    = Val' Int | Nested [PacketVals'] deriving Show
-newtype PacketList' = Packet' [PacketVals'] deriving Show
-data Pairs'         = Pairs' Int (PacketList', PacketList') deriving Show
+data PacketVals    = Val Int | Nested [PacketVals] deriving Show
+newtype PacketList = Packet [PacketVals] deriving Show
+data Pair          = Pair Int (PacketList, PacketList) deriving Show
+type Pairs         = [Pair]
 
-parsePacket' :: String -> PacketList'
-parsePacket' (_:rest) = Packet' (go rest)
+
+parsePacket :: String -> PacketList
+parsePacket (_:rest) = Packet (go rest)
   where
-    go :: String -> [PacketVals']
+    go :: String -> [PacketVals]
     go [] = []
     go ('[':cs) =
       let (nested, rest) = span (/= ']') cs
       in  Nested (go nested) : go rest
     go (c:cs) | isDigit c =
       let (num, rest) = span isDigit (c:cs)
-      in  Val' (read num) : go rest
+      in  Val (read num) : go rest
     go (_:cs) = go cs
 
-parseInput' :: String -> [Pairs']
-parseInput' input = go 1 lns
+parseInput :: String -> Pairs
+parseInput input = go 1 lns
   where
     lns = lines input
-    go :: Int -> [String] -> [Pairs']
+    go :: Int -> [String] -> Pairs
     go _ [] = []
     go cnt ("":rest) = go cnt rest
-    go cnt (l:r:rest) = Pairs' cnt (parseL, parseR):go (cnt+1) rest
+    go cnt (l:r:rest) = Pair cnt (parseL, parseR):go (cnt+1) rest
       where
-        parseL = parsePacket' l
-        parseR = parsePacket' r
+        parseL = parsePacket l
+        parseR = parsePacket r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
 
+disp2 :: Pairs -> IO ()
+disp2 pairs = putStrLn $ unlines $ map dispPair pairs
+
+dispPair :: Pair -> String
+dispPair (Pair pNum (pLeft, pRight)) = "Pair " ++ show pNum ++ ": "
+                                        ++ dispPacket pLeft ++ ", " ++ dispPacket pRight
+
+dispPacket :: PacketList -> String
+dispPacket (Packet pLst) = "[" ++ go pLst ++ "]"
+  where
+    go :: [PacketVals] -> String
+    go [] = ""
+    go [Val v] = show v
+    go (Val v:vals)  = show v ++ "," ++ go vals
+    go [Nested vs]   = "[" ++ go vs ++ "]"
+    go (Nested v:vs) = "[" ++ go v ++ "]," ++ go vs
+
 hr :: IO ()
 hr = putStrLn $ replicate 42 '-' ++ ['\n']
 
-cmpPairs' :: Pairs' -> Int
-cmpPairs' (Pairs' pNum (Packet' lPacket, Packet' rPacket)) = go lPacket rPacket
+cmpPair :: Pair -> Int
+cmpPair (Pair pNum (Packet lPacket, Packet rPacket)) = go lPacket rPacket
   where
+    go :: [PacketVals] -> [PacketVals] -> Int
     go [] [] = -1 -- inconclusive, continue
 
     -- compare 2 Ints
-    go (Val' lVal:lVals) (Val' rVal:rVals) =
+    go (Val lVal:lVals) (Val rVal:rVals) =
       case compare lVal rVal of
         LT -> pNum
         GT -> 0
         EQ -> go lVals rVals
 
     -- if Left is exhausted first, the inputs are in the right order
-    go [] (Val' rVal:_) = pNum
+    go [] (Val rVal:_) = pNum
     -- if Right is exhausted first, the inputs are NOT in the right order
-    go (Val' lVal:_) [] = 0
+    go (Val lVal:_) [] = 0
 
     -- compare 2 Nested Lists
     go (Nested nLeft:lVals) (Nested nRight:rVals) =
@@ -112,43 +133,39 @@ cmpPairs' (Pairs' pNum (Packet' lPacket, Packet' rPacket)) = go lPacket rPacket
 
     -- if only one of the 2 is an Int
     -- ... convert the Int to a Nested List and re-compare
-    go lVals (Val' rVal:rVals) = go lVals (Nested [Val' rVal]:rVals)
-    go (Val' lVal:lVals) rVals = go (Nested [Val' lVal]:lVals) rVals
-    -- go (Nested nLeft:lVals) (Val' rVal:rVals)  = go 
-    -- go (Val' lVal:lVals) (Nested nRight:rVals) =
+    go lVals (Val rVal:rVals) = go lVals (Nested [Val rVal]:rVals)
+    go (Val lVal:lVals) rVals = go (Nested [Val lVal]:lVals) rVals
+    -- go lVals@(Nested nLeft:_) (Val rVal:rVals)  = go lVals (Nested [Val rVal]:rVals)
+    -- go (Val lVal:lVals) rVals@(Nested nRight:_) = go (Nested [Val lVal]:lVals) rVals
 
-    -- Pattern match is redundant
-    -- In an equation for ‘go’: go (lVal : _) (rVal : _) = ...compile(-Woverlapping-patterns)
-    -- go (lVal:_) (rVal:_) = error "BLAH BLAH BLAH BLAH BLAH"
-
-    -- go l r = error $ "BLAH BLAH BLAH BLAH BLAH"
-    --                  ++ "\n"
-    --                  ++ "Left: " ++ show l
-    --                  ++ "\n"
-    --                  ++ "Right: " ++ show r
+    -- Pattern match is redundant?!
+    go l r = error $ "BLAH BLAH BLAH BLAH BLAH"
+                     ++ "\n"
+                     ++ "Left: " ++ show l
+                     ++ "\n"
+                     ++ "Right: " ++ show r
 
 
 main :: IO ()
 main = do
-  fileInput <- readFile "input-13.test"
-  -- fileInput <- readFile "input-13.txt"
+  -- fileInput <- readFile "input-13.test"
+  fileInput <- readFile "input-13.txt"
 
   putStrLn "Day 13 - Part A"
   putStrLn fileInput
 
   hr
 
-  disp $ parseInput' fileInput
+  disp $ take 5 $ parseInput fileInput
 
   hr
 
-  print $ map cmpPairs' $ parseInput' fileInput
-  
+  print $ map cmpPair $ parseInput fileInput
+
   hr
 
   putStr "Sum = "
-  print $ sum $ map cmpPairs' $ parseInput' fileInput
+  print $ sum $ map cmpPair $ parseInput fileInput
 
   -- using my personalized input data, I end up w/ 5486
   -- > That's not the right answer; your answer is too high.
-  
