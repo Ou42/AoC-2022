@@ -86,6 +86,18 @@ parsePacket' (_:rest) = Packet' (go rest)
       in  Val' (read num) : go rest
     go (_:cs) = go cs
 
+parseInput' :: String -> [Pairs']
+parseInput' input = go 1 lns
+  where
+    lns = lines input
+    go :: Int -> [String] -> [Pairs']
+    go _ [] = []
+    go cnt ("":rest) = go cnt rest
+    go cnt (l:r:rest) = Pairs' cnt (parseL, parseR):go (cnt+1) rest
+      where
+        parseL = parsePacket' l
+        parseR = parsePacket' r
+
 parsePacket :: String -> [PacketVals]
 parsePacket [] = []
 parsePacket (c:cs) = case c of
