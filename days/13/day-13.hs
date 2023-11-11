@@ -50,9 +50,9 @@ data PacketVals = OpenBracket | CloseBracket | Val Int
 newtype Packet  = Packet [PacketVals]
 data Pairs      = Pairs Int (Packet, Packet) deriving Show
 
-data PacketVals' = Val' Int | Nested [PacketVals'] deriving Show
-type PacketList' = [PacketVals']
-data Pairs'      = Pairs' Int (PacketList', PacketList') deriving Show
+data PacketVals'    = Val' Int | Nested [PacketVals'] deriving Show
+newtype PacketList' = Packet' [PacketVals'] deriving Show
+data Pairs'         = Pairs' Int (PacketList', PacketList') deriving Show
 
 instance Show PacketVals where
   show :: PacketVals -> String
@@ -74,14 +74,17 @@ instance Show Packet where
       replB = pack "]"
 
 parsePacket' :: String -> PacketList'
-parsePacket' [] = []
-parsePacket' ('[':cs) =
-  let (nested, rest) = span (/= ']') cs
-  in  Nested (parsePacket' nested) : parsePacket' rest
-parsePacket' (c:cs) | isDigit c =
-  let (num, rest) = span isDigit (c:cs)
-  in  Val' (read num) : parsePacket' rest
-parsePacket' (_:cs) = parsePacket' cs
+parsePacket' (_:rest) = Packet' (go rest)
+  where
+    go :: String -> [PacketVals']
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = span (/= ']') cs
+      in  Nested (go nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val' (read num) : go rest
+    go (_:cs) = go cs
 
 parsePacket :: String -> [PacketVals]
 parsePacket [] = []

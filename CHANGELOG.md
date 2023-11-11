@@ -765,3 +765,10 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     ghci> parsePacket' $ lns !! 3
     [Nested [Nested [Val' 1]],Nested [Val' 2,Val' 3,Val' 4]]  
     ```
+  - [x] parsing | `parsePacket'` *improved!*
+      ```haskell
+      ghci> parsePacket' $ lns !! 0
+      Packet' [Val' 1,Val' 1,Val' 3,Val' 1,Val' 1]
+      ghci> parsePacket' $ lns !! 3
+      Packet' [Nested [Val' 1],Nested [Val' 2,Val' 3,Val' 4]]
+      ```
