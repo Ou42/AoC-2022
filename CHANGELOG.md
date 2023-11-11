@@ -756,5 +756,12 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - instead of return `Bool`, returning `Pair #` if True and 0 if False?!
     ... so it can be `Sum`ed easily at the end
 - switching to recursive data structure
-  - [ ] parsing
-  
+  - [x] parsing | `parsePacket'` -- good enough?!
+    ```haskell
+    -- 0 | [1,1,5,1,1]
+    -- 3 | [[1],[2,3,4]]
+    ghci> parsePacket' $ lns !! 0
+    [Nested [Val' 1,Val' 1,Val' 3,Val' 1,Val' 1]]
+    ghci> parsePacket' $ lns !! 3
+    [Nested [Nested [Val' 1]],Nested [Val' 2,Val' 3,Val' 4]]  
+    ```

@@ -73,18 +73,15 @@ instance Show Packet where
       findB = pack ",]"
       replB = pack "]"
 
-parsePacket' :: String -> PacketVals'
-parsePacket' str = Nested (go str)
-  where
-    go :: String -> PacketList'
-    go [] = []
-    go ('[':cs) =
-      let (nested, rest) = span (/= ']') cs
-      in  Nested (go nested) : go rest
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val' (read num) : go rest
-    go (_:cs) = go cs
+parsePacket' :: String -> PacketList'
+parsePacket' [] = []
+parsePacket' ('[':cs) =
+  let (nested, rest) = span (/= ']') cs
+  in  Nested (parsePacket' nested) : parsePacket' rest
+parsePacket' (c:cs) | isDigit c =
+  let (num, rest) = span isDigit (c:cs)
+  in  Val' (read num) : parsePacket' rest
+parsePacket' (_:cs) = parsePacket' cs
 
 parsePacket :: String -> [PacketVals]
 parsePacket [] = []
