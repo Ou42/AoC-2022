@@ -71,13 +71,31 @@ parseP2 (_:rest) = Packet (go $ init rest)
   where
     go :: String -> [PacketVals]
     go [] = []
+    -- go (']':cs) = [] : go cs
     go ('[':cs) =
-      -- here's the bug, Luke:
-      -- let (nested, rest) = span (/= ']') cs
-      -- ... if they are "nested" then another '[' might show up first ...
-      -- let (nested, rest) = span (\x -> x /= ']' || x /= '[')  cs
-      let (nested, rest) = span (\x -> x /= ']' && x /= '[')  cs
+      let (nested, rest) = span (/= ']') cs
+      in  if null rest then error $ ">>>>> emtpy list?!\n"
+                                    ++ "nested: " ++ show nested ++ "\n"
+                                    ++ "rest: " ++ show rest ++ "\n"
+                       else Nested (go nested) : go (tail rest)
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val (read num) : go rest
+    go (_:cs) = go cs
 
+-- parseP3 :: (String, String, Bool) -- String -> PacketList
+parseP3 :: IO ()
+parseP3 = putStrLn $ packetStr ++ " source\n"
+                     ++ res ++ " converted/reverted\n"
+                     ++ "Match: " ++ show isCorrect
+  where
+    packetStr = "[[[6,10],[4,3,[4]]]]"
+    res = dispPacket $ Packet (go $ tail packetStr)
+    isCorrect = packetStr == res
+    go :: String -> [PacketVals]
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = span (/= ']') cs
       in  Nested (go nested) : go rest
     go (c:cs) | isDigit c =
       let (num, rest) = span isDigit (c:cs)

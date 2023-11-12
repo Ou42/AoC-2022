@@ -778,7 +778,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - refactor, but nothing discovered
   - `disp2` to convert (display) the parsed data back in original form
   - need to check if anything was parsed incorrectly
-  - yes, yes it was:
+  - yes, yes it was ( parsed incorrectly):
     ```haskell
     Pair 1: [[[6,10],[4,3,[4]]]], ... -- prettyPrint - raw input data
     Pair 1: [[[6,10]],[4,3,[4]]], ... -- disp2       - parsed & converted back
@@ -790,3 +790,13 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     ghci> dispPacket $ parseP2 a
     "[[],[6,10],[4,3],[4]]"
     ```
+  - It's taken me a while to see this, but `span (/= ']')` is the culprit!
+    - Instead of the *first* ']', it should include everthing up to the matching ']'
+    - How to *find* that matching ']'?!
+    - To help in testing, created the *simpler* helper func: `parseP3`
+      ```haskell
+      ghci> parseP3
+      [[[6,10],[4,3,[4]]]] source
+      [[[6,10]],[4,3,[4]]] converted/reverted
+      Match: False
+      ```
