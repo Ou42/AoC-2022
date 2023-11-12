@@ -800,3 +800,8 @@ https://github.com/haskell/cabal/issues/6481 for more information.
       [[[6,10]],[4,3,[4]]] converted/reverted
       Match: False
       ```
+  - tried other ways with recursion & an accumulator. Closer, but not quite there.
+  - asked Bing for more help, but it kept writing bad code.
+    - It'd compile, but wouldn't create the correct structure
+  - Then I asked Bing for tutorials!
+    - here's one, [Write_Yourself_a_Scheme_in_48_Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing)
