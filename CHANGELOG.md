@@ -806,4 +806,5 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - Then I asked Bing for tutorials!
     - here's one, [Write_Yourself_a_Scheme_in_48_Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing)
   - `parseP2c` FTW?! uses `splitP` to extract matching `[ ]` List
-    - refactor: `parseP2c` renamed `parseP2cTest_1` and `go` renamed `parseP2c`
+    - refactor 1: `parseP2c` renamed `parseP2cTest_1` and `go` renamed `parseP2c`
+    - refactor 2: more renaming, `parseP2c` now is `String -> PacketList`

@@ -117,15 +117,20 @@ parseP2b = putStrLn $ packetStr ++ " source\n"
       in  Val (read num) : go rest
     go (_:cs) = go cs
 
-parseP2c :: String -> [PacketVals]
-parseP2c [] = []
-parseP2c ('[':cs) =
+parseP2c2PacketValsList :: String -> [PacketVals]
+parseP2c2PacketValsList [] = []
+parseP2c2PacketValsList ('[':cs) =
   let (nested, rest) = splitP ('[':cs)
-  in  Nested (parseP2c $ tail nested) : parseP2c rest
-parseP2c (c:cs) | isDigit c =
+  in  Nested (parseP2c2PacketValsList $ tail nested) : parseP2c2PacketValsList rest
+parseP2c2PacketValsList (c:cs) | isDigit c =
   let (num, rest) = span isDigit (c:cs)
-  in  Val (read num) : parseP2c rest
-parseP2c (_:cs) = parseP2c cs
+  in  Val (read num) : parseP2c2PacketValsList rest
+parseP2c2PacketValsList (_:cs) = parseP2c2PacketValsList cs
+
+parseP2c :: String -> PacketList
+parseP2c packetStr =
+  let innerNested [Nested packetVals] = packetVals
+  in  Packet $ innerNested $ parseP2c2PacketValsList packetStr
 
 parseP2cTest_1 :: IO ()
 parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
@@ -135,8 +140,7 @@ parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
   where
     -- packetStr = "[[[]]]" -- works!
     packetStr  = "[[[6,10],[4,3,[4]]]]"
-    innerNested [Nested packetVals] = packetVals
-    packetForm = Packet $ innerNested $ parseP2c packetStr  :: PacketList
+    packetForm = parseP2c packetStr
     res = dispPacket packetForm
     isCorrect = packetStr == res
 
@@ -258,8 +262,8 @@ parseInput input = go 1 lns
     go cnt ("":rest) = go cnt rest
     go cnt (l:r:rest) = Pair cnt (parseL, parseR):go (cnt+1) rest
       where
-        parseL = parsePacket l
-        parseR = parsePacket r
+        parseL = parseP2c l -- parsePacket l
+        parseR = parseP2c r -- parsePacket r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
