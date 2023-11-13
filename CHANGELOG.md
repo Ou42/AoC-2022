@@ -737,7 +737,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - days 08-12
   - consider editing the .hs files to ack this change
 
-### 2023-11-10
+### 2023-11-10 - 2023-11-12
 
 - simple WIP parse of the input data
   - `(Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
@@ -805,3 +805,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - It'd compile, but wouldn't create the correct structure
   - Then I asked Bing for tutorials!
     - here's one, [Write_Yourself_a_Scheme_in_48_Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing)
+  - `parse2c` FTW?! uses `splitP` to extract matching `[ ]` List
