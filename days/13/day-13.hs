@@ -117,8 +117,18 @@ parseP2b = putStrLn $ packetStr ++ " source\n"
       in  Val (read num) : go rest
     go (_:cs) = go cs
 
-parseP2c :: IO ()
-parseP2c = putStrLn $ packetStr ++ " source\n"
+parseP2c :: String -> [PacketVals]
+parseP2c [] = []
+parseP2c ('[':cs) =
+  let (nested, rest) = splitP ('[':cs)
+  in  Nested (parseP2c $ tail nested) : parseP2c rest
+parseP2c (c:cs) | isDigit c =
+  let (num, rest) = span isDigit (c:cs)
+  in  Val (read num) : parseP2c rest
+parseP2c (_:cs) = parseP2c cs
+
+parseP2cTest_1 :: IO ()
+parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
                      ++ res ++ " converted/reverted\n"
                      ++ show packetForm ++ " packet format\n"
                      ++ "Match: " ++ show isCorrect
@@ -126,19 +136,9 @@ parseP2c = putStrLn $ packetStr ++ " source\n"
     -- packetStr = "[[[]]]" -- works!
     packetStr  = "[[[6,10],[4,3,[4]]]]"
     innerNested [Nested packetVals] = packetVals
-    packetForm = Packet $ innerNested $ go packetStr
+    packetForm = Packet $ innerNested $ parseP2c packetStr  :: PacketList
     res = dispPacket packetForm
     isCorrect = packetStr == res
-    go :: String -> [PacketVals]
-    go [] = []
-    go ('[':cs) =
-      -- let (nested, rest) = span (/= ']') cs
-      let (nested, rest) = splitP ('[':cs)
-      in  Nested (go $ tail nested) : go rest
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val (read num) : go rest
-    go (_:cs) = go cs
 
 -- parseP3 :: (String, String, Bool) -- String -> PacketList
 parseP3 :: IO ()

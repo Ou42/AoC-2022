@@ -805,4 +805,5 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - It'd compile, but wouldn't create the correct structure
   - Then I asked Bing for tutorials!
     - here's one, [Write_Yourself_a_Scheme_in_48_Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing)
-  - `parse2c` FTW?! uses `splitP` to extract matching `[ ]` List
+  - `parseP2c` FTW?! uses `splitP` to extract matching `[ ]` List
+    - refactor: `parseP2c` renamed `parseP2cTest_1` and `go` renamed `parseP2c`
