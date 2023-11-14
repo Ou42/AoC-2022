@@ -1,8 +1,6 @@
 module Main where
 
 import Data.Char (isDigit)
-import Data.Text (pack, replace, unpack)
-import Data.Text.Internal.Fusion (stream)
 
 {-
     Day 13
@@ -51,20 +49,6 @@ newtype PacketList = Packet [PacketVals] deriving Show
 data Pair          = Pair Int (PacketList, PacketList) deriving Show
 type Pairs         = [Pair]
 
-
-parsePacket :: String -> PacketList
-parsePacket (_:rest) = Packet (go rest)
-  where
-    go :: String -> [PacketVals]
-    go [] = []
-    go ('[':cs) =
-      let (nested, rest) = span (/= ']') cs
-      in  Nested (go nested) : go rest
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val (read num) : go rest
-    go (_:cs) = go cs
-
 splitP :: String -> (String, String)
 splitP str = go ([head str], tail str)
   where
@@ -75,47 +59,6 @@ splitP str = go ([head str], tail str)
       in  if p1OpenBracketCnt == p1CloseBracketCnt
             then (p1, p2)
             else go (p1 ++ [head p2], tail p2)
-
-parseP2 :: String -> PacketList
-parseP2 (_:rest) = Packet (go $ init rest)
-  where
-    go :: String -> [PacketVals]
-    go [] = []
-    -- go (']':cs) = [] : go cs
-    go ('[':cs) =
-      let (nested, rest) = span (/= ']') cs
-      in  if null rest then error $ ">>>>> emtpy list?!\n"
-                                    ++ "nested: " ++ show nested ++ "\n"
-                                    ++ "rest: " ++ show rest ++ "\n"
-                       else Nested (go nested) : go (tail rest)
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val (read num) : go rest
-    go (_:cs) = go cs
-
-parseP2b :: IO ()
-parseP2b = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    -- packetStr = "[[[]]]" -- works!
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    -- packetForm = Packet (go packetStr [])
-    packetForm = Packet [Nested $ go packetStr]
-    -- packetForm = Packet (go (tail packetStr) [])
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals]
-    go [] = []
-    -- go (']':cs) = [] : go cs
-    go ('[':cs) =
-      let (nested, rest) = span (/= ']') cs
-      in  Nested (go nested) : go rest
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val (read num) : go rest
-    go (_:cs) = go cs
 
 parseP2c2PacketValsList :: String -> [PacketVals]
 parseP2c2PacketValsList [] = []
@@ -144,115 +87,6 @@ parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
     res = dispPacket packetForm
     isCorrect = packetStr == res
 
--- parseP3 :: (String, String, Bool) -- String -> PacketList
-parseP3 :: IO ()
-parseP3 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    -- packetStr = "[[[]]]" -- works!
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    -- packetForm = Packet (go packetStr [])
-    packetForm = Packet [Nested $ go packetStr]
-    -- packetForm = Packet (go (tail packetStr) [])
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals]
-    go [] = []
-    go (']':c:cs) = case c of
-                      ',' -> go cs
-                      _   -> go cs
-    go ('[':cs) = go cs
-    go (c:cs) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  Val (read num) : go rest
-    go (_:cs) = go cs 
-    -- go todo acc = error $ ">>>> More to do?!\n"
-    --                       ++ "left to do: " ++ show todo ++ "\n"
-    --                       ++ "acc: " ++ show acc ++ "\n"
-
-
-parseP4 :: IO ()
-parseP4 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    packetForm = Packet [Nested $ go packetStr []]
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals] -> [PacketVals]
-    go [] [] = []
-    go (']':c:cs) acc = case c of
-                          ',' -> Nested acc : go cs []
-                          _ -> [Nested acc]
-    go ('[':cs) acc = acc ++ go cs []
-    go (c:cs) acc | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  go rest (acc ++ [Val (read num)])
-    go (_:cs) acc = go cs acc
-
-bingParse :: IO ()
-bingParse = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    packetForm = Packet (go packetStr [])
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals] -> [PacketVals]
-    go [] acc = reverse acc
-    go (x:xs) acc
-      | x == '['  = go xs (Nested (go xs []) : acc)
-      | x == ']'  = acc
-      | isDigit x = let (num, rest) = span isDigit (x:xs)
-                    in  go rest (Val (read num) : acc)
-      | otherwise = go xs acc
-
-bingParse2 :: IO ()
-bingParse2 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    packetForm = Packet (go packetStr [])
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals] -> [PacketVals]
-    go [] acc = reverse acc
-    go (x:xs) acc
-      | x == '['  = let (nested, rest) = span (/= ']') xs
-                    in  go rest (Nested (go nested []) : acc)
-      | x == ']'  = acc
-      | isDigit x = let (num, rest) = span isDigit (x:xs)
-                    in  go (dropWhile (== ',') rest) (Val (read num) : acc)
-      | otherwise = go xs acc
-
-bingParse3 :: IO ()
-bingParse3 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
-  where
-    packetStr = "[[[6,10],[4,3,[4]]]]"
-    packetForm = Packet (go packetStr [])
-    res = dispPacket packetForm
-    isCorrect = packetStr == res
-    go :: String -> [PacketVals] -> [PacketVals]
-    go [] acc = reverse acc
-    go (x:xs) acc
-      | x == '['  = let (nested, rest) = span (/= ']') xs
-                    in  go rest (Nested (go nested []) : acc)
-      | x == ']'  = acc
-      | isDigit x = let (num, rest) = span isDigit (x:xs)
-                    in  go (dropWhile (== ',') rest) (Val (read num) : acc)
-      | otherwise = go xs acc
-
 parseInput :: String -> Pairs
 parseInput input = go 1 lns
   where
@@ -262,8 +96,8 @@ parseInput input = go 1 lns
     go cnt ("":rest) = go cnt rest
     go cnt (l:r:rest) = Pair cnt (parseL, parseR):go (cnt+1) rest
       where
-        parseL = parseP2c l -- parsePacket l
-        parseR = parseP2c r -- parsePacket r
+        parseL = parseP2c l
+        parseR = parseP2c r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
@@ -288,8 +122,8 @@ dispPacket (Packet pLst) = "[" ++ go pLst ++ "]"
 hr :: IO ()
 hr = putStrLn $ replicate 42 '-' ++ ['\n']
 
-cmpPair :: Pair -> Int
-cmpPair (Pair pNum (Packet lPacket, Packet rPacket)) = go lPacket rPacket
+cmpPairPartA :: Pair -> Int
+cmpPairPartA (Pair pNum (Packet lPacket, Packet rPacket)) = go lPacket rPacket
   where
     go :: [PacketVals] -> [PacketVals] -> Int
     go [] [] = -1 -- inconclusive, continue
@@ -322,15 +156,6 @@ cmpPair (Pair pNum (Packet lPacket, Packet rPacket)) = go lPacket rPacket
     -- ... convert the Int to a Nested List and re-compare
     go lVals (Val rVal:rVals) = go lVals (Nested [Val rVal]:rVals)
     go (Val lVal:lVals) rVals = go (Nested [Val lVal]:lVals) rVals
-    -- go lVals@(Nested nLeft:_) (Val rVal:rVals)  = go lVals (Nested [Val rVal]:rVals)
-    -- go (Val lVal:lVals) rVals@(Nested nRight:_) = go (Nested [Val lVal]:lVals) rVals
-
-    -- Pattern match is redundant?!
-    -- go l r = error $ "BLAH BLAH BLAH BLAH BLAH"
-    --                  ++ "\n"
-    --                  ++ "Left: " ++ show l
-    --                  ++ "\n"
-    --                  ++ "Right: " ++ show r
 
 prettyPrintInputData :: String -> IO ()
 prettyPrintInputData input = putStrLn $ go 1 lns
@@ -354,16 +179,15 @@ main = do
 
   hr
 
-  disp $ take 5 $ parseInput fileInput
+  let packetPairList = parseInput fileInput
+  disp $ take 5 packetPairList
 
   hr
 
-  print $ map cmpPair $ parseInput fileInput
+  let validPairs = map cmpPairPartA packetPairList
+  print validPairs
 
   hr
 
   putStr "Sum = "
-  print $ sum $ map cmpPair $ parseInput fileInput
-
-  -- using my personalized input data, I end up w/ 5486
-  -- > That's not the right answer; your answer is too high.
+  print $ sum validPairs

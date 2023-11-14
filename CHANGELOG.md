@@ -737,7 +737,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - days 08-12
   - consider editing the .hs files to ack this change
 
-### 2023-11-10 - 2023-11-12
+### 2023-11-10 - 2023-11-13
 
 - simple WIP parse of the input data
   - `(Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
@@ -808,3 +808,8 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - `parseP2c` FTW?! uses `splitP` to extract matching `[ ]` List
     - refactor 1: `parseP2c` renamed `parseP2cTest_1` and `go` renamed `parseP2c`
     - refactor 2: more renaming, `parseP2c` now is `String -> PacketList`
+- *SUCCESS!!*
+  - dead code removal
+  - wish 1: find a recursive parse solution
+  - wish 2: use a parser combinator solution: `readP`?!
+  - wish 3: fix clunkiness / extra pattern matching etc
