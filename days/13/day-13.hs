@@ -60,20 +60,33 @@ splitP str = go ([head str], tail str)
             then (p1, p2)
             else go (p1 ++ [head p2], tail p2)
 
-parseP2c2PacketValsList :: String -> [PacketVals]
-parseP2c2PacketValsList [] = []
-parseP2c2PacketValsList ('[':cs) =
-  let (nested, rest) = splitP ('[':cs)
-  in  Nested (parseP2c2PacketValsList $ tail nested) : parseP2c2PacketValsList rest
-parseP2c2PacketValsList (c:cs) | isDigit c =
-  let (num, rest) = span isDigit (c:cs)
-  in  Val (read num) : parseP2c2PacketValsList rest
-parseP2c2PacketValsList (_:cs) = parseP2c2PacketValsList cs
-
 parseP2c :: String -> PacketList
-parseP2c packetStr =
-  let innerNested [Nested packetVals] = packetVals
-  in  Packet $ innerNested $ parseP2c2PacketValsList packetStr
+parseP2c = Packet . innerNested . go
+  where
+    innerNested [Nested packetVals] = packetVals
+    go :: String -> [PacketVals]
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = splitP ('[':cs)
+      in  Nested (go $ tail nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val (read num) : go rest
+    go (_:cs) = go cs
+
+parseP3RecursiveOnly :: String -> PacketList
+parseP3RecursiveOnly = Packet . innerNested . go
+  where
+    innerNested [Nested packetVals] = packetVals
+    go :: String -> [PacketVals]
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = splitP ('[':cs)
+      in  Nested (go $ tail nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val (read num) : go rest
+    go (_:cs) = go cs
 
 parseFuncTest :: (String -> PacketList) -> String -> IO ()
 parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"

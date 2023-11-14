@@ -817,3 +817,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 ### 2023-11-14
 
 - Day-13 - Part A | Wish 1: Find a recursive parse solution WIP
+    - refactor: `parseP2c` & `parseP3RecursiveOnly` are now self-contained
