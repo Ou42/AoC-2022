@@ -25,6 +25,7 @@
 | 10  | &check; | &check; | &check; | _          | _         |
 | 11  | &check; | &check; | &check; | _          | _         |
 | 12  | &check; | &check; | &check; | `cabal`    | &check;   |
+| 13  | &check; | _       | _       | _          | _         |
 | 23  | &check; | &check; | &check; | `stack`    | &check;   |
 
 ## Run / Build & Run Instructions:

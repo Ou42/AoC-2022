@@ -726,3 +726,90 @@ https://github.com/haskell/cabal/issues/6481 for more information.
 
 - Day-12 Profiling *WIP*
 - see: /days/12/README-aoc-2022-day-12.md
+
+## Day-13 - Part A
+
+### 2023-11-09
+
+- started
+- renamed test input files: `input-XX-test.txt` to `input-XX.test`
+  - now they are saved to the repo
+  - days 08-12
+  - consider editing the .hs files to ack this change
+
+### 2023-11-10 - 2023-11-13
+
+- simple WIP parse of the input data
+  - `(Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
+  - `(Packet "[[1],[2,3,4]]",Packet "[[1],4]")`
+- enumerated the list of `Pairs`:
+  - `Pairs 1 (Packet "[1,1,3,1,1]",Packet "[1,1,5,1,1]")`
+  - `Pairs 2 (Packet "[[1],[2,3,4]]",Packet "[[1],4]")`
+- `parsePacket`
+  - started WIP
+  - now handles 10's ( or any multi-digit Int )
+- `Show` instance / parsing cleanup
+  - parsing done?!
+  - does `show` an extra set of [ ]'s surrounding the Packet
+- `cmpPairs` WIP
+  - works for test input data Pairs 1, 7, & 8
+  - instead of return `Bool`, returning `Pair #` if True and 0 if False?!
+    ... so it can be `Sum`ed easily at the end
+- switching to recursive data structure
+  - [x] parsing | `parsePacket'` -- good enough?!
+    ```haskell
+    -- 0 | [1,1,5,1,1]
+    -- 3 | [[1],[2,3,4]]
+    ghci> parsePacket' $ lns !! 0
+    [Nested [Val' 1,Val' 1,Val' 3,Val' 1,Val' 1]]
+    ghci> parsePacket' $ lns !! 3
+    [Nested [Nested [Val' 1]],Nested [Val' 2,Val' 3,Val' 4]]  
+    ```
+  - [x] parsing | `parsePacket'` *improved!*
+      ```haskell
+      ghci> parsePacket' $ lns !! 0
+      Packet' [Val' 1,Val' 1,Val' 3,Val' 1,Val' 1]
+      ghci> parsePacket' $ lns !! 3
+      Packet' [Nested [Val' 1],Nested [Val' 2,Val' 3,Val' 4]]
+      ```
+- `parseInput'`
+- it compiles! it runs! ... it doesn't produce the right answer!
+- bug hunt!
+  - refactor, but nothing discovered
+  - `disp2` to convert (display) the parsed data back in original form
+  - need to check if anything was parsed incorrectly
+  - yes, yes it was ( parsed incorrectly):
+    ```haskell
+    Pair 1: [[[6,10],[4,3,[4]]]], ... -- prettyPrint - raw input data
+    Pair 1: [[[6,10]],[4,3,[4]]], ... -- disp2       - parsed & converted back
+
+    Packet [Nested [Nested [Val 6,Val 10]],Nested [Val 4,Val 3,Nested [Val 4]]]
+
+    -- easier test:
+    ghci> a = "[[[6,10],[4,3,[4]]]]"
+    ghci> dispPacket $ parseP2 a
+    "[[],[6,10],[4,3],[4]]"
+    ```
+  - It's taken me a while to see this, but `span (/= ']')` is the culprit!
+    - Instead of the *first* ']', it should include everthing up to the matching ']'
+    - How to *find* that matching ']'?!
+    - To help in testing, created the *simpler* helper func: `parseP3`
+      ```haskell
+      ghci> parseP3
+      [[[6,10],[4,3,[4]]]] source
+      [[[6,10]],[4,3,[4]]] converted/reverted
+      Match: False
+      ```
+  - tried other ways with recursion & an accumulator. Closer, but not quite there.
+  - asked Bing for more help, but it kept writing bad code.
+    - It'd compile, but wouldn't create the correct structure
+  - Then I asked Bing for tutorials!
+    - here's one, [Write_Yourself_a_Scheme_in_48_Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing)
+  - `parseP2c` FTW?! uses `splitP` to extract matching `[ ]` List
+    - refactor 1: `parseP2c` renamed `parseP2cTest_1` and `go` renamed `parseP2c`
+    - refactor 2: more renaming, `parseP2c` now is `String -> PacketList`
+- *SUCCESS!!*
+  - dead code removal
+  - wish 1: find a recursive parse solution
+  - wish 2: use a parser combinator solution: `readP`?!
+  - wish 3: fix clunkiness / extra pattern matching etc
