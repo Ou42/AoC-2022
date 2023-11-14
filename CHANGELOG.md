@@ -813,3 +813,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - wish 1: find a recursive parse solution
   - wish 2: use a parser combinator solution: `readP`?!
   - wish 3: fix clunkiness / extra pattern matching etc
+
+### 2023-11-14
+
+- Day-13 - Part A | Wish 1: Find a recursive parse solution WIP

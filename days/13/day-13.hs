@@ -75,17 +75,19 @@ parseP2c packetStr =
   let innerNested [Nested packetVals] = packetVals
   in  Packet $ innerNested $ parseP2c2PacketValsList packetStr
 
-parseP2cTest_1 :: IO ()
-parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
+parseFuncTest :: (String -> PacketList) -> String -> IO ()
+parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"
+                                    ++ res ++ " converted/reverted\n"
+                                    ++ show packetForm ++ " packet format\n"
+                                    ++ "Match: " ++ show isCorrect
   where
-    -- packetStr = "[[[]]]" -- works!
-    packetStr  = "[[[6,10],[4,3,[4]]]]"
-    packetForm = parseP2c packetStr
+    packetForm = parseFunc packetStr
     res = dispPacket packetForm
     isCorrect = packetStr == res
+
+parseP2cTest_1 :: IO ()
+parseP2cTest_1 = parseFuncTest parseP2c "[[[6,10],[4,3,[4]]]]"
+-- parseP2cTest_1 = parseFuncTest parseP2c "[[[]]]" -- works!
 
 parseInput :: String -> Pairs
 parseInput input = go 1 lns
