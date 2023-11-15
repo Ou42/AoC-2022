@@ -75,31 +75,26 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 parseP3RecursiveOnly :: String -> PacketList
-parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (str, [[]])
+parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (str, [[Nested []]])
   where
     innerNested [Nested packetVals] = packetVals
     go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
     go ([],vals) = ([],vals)
-    -- go (']':c:cs) | c /= ']' =  Val 42 : go cs
-    -- go (']':cs, v1:v2:vals) = error $ show (cs,3,v2,vals)
     go (']':cs, [v]) = go (cs,[v])
-    go (']':cs, v:vals) = go (cs,((head vals)++v):tail vals)
-    -- go (']':cs, v1:v2:vals) = (cs,[v2++[v1]]:vals)
-    go ('[':cs, vals) = (cs, [Nested $ head $ snd $ go (cs,vals)]:vals)
+    go (']':cs, [v1]:[v2]:vals) = go (cs,[Nested [v2, v1]]:tail vals)
+    go ('[':cs, vals) = (cs, head (snd $ go (cs,vals)):vals)
     go (c:cs, vals) | isDigit c =
       let (num, rest) = span isDigit (c:cs)
       in  go (rest, [Val (read num)] : vals)
-      -- in  if num == "3" then error $ show (rest, v1, num, vals)
-      --     else go (rest, (v1 ++ [Val (read num)]) : vals)
     go (_:cs, vals) = go (cs, vals)
 
 {-
-ghci> parseFuncTest parseP3RecursiveOnly "[[1,2],3]"
-[[1,2],3] source
-[[1,2,3]] converted/reverted
-Packet [Nested [Val 1,Val 2,Val 3]] packet format
+ghci> parseFuncTest parseP3RecursiveOnly "[1]"
+[1] source
+[[],1] converted/reverted
+Packet [Nested [],Val 1] packet format
 Match: False
--}    
+-}
 
 parseFuncTest :: (String -> PacketList) -> String -> IO ()
 parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"
