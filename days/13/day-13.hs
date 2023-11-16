@@ -75,18 +75,24 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 parseP3RecursiveOnly :: String -> PacketList
-parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (str, [[Nested []]])
+parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (tail str, [[Nested []]])
   where
     innerNested [Nested packetVals] = packetVals
     go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
     go ([],vals) = ([],vals)
-    go (']':cs, [v]) = go (cs,[v])
-    go (']':cs, [v1]:[v2]:vals) = go (cs,[Nested [v2, v1]]:tail vals)
-    go ('[':cs, vals) = (cs, head (snd $ go (cs,vals)):vals)
+    -- go (']':cs, [v]) = go (cs,[v])
+    -- go (']':cs, [v1]:[v2]:vals) = go (cs,[Nested [v2, v1]]:tail vals)
+    go (']':cs, vals) = go (cs,vals)
+    go ('[':cs, vals) = (cs, [Nested $ head (snd $ go (cs,vals))]:vals)
     go (c:cs, vals) | isDigit c =
       let (num, rest) = span isDigit (c:cs)
       in  go (rest, [Val (read num)] : vals)
-    go (_:cs, vals) = go (cs, vals)
+    -- go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
+    go (',':cs, v:vals) = error $ "----------------------------------" ++ "\n"
+                          ++ "cs: " ++ cs ++ "\n"
+                          ++ "v: " ++ show v ++ "\n"
+                          ++ "vals: " ++ show vals ++ "\n" -- (cs, v : head (snd (go (cs, vals))) : vals)
+    go (_, vals) = error "Bad thing happened!"
 
 {-
 ghci> parseFuncTest parseP3RecursiveOnly "[1]"
