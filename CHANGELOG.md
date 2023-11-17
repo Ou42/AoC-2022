@@ -823,3 +823,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - I think I *got* it!! it's that I need to parse based on the `,`!!
   - That may be the case, but I can't seem to figure it out
   - Gonna try to "simplify" and work on using a `foldl'` & "buckets"
+    - ... List of Lists of `PVals2` ( temp `PacketVals` )

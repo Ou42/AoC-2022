@@ -79,12 +79,12 @@ parseP2c = Packet . innerNested . go
 data PVals2    = Ch Char | Val2 Int | Nested2 [PVals2] deriving Show
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldP :: String -> [PVals2]
-foldP = reverse . foldl' go2 ([]::[PVals2])
+foldP :: String -> [[PVals2]]
+foldP = reverse . foldl' go2 ([[]]::[[PVals2]])
 
-go2 :: [PVals2] -> Char -> [PVals2]
-go2 donePLst c | isDigit c = Val2 (read [c]) : donePLst
-go2 donePLst c = Ch c : donePLst
+go2 :: [[PVals2]] -> Char -> [[PVals2]]
+go2 donePLst c | isDigit c = [Val2 (read [c])] : donePLst
+go2 donePLst c = [Ch c] : donePLst
 
 
 go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
