@@ -84,7 +84,8 @@ parseFoldP packetStr =
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
 foldP :: String -> PacketVals
-foldP = head . foldl' go2 ([]::[PacketVals])
+-- foldP = head . foldl' go2 ([]::[PacketVals])
+foldP = head . snd . foldl' go3 ('!',[]::[PacketVals])
 
 go2 :: [PacketVals] -> Char -> [PacketVals]
 go2 (Nested pv:pvs) c | isDigit c = Nested (pv ++ [Val (read [c])]) : pvs
@@ -94,6 +95,19 @@ go2 (pv1 : Nested pv2 : pvs) ']' = Nested (pv2 ++ [pv1]) : pvs
 go2 pvs ','  = pvs -- default action will be append
 go2 pvs c    = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
+go3 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
+go3 (prevC, Nested pv:pvs) c | isDigit c =
+  if isDigit prevC
+    then
+      let Val prevDigit = last pv
+      in  (c, Nested ( init pv ++ [Val (prevDigit*10 + read [c])]) : pvs)
+    else
+      (c, Nested (pv ++ [Val (read [c])]) : pvs)
+go3 (_,  pvs) '[' = ('!', Nested [] : pvs)
+go3 (_, [pv]) ']' = ('!', [pv])
+go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
+go3 (_,  pvs) ',' = ('!', pvs) -- default action will be append
+go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
 go ([],vals) = ([],vals)
