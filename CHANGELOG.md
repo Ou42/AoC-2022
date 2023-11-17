@@ -828,3 +828,5 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - refactor: `([]::[[PVals']])`, `PVal2` -> `PVal'`, & `Val2` -> `Val'`
     - removed `OSB`, `,` does nothing because def action is append
     - removed `CSB` and start of adding "Nesting" ( missing `Nesting'` )
+    - returned to using `PacketVals` & `Val`
+    - guards, although cool, replaced w/ pattern matching

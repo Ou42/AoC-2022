@@ -76,17 +76,17 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 
-data PVals'    = Val' Int | Nested' [PVals'] deriving Show
+-- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldP :: String -> [[PVals']]
-foldP = reverse . foldl' go2 ([]::[[PVals']])
+foldP :: String -> [[PacketVals]]
+foldP = reverse . foldl' go2 ([]::[[PacketVals]])
 
-go2 :: [[PVals']] -> Char -> [[PVals']]
-go2 (pv:pvs) c | isDigit c = (Val' (read [c]) : pv) : pvs
+go2 :: [[PacketVals]] -> Char -> [[PacketVals]]
+go2 (pv:pvs) c | isDigit c = (Val (read [c]) : pv) : pvs
 go2 pvs '[' = [] : pvs
-go2 (pv:pvs) ']' | null pvs  = reverse pv : pvs
-                 | otherwise = reverse (pv ++ head pvs) : tail pvs
+go2 (pv:[]) ']'  = [reverse pv]
+go2 (pv:pvs) ']' = reverse (pv ++ head pvs) : tail pvs
 go2 pvs ',' = pvs -- default action will be append
 go2 pvs c = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n" 
 
