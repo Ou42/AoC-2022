@@ -827,3 +827,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - baby step: `OSB` & `CSB` (Open Sqr Bracket & Close ...)
     - refactor: `([]::[[PVals']])`, `PVal2` -> `PVal'`, & `Val2` -> `Val'`
     - removed `OSB`, `,` does nothing because def action is append
+    - removed `CSB` and start of adding "Nesting" ( missing `Nesting'` )
