@@ -76,7 +76,7 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 
-data PVals2    = Ch Char | Val2 Int | Nested2 [PVals2] deriving Show
+data PVals2    = OSB | CSB | Val2 Int | Nested2 [PVals2] deriving Show
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
 foldP :: String -> [[PVals2]]
@@ -84,7 +84,10 @@ foldP = reverse . foldl' go2 ([[]]::[[PVals2]])
 
 go2 :: [[PVals2]] -> Char -> [[PVals2]]
 go2 donePLst c | isDigit c = [Val2 (read [c])] : donePLst
-go2 donePLst c = [Ch c] : donePLst
+go2 donePLst '[' = [OSB] : donePLst
+go2 donePLst ']' = [CSB] : donePLst
+go2 donePLst ',' = donePLst -- default action will be append
+go2 donePLst c = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n" 
 
 
 go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
