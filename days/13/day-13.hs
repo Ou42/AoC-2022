@@ -76,14 +76,14 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 
-data PVals2    = OSB | CSB | Val2 Int | Nested2 [PVals2] deriving Show
+data PVals'    = OSB | CSB | Val' Int | Nested2 [PVals'] deriving Show
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldP :: String -> [[PVals2]]
-foldP = reverse . foldl' go2 ([[]]::[[PVals2]])
+foldP :: String -> [[PVals']]
+foldP = reverse . foldl' go2 ([]::[[PVals']])
 
-go2 :: [[PVals2]] -> Char -> [[PVals2]]
-go2 donePLst c | isDigit c = [Val2 (read [c])] : donePLst
+go2 :: [[PVals']] -> Char -> [[PVals']]
+go2 donePLst c | isDigit c = [Val' (read [c])] : donePLst
 go2 donePLst '[' = [OSB] : donePLst
 go2 donePLst ']' = [CSB] : donePLst
 go2 donePLst ',' = donePLst -- default action will be append
