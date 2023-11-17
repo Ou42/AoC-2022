@@ -834,3 +834,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - missing 2 digit numbers
     - proved it works on test input, To-Do: parse 2 digit numbers
     - *It **works!!***
+    - Semigroup `(<>)` for code readability / less pattern matching?!

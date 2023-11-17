@@ -2,6 +2,14 @@ module Main where
 
 import Data.Char (isDigit)
 import Data.List (foldl')
+import Data.Semigroup
+
+instance Semigroup PacketVals where
+  (<>) :: PacketVals -> PacketVals -> PacketVals
+  Val x <> Val y = Val (x*10 + y)
+  Val x <> Nested ys = Nested (Val x : ys)
+  Nested xs <> Val y = Nested (xs ++ [Val y])
+  Nested xs <> Nested ys = Nested (xs ++ ys)
 
 {-
     Day 13
@@ -84,7 +92,6 @@ parseFoldP packetStr =
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
 foldP :: String -> PacketVals
--- foldP = head . foldl' go2 ([]::[PacketVals])
 foldP = head . snd . foldl' go3 ('!',[]::[PacketVals])
 
 go2 :: [PacketVals] -> Char -> [PacketVals]
@@ -109,64 +116,21 @@ go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
 go3 (_,  pvs) ',' = ('!', pvs) -- default action will be append
 go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
-go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
-go ([],vals) = ([],vals)
-
-go (']':cs, vals) = go (cs,vals)
-                    -- error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
-                    -- ++ "cs: " ++ cs ++ "\n"
-                    -- ++ "vals: " ++ show vals ++ "\n"
-
-go ('[':cs, vals) = undefined -- (cs, [Nested $ snd $ go (cs, vals)-+]:vals)
-
-go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
-
-go (c:cs, vals) | isDigit c =
-                              let (num, rest) = span isDigit (c:cs)
-                              in  go (rest, [Val (read num)] : vals)
-                | otherwise =
-                              error $ "-----\n"
-                                    ++ "c: " ++ [c] ++ "\n"
-
-parseP3RecursiveOnly :: String -> PacketList
-parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (tail str, [[]])
-  where
-    innerNested [Nested packetVals] = packetVals
-    innerNested huh = error $ show huh
-    go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
-    go ([],vals) = ([],vals)
-    -- go (']':cs, [v]) = go (cs,[v])
-    -- go (']':cs, [v1]:[v2]:vals) = go (cs,[Nested [v2, v1]]:tail vals)
-    go (']':cs, vals) = -- go (cs,vals)
-                        error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
-                        ++ "cs: " ++ cs ++ "\n"
-                        ++ "vals: " ++ show vals ++ "\n"
-    -- go ('[':cs, vals) = (cs, [Nested $ head (snd $ go (cs,vals))]:vals)
-    go ('[':cs, vals) = (cs, [Nested $ head (snd (go (cs, vals))) ]:vals)
-    -- go ('2':cs, vals) = error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
-    --                           ++ "cs: " ++ cs ++ "\n"
-    --                           ++ "vals: " ++ show vals ++ "\n"
-    go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
-        -- error $ "------- , ---------------------------" ++ "\n"
-        -- ++ "cs: " ++ cs ++ "\n"
-        -- ++ "v:vals: " ++ show (v:vals) ++ "\n" -- (cs, v : head (snd (go (cs, vals))) : vals)
-
-    go (c:cs, vals) | isDigit c =
-                                  let (num, rest) = span isDigit (c:cs)
-                                  in  go (rest, [Val (read num)] : vals)
-                    | otherwise =
-                                  error $ "-----\n"
-                                        ++ "c: " ++ [c] ++ "\n"
-
-    -- go (cs, vals) =  
-
-{-
-ghci> parseFuncTest parseP3RecursiveOnly "[1]"
-[1] source
-[[],1] converted/reverted
-Packet [Nested [],Val 1] packet format
-Match: False
--}
+go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
+go4 (prevC, pv:pvs) c | isDigit c =
+  if isDigit prevC
+    then
+      let Val prevDigit = last pv -- can't take last of "pv" ?!
+      in  (c, Nested ( init pv <> [Val (prevDigit*10 + read [c])]) : pvs)
+    else
+      -- (c, Nested (pv ++ [Val (read [c])]) : pvs)
+      (c, (pv <> Val (read [c])) : pvs) -- type checks here!
+go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
+go4 (_, [pv]) ']' = ('!', [pv])
+-- go4 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
+go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
+go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
+go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 parseFuncTest :: (String -> PacketList) -> String -> IO ()
 parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"
