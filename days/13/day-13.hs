@@ -77,20 +77,22 @@ parseP2c = Packet . innerNested . go
 
 
 -- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
+parseFoldP :: String -> PacketList
+parseFoldP packetStr =
+  let (Nested packetVals) = foldP packetStr
+  in  Packet packetVals
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
 foldP :: String -> PacketVals
 foldP = head . foldl' go2 ([]::[PacketVals])
 
 go2 :: [PacketVals] -> Char -> [PacketVals]
--- go2 (Nested pv:pvs) c | isDigit c = Nested (Val (read [c]) : pv) : pvs
 go2 (Nested pv:pvs) c | isDigit c = Nested (pv ++ [Val (read [c])]) : pvs
--- go2 []  '[' = []
-go2 pvs '[' = Nested [] : pvs
-go2 [pv] ']'  = [pv] -- [Nested $ reverse pv] -- [Nested pv]
+go2 pvs '['  = Nested [] : pvs
+go2 [pv] ']' = [pv]
 go2 (pv1 : Nested pv2 : pvs) ']' = Nested (pv2 ++ [pv1]) : pvs
-go2 pvs ',' = pvs -- default action will be append
-go2 pvs c = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
+go2 pvs ','  = pvs -- default action will be append
+go2 pvs c    = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 
 go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
@@ -166,8 +168,8 @@ parseP2cTest_1 :: IO ()
 parseP2cTest_1 = parseFuncTest parseP2c "[[[6,10],[4,3,[4]]]]"
 -- parseP2cTest_1 = parseFuncTest parseP2c "[[[]]]" -- works!
 
-parseInput :: String -> Pairs
-parseInput input = go 1 lns
+parseInput :: String -> (String -> PacketList) -> Pairs
+parseInput input parseFunc = go 1 lns
   where
     lns = lines input
     go :: Int -> [String] -> Pairs
@@ -175,8 +177,8 @@ parseInput input = go 1 lns
     go cnt ("":rest) = go cnt rest
     go cnt (l:r:rest) = Pair cnt (parseL, parseR):go (cnt+1) rest
       where
-        parseL = parseP2c l
-        parseR = parseP2c r
+        parseL = parseFunc l
+        parseR = parseFunc r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
@@ -250,15 +252,15 @@ prettyPrintInputData input = putStrLn $ go 1 lns
 
 main :: IO ()
 main = do
-  -- fileInput <- readFile "input-13.test"
-  fileInput <- readFile "input-13.txt"
+  fileInput <- readFile "input-13.test"
+  -- fileInput <- readFile "input-13.txt"
 
   putStrLn "Day 13 - Part A"
   putStrLn fileInput
 
   hr
 
-  let packetPairList = parseInput fileInput
+  let packetPairList = parseInput fileInput parseP2c
   disp $ take 5 packetPairList
 
   hr
@@ -268,5 +270,13 @@ main = do
 
   hr
 
-  putStr "Sum = "
+  putStr "Sum ( using `parseP2c` ) = "
   print $ sum validPairs
+
+  hr
+
+  let packetsFromFold    = parseInput fileInput parseFoldP
+  let validPairsFromFold = map cmpPairPartA packetsFromFold
+
+  putStr "Sum ( using `parseFoldP` ) = "
+  print $ sum validPairsFromFold
