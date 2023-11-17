@@ -814,10 +814,12 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - wish 2: use a parser combinator solution: `readP`?!
   - wish 3: fix clunkiness / extra pattern matching etc
 
-### 2023-11-14 - 2023-11-15
+### 2023-11-14 - 2023-11-17
 
 - Day-13 - Part A | Wish 1: Find a recursive parse solution WIP
   - refactor: `parseP2c` & `parseP3RecursiveOnly` are now self-contained
   - WIP: `parseP3RecursiveOnly`'s `go` func now uses a tuple
   - closer ... but some issues: [1] -> [[], 1] ?!
   - I think I *got* it!! it's that I need to parse based on the `,`!!
+  - That may be the case, but I can't seem to figure it out
+  - Gonna try to "simplify" and work on using a `foldl'` & "buckets"

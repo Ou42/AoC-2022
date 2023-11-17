@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Char (isDigit)
+import Data.List (foldl')
 
 {-
     Day 13
@@ -74,25 +75,68 @@ parseP2c = Packet . innerNested . go
       in  Val (read num) : go rest
     go (_:cs) = go cs
 
+
+data PVals2    = Ch Char | Val2 Int | Nested2 [PVals2] deriving Show
+
+-- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
+foldP :: String -> [PVals2]
+foldP = reverse . foldl' go2 ([]::[PVals2])
+
+go2 :: [PVals2] -> Char -> [PVals2]
+go2 donePLst c | isDigit c = Val2 (read [c]) : donePLst
+go2 donePLst c = Ch c : donePLst
+
+
+go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
+go ([],vals) = ([],vals)
+
+go (']':cs, vals) = go (cs,vals)
+                    -- error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
+                    -- ++ "cs: " ++ cs ++ "\n"
+                    -- ++ "vals: " ++ show vals ++ "\n"
+
+go ('[':cs, vals) = undefined -- (cs, [Nested $ snd $ go (cs, vals)-+]:vals)
+
+go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
+
+go (c:cs, vals) | isDigit c =
+                              let (num, rest) = span isDigit (c:cs)
+                              in  go (rest, [Val (read num)] : vals)
+                | otherwise =
+                              error $ "-----\n"
+                                    ++ "c: " ++ [c] ++ "\n"
+
 parseP3RecursiveOnly :: String -> PacketList
-parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (tail str, [[Nested []]])
+parseP3RecursiveOnly str = Packet $ innerNested $ head $ snd $ go (tail str, [[]])
   where
     innerNested [Nested packetVals] = packetVals
+    innerNested huh = error $ show huh
     go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])
     go ([],vals) = ([],vals)
     -- go (']':cs, [v]) = go (cs,[v])
     -- go (']':cs, [v1]:[v2]:vals) = go (cs,[Nested [v2, v1]]:tail vals)
-    go (']':cs, vals) = go (cs,vals)
-    go ('[':cs, vals) = (cs, [Nested $ head (snd $ go (cs,vals))]:vals)
+    go (']':cs, vals) = -- go (cs,vals)
+                        error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
+                        ++ "cs: " ++ cs ++ "\n"
+                        ++ "vals: " ++ show vals ++ "\n"
+    -- go ('[':cs, vals) = (cs, [Nested $ head (snd $ go (cs,vals))]:vals)
+    go ('[':cs, vals) = (cs, [Nested $ head (snd (go (cs, vals))) ]:vals)
+    -- go ('2':cs, vals) = error $ "--- Whaaaaaaaat! ----------------------------" ++ "\n"
+    --                           ++ "cs: " ++ cs ++ "\n"
+    --                           ++ "vals: " ++ show vals ++ "\n"
+    go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
+        -- error $ "------- , ---------------------------" ++ "\n"
+        -- ++ "cs: " ++ cs ++ "\n"
+        -- ++ "v:vals: " ++ show (v:vals) ++ "\n" -- (cs, v : head (snd (go (cs, vals))) : vals)
+
     go (c:cs, vals) | isDigit c =
-      let (num, rest) = span isDigit (c:cs)
-      in  go (rest, [Val (read num)] : vals)
-    -- go (',':cs, v:vals) = (cs, v : head (snd (go (cs, vals))) : vals)
-    go (',':cs, v:vals) = error $ "----------------------------------" ++ "\n"
-                          ++ "cs: " ++ cs ++ "\n"
-                          ++ "v: " ++ show v ++ "\n"
-                          ++ "vals: " ++ show vals ++ "\n" -- (cs, v : head (snd (go (cs, vals))) : vals)
-    go (_, vals) = error "Bad thing happened!"
+                                  let (num, rest) = span isDigit (c:cs)
+                                  in  go (rest, [Val (read num)] : vals)
+                    | otherwise =
+                                  error $ "-----\n"
+                                        ++ "c: " ++ [c] ++ "\n"
+
+    -- go (cs, vals) =  
 
 {-
 ghci> parseFuncTest parseP3RecursiveOnly "[1]"
