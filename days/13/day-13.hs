@@ -79,16 +79,18 @@ parseP2c = Packet . innerNested . go
 -- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldP :: String -> [[PacketVals]]
-foldP = reverse . foldl' go2 ([]::[[PacketVals]])
+foldP :: String -> PacketVals
+foldP = head . foldl' go2 ([]::[PacketVals])
 
-go2 :: [[PacketVals]] -> Char -> [[PacketVals]]
-go2 (pv:pvs) c | isDigit c = (Val (read [c]) : pv) : pvs
-go2 pvs '[' = [] : pvs
-go2 (pv:[]) ']'  = [reverse pv]
-go2 (pv:pvs) ']' = reverse (pv ++ head pvs) : tail pvs
+go2 :: [PacketVals] -> Char -> [PacketVals]
+-- go2 (Nested pv:pvs) c | isDigit c = Nested (Val (read [c]) : pv) : pvs
+go2 (Nested pv:pvs) c | isDigit c = Nested (pv ++ [Val (read [c])]) : pvs
+-- go2 []  '[' = []
+go2 pvs '[' = Nested [] : pvs
+go2 [pv] ']'  = [pv] -- [Nested $ reverse pv] -- [Nested pv]
+go2 (pv1 : Nested pv2 : pvs) ']' = Nested (pv2 ++ [pv1]) : pvs
 go2 pvs ',' = pvs -- default action will be append
-go2 pvs c = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n" 
+go2 pvs c = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 
 go :: (String, [[PacketVals]]) -> (String, [[PacketVals]])

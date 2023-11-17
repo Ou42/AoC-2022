@@ -830,3 +830,5 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - removed `CSB` and start of adding "Nesting" ( missing `Nesting'` )
     - returned to using `PacketVals` & `Val`
     - guards, although cool, replaced w/ pattern matching
+    - very close. appears to work for all test input
+    - missing 2 digit numbers
