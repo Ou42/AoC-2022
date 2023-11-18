@@ -87,12 +87,14 @@ parseP2c = Packet . innerNested . go
 -- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
 parseFoldP :: String -> PacketList
 parseFoldP packetStr =
-  let (Nested packetVals) = foldP packetStr
+  -- let (Nested packetVals) = foldP go3 packetStr -- sum == 13 (correct!)
+  let (Nested packetVals) = foldP go4 packetStr -- sum == 12 ?! 
   in  Packet packetVals
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
-foldP :: String -> PacketVals
-foldP = head . snd . foldl' go3 ('!',[]::[PacketVals])
+foldP :: ((Char, [PacketVals]) -> Char -> (Char, [PacketVals]))
+         -> String -> PacketVals
+foldP goFunc = head . snd . foldl' goFunc ('!',[]::[PacketVals])
 
 go2 :: [PacketVals] -> Char -> [PacketVals]
 go2 (Nested pv:pvs) c | isDigit c = Nested (pv ++ [Val (read [c])]) : pvs
@@ -116,19 +118,52 @@ go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
 go3 (_,  pvs) ',' = ('!', pvs) -- default action will be append
 go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
+
+-- Functor instance:
+
+  -- ghci> data Val a = Val a deriving Show
+  -- ghci> instance Functor Val where; fmap f (Val x) = Val (f x)
+
+  -- ghci> fmap (*10) $ Val 42
+  -- Val 420
+  -- ghci> fmap ((+3) . (*10)) $ Val 42
+  -- Val 423
+  -- ghci> fmap ((+3) . (*10)) $ Val 2
+  -- Val 23
+
+-- ----------------------------------------------------------------
+
+-- using go4:
+
+  -- [1,2,0,4,0,6,-1,0]
+  -- Sum ( using `parseFoldP` ) = 12
+  -- ghci> parseFoldP "[[]]"
+  -- Packet []
+  -- ghci> parseFoldP "[[[]]]"
+  -- Packet []
+  -- ghci> parseFoldP "[]"
+  -- Packet []
+
 go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
-go4 (prevC, pv:pvs) c | isDigit c =
+-- go4 (prevC, pv:pvs) c | isDigit c =
+go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
   if isDigit prevC
     then
-      let Val prevDigit = last pv -- can't take last of "pv" ?!
-      in  (c, Nested ( init pv <> [Val (prevDigit*10 + read [c])]) : pvs)
+      let -- ePV == extractedPV
+          Val prevDigit = last ePV -- can't take last of "pv" ?!
+      in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
     else
-      -- (c, Nested (pv ++ [Val (read [c])]) : pvs)
       (c, (pv <> Val (read [c])) : pvs) -- type checks here!
 go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
 go4 (_, [pv]) ']' = ('!', [pv])
--- go4 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
+
+-- go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
+  -- ghci> Nested ([] ++ [Nested []]) : []
+  -- [Nested [Nested []]]
 go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
+  -- ghci> Nested [] <> Nested []
+  -- Nested []
+
 go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
 go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
@@ -246,8 +281,6 @@ main = do
   let validPairs = map cmpPairPartA packetPairList
   print validPairs
 
-  hr
-
   putStr "Sum ( using `parseP2c` ) = "
   print $ sum validPairs
 
@@ -256,5 +289,6 @@ main = do
   let packetsFromFold    = parseInput fileInput parseFoldP
   let validPairsFromFold = map cmpPairPartA packetsFromFold
 
+  print validPairsFromFold
   putStr "Sum ( using `parseFoldP` ) = "
   print $ sum validPairsFromFold

@@ -835,3 +835,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - proved it works on test input, To-Do: parse 2 digit numbers
     - *It **works!!***
     - Semigroup `(<>)` for code readability / less pattern matching?!
+    - new bug due to Semigroup! in `go4`
