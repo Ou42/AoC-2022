@@ -1,6 +1,8 @@
 module Main where
 
 import Data.Char (isDigit)
+import Data.List (foldl')
+import Data.Semigroup ()
 
 {-
     Day 13
@@ -49,6 +51,14 @@ newtype PacketList = Packet [PacketVals] deriving Show
 data Pair          = Pair Int (PacketList, PacketList) deriving Show
 type Pairs         = [Pair]
 
+instance Semigroup PacketVals where
+  (<>) :: PacketVals -> PacketVals -> PacketVals
+  Val x <> Val y = Val (x*10 + y)
+  Val x <> Nested ys = Nested (Val x : ys)
+  Nested xs <> Val y = Nested (xs ++ [Val y])
+  Nested xs <> Nested ys = Nested (xs ++ [Nested ys])
+
+
 splitP :: String -> (String, String)
 splitP str = go ([head str], tail str)
   where
@@ -60,35 +70,93 @@ splitP str = go ([head str], tail str)
             then (p1, p2)
             else go (p1 ++ [head p2], tail p2)
 
-parseP2c2PacketValsList :: String -> [PacketVals]
-parseP2c2PacketValsList [] = []
-parseP2c2PacketValsList ('[':cs) =
-  let (nested, rest) = splitP ('[':cs)
-  in  Nested (parseP2c2PacketValsList $ tail nested) : parseP2c2PacketValsList rest
-parseP2c2PacketValsList (c:cs) | isDigit c =
-  let (num, rest) = span isDigit (c:cs)
-  in  Val (read num) : parseP2c2PacketValsList rest
-parseP2c2PacketValsList (_:cs) = parseP2c2PacketValsList cs
-
-parseP2c :: String -> PacketList
-parseP2c packetStr =
-  let innerNested [Nested packetVals] = packetVals
-  in  Packet $ innerNested $ parseP2c2PacketValsList packetStr
-
-parseP2cTest_1 :: IO ()
-parseP2cTest_1 = putStrLn $ packetStr ++ " source\n"
-                     ++ res ++ " converted/reverted\n"
-                     ++ show packetForm ++ " packet format\n"
-                     ++ "Match: " ++ show isCorrect
+parseLookAhead :: String -> PacketList
+parseLookAhead = Packet . (\[Nested pVals] -> pVals) . go
   where
-    -- packetStr = "[[[]]]" -- works!
-    packetStr  = "[[[6,10],[4,3,[4]]]]"
-    packetForm = parseP2c packetStr
+    go :: String -> [PacketVals]
+    go [] = []
+    go ('[':cs) =
+      let (nested, rest) = splitP ('[':cs)
+      in  Nested (go $ tail nested) : go rest
+    go (c:cs) | isDigit c =
+      let (num, rest) = span isDigit (c:cs)
+      in  Val (read num) : go rest
+    go (_:cs) = go cs
+
+
+-- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
+foldP :: ((Char, [PacketVals]) -> Char -> (Char, [PacketVals]))
+         -> String -> PacketVals
+foldP goFunc = head . snd . foldl' goFunc ('!',[]::[PacketVals])
+
+
+parseFoldSemigroup :: String -> PacketList
+parseFoldSemigroup = Packet . (\(Nested pVals) -> pVals) . foldP go4
+  where
+    go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
+    go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
+      if isDigit prevC
+        then
+          let -- ePV == extractedPV
+              Val prevDigit = last ePV
+          in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
+        else
+          (c, (pv <> Val (read [c])) : pvs) -- type checks here!
+    go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
+    go4 (_, [pv]) ']' = ('!', [pv])
+    go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
+    go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
+    go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
+
+
+parseFold :: String -> PacketList
+parseFold = Packet . (\(Nested pVals) -> pVals) . foldP go3
+  where
+    go3 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
+    go3 (prevC, Nested pv:pvs) c | isDigit c =
+      if isDigit prevC
+        then
+          let Val prevDigit = last pv
+          in  (c, Nested ( init pv ++ [Val (prevDigit*10 + read [c])]) : pvs)
+        else
+          (c, Nested (pv ++ [Val (read [c])]) : pvs)
+    go3 (_,  pvs) '[' = ('!', Nested [] : pvs)
+    go3 (_, [pv]) ']' = ('!', [pv])
+    go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
+    go3 (_,  pvs) ',' = ('!', pvs) -- default action will be append
+    go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
+
+
+-- Functor instance:
+
+  -- ghci> data Val a = Val a deriving Show
+  -- ghci> instance Functor Val where; fmap f (Val x) = Val (f x)
+
+  -- ghci> fmap (*10) $ Val 42
+  -- Val 420
+  -- ghci> fmap ((+3) . (*10)) $ Val 42
+  -- Val 423
+  -- ghci> fmap ((+3) . (*10)) $ Val 2
+  -- Val 23
+
+-- ----------------------------------------------------------------
+
+parseFuncTest :: (String -> PacketList) -> String -> IO ()
+parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"
+                                    ++ res ++ " converted/reverted\n"
+                                    ++ show packetForm ++ " packet format\n"
+                                    ++ "Match: " ++ show isCorrect
+  where
+    packetForm = parseFunc packetStr
     res = dispPacket packetForm
     isCorrect = packetStr == res
 
-parseInput :: String -> Pairs
-parseInput input = go 1 lns
+parseLookAheadTest_1 :: IO ()
+parseLookAheadTest_1 = parseFuncTest parseLookAhead "[[[6,10],[4,3,[4]]]]"
+-- parseLookAheadTest_1 = parseFuncTest parseLookAhead "[[[]]]" -- works!
+
+parseInput :: String -> (String -> PacketList) -> Pairs
+parseInput input parseFunc = go 1 lns
   where
     lns = lines input
     go :: Int -> [String] -> Pairs
@@ -96,8 +164,8 @@ parseInput input = go 1 lns
     go cnt ("":rest) = go cnt rest
     go cnt (l:r:rest) = Pair cnt (parseL, parseR):go (cnt+1) rest
       where
-        parseL = parseP2c l
-        parseR = parseP2c r
+        parseL = parseFunc l
+        parseR = parseFunc r
 
 disp :: Show a => [a] -> IO ()
 disp pairs = putStrLn $ unlines $ map show pairs
@@ -171,15 +239,15 @@ prettyPrintInputData input = putStrLn $ go 1 lns
 
 main :: IO ()
 main = do
-  -- fileInput <- readFile "input-13.test"
-  fileInput <- readFile "input-13.txt"
+  fileInput <- readFile "input-13.test"
+  -- fileInput <- readFile "input-13.txt"
 
   putStrLn "Day 13 - Part A"
   putStrLn fileInput
 
   hr
 
-  let packetPairList = parseInput fileInput
+  let packetPairList = parseInput fileInput parseLookAhead
   disp $ take 5 packetPairList
 
   hr
@@ -187,7 +255,23 @@ main = do
   let validPairs = map cmpPairPartA packetPairList
   print validPairs
 
+  putStr "Sum ( using `parseLookAhead` ) = "
+  print $ sum validPairs
+
   hr
 
-  putStr "Sum = "
-  print $ sum validPairs
+  let packetsFromFold    = parseInput fileInput parseFold
+  let validPairsFromFold = map cmpPairPartA packetsFromFold
+
+  print validPairsFromFold
+  putStr "Sum ( using `parseFold` ) = "
+  print $ sum validPairsFromFold
+
+  hr
+
+  let packetsFromFold'    = parseInput fileInput parseFoldSemigroup
+  let validPairsFromFold' = map cmpPairPartA packetsFromFold'
+
+  print validPairsFromFold'
+  putStr "Sum ( using `parseFoldSemigroup` ) = "
+  print $ sum validPairsFromFold'

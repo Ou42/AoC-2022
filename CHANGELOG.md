@@ -813,3 +813,29 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - wish 1: find a recursive parse solution
   - wish 2: use a parser combinator solution: `readP`?!
   - wish 3: fix clunkiness / extra pattern matching etc
+
+### 2023-11-14 - 2023-11-18
+
+- Day-13 - Part A | Wish 1: Find a recursive parse solution WIP
+  - refactor: `parseP2c` & `parseP3RecursiveOnly` are now self-contained
+  - WIP: `parseP3RecursiveOnly`'s `go` func now uses a tuple
+  - closer ... but some issues: [1] -> [[], 1] ?!
+  - I think I *got* it!! it's that I need to parse based on the `,`!!
+  - That may be the case, but I can't seem to figure it out
+  - Gonna try to "simplify" and work on using a `foldl'` & "buckets"
+    - ... List of Lists of `PVals2` ( temp `PacketVals` )
+    - baby step: `OSB` & `CSB` (Open Sqr Bracket & Close ...)
+    - refactor: `([]::[[PVals']])`, `PVal2` -> `PVal'`, & `Val2` -> `Val'`
+    - removed `OSB`, `,` does nothing because def action is append
+    - removed `CSB` and start of adding "Nesting" ( missing `Nesting'` )
+    - returned to using `PacketVals` & `Val`
+    - guards, although cool, replaced w/ pattern matching
+    - very close. appears to work for all test input
+    - missing 2 digit numbers
+    - proved it works on test input, To-Do: parse 2 digit numbers
+    - *It **works!!***
+    - Semigroup `(<>)` for code readability / less pattern matching?!
+    - new bug due to Semigroup! in `go4`
+    - fixed! `Nested xs <> Nested ys = Nested (xs ++ [Nested ys])`
+    - refactor: renamed `parseFoldP` => `parseFoldSemigroup` & misc
+    - more refactoring! func renaming (`parseFold`, `parseLookAhead`) etc
