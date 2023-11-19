@@ -838,3 +838,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - new bug due to Semigroup! in `go4`
     - fixed! `Nested xs <> Nested ys = Nested (xs ++ [Nested ys])`
     - refactor: renamed `parseFoldP` => `parseFoldSemigroup` & misc
+    - more refactoring! func renaming (`parseFold`, `parseLookAhead`) etc
