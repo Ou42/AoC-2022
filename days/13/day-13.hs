@@ -70,9 +70,8 @@ splitP str = go ([head str], tail str)
             else go (p1 ++ [head p2], tail p2)
 
 parseP2c :: String -> PacketList
-parseP2c = Packet . innerNested . go
+parseP2c = Packet . (\[Nested pVals] -> pVals) . go
   where
-    innerNested [Nested packetVals] = packetVals
     go :: String -> [PacketVals]
     go [] = []
     go ('[':cs) =
@@ -84,11 +83,26 @@ parseP2c = Packet . innerNested . go
     go (_:cs) = go cs
 
 
--- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
-parseFoldP :: String -> PacketList
-parseFoldP packetStr =
-  let (Nested packetVals) = foldP go4 packetStr
-  in  Packet packetVals
+parseFoldSemigroup :: String -> PacketList
+parseFoldSemigroup packetStr = Packet
+                       $ (\(Nested pVals) -> pVals)
+                       $ foldP go4 packetStr
+  where
+    go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
+    go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
+      if isDigit prevC
+        then
+          let -- ePV == extractedPV
+              Val prevDigit = last ePV
+          in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
+        else
+          (c, (pv <> Val (read [c])) : pvs) -- type checks here!
+    go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
+    go4 (_, [pv]) ']' = ('!', [pv])
+    go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
+    go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
+    go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
+
 
 parseFoldP3 :: String -> PacketList
 parseFoldP3 packetStr =
@@ -136,21 +150,6 @@ go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
   -- Val 23
 
 -- ----------------------------------------------------------------
-
-go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
-go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
-  if isDigit prevC
-    then
-      let -- ePV == extractedPV
-          Val prevDigit = last ePV
-      in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
-    else
-      (c, (pv <> Val (read [c])) : pvs) -- type checks here!
-go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
-go4 (_, [pv]) ']' = ('!', [pv])
-go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
-go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
-go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 parseFuncTest :: (String -> PacketList) -> String -> IO ()
 parseFuncTest parseFunc packetStr = putStrLn $ packetStr ++ " source\n"
@@ -271,9 +270,9 @@ main = do
 
   hr
 
-  let packetsFromFold    = parseInput fileInput parseFoldP
+  let packetsFromFold    = parseInput fileInput parseFoldSemigroup
   let validPairsFromFold = map cmpPairPartA packetsFromFold
 
   print validPairsFromFold
-  putStr "Sum ( using `parseFoldP` ) = "
+  putStr "Sum ( using `parseFoldSemigroup` ) = "
   print $ sum validPairsFromFold

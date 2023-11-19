@@ -837,3 +837,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - Semigroup `(<>)` for code readability / less pattern matching?!
     - new bug due to Semigroup! in `go4`
     - fixed! `Nested xs <> Nested ys = Nested (xs ++ [Nested ys])`
+    - refactor: renamed `parseFoldP` => `parseFoldSemigroup` & misc
