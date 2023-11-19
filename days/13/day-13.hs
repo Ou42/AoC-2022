@@ -2,14 +2,14 @@ module Main where
 
 import Data.Char (isDigit)
 import Data.List (foldl')
-import Data.Semigroup
+import Data.Semigroup ()
 
 instance Semigroup PacketVals where
   (<>) :: PacketVals -> PacketVals -> PacketVals
   Val x <> Val y = Val (x*10 + y)
   Val x <> Nested ys = Nested (Val x : ys)
   Nested xs <> Val y = Nested (xs ++ [Val y])
-  Nested xs <> Nested ys = Nested (xs ++ ys)
+  Nested xs <> Nested ys = Nested (xs ++ [Nested ys])
 
 {-
     Day 13
@@ -87,8 +87,12 @@ parseP2c = Packet . innerNested . go
 -- data PacketVals    = Val Int | Nested [PacketVals] deriving Show
 parseFoldP :: String -> PacketList
 parseFoldP packetStr =
-  -- let (Nested packetVals) = foldP go3 packetStr -- sum == 13 (correct!)
-  let (Nested packetVals) = foldP go4 packetStr -- sum == 12 ?! 
+  let (Nested packetVals) = foldP go4 packetStr
+  in  Packet packetVals
+
+parseFoldP3 :: String -> PacketList
+parseFoldP3 packetStr =
+  let (Nested packetVals) = foldP go3 packetStr
   in  Packet packetVals
 
 -- foldl' :: Foldable t => (b -> a -> b) -> b -> t a -> b
@@ -133,37 +137,18 @@ go3 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
 -- ----------------------------------------------------------------
 
--- using go4:
-
-  -- [1,2,0,4,0,6,-1,0]
-  -- Sum ( using `parseFoldP` ) = 12
-  -- ghci> parseFoldP "[[]]"
-  -- Packet []
-  -- ghci> parseFoldP "[[[]]]"
-  -- Packet []
-  -- ghci> parseFoldP "[]"
-  -- Packet []
-
 go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
--- go4 (prevC, pv:pvs) c | isDigit c =
 go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
   if isDigit prevC
     then
       let -- ePV == extractedPV
-          Val prevDigit = last ePV -- can't take last of "pv" ?!
+          Val prevDigit = last ePV
       in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
     else
       (c, (pv <> Val (read [c])) : pvs) -- type checks here!
 go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
 go4 (_, [pv]) ']' = ('!', [pv])
-
--- go3 (_, pv1 : Nested pv2 : pvs) ']' = ('!', Nested (pv2 ++ [pv1]) : pvs)
-  -- ghci> Nested ([] ++ [Nested []]) : []
-  -- [Nested [Nested []]]
 go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
-  -- ghci> Nested [] <> Nested []
-  -- Nested []
-
 go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
 go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 

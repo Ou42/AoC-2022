@@ -814,7 +814,7 @@ https://github.com/haskell/cabal/issues/6481 for more information.
   - wish 2: use a parser combinator solution: `readP`?!
   - wish 3: fix clunkiness / extra pattern matching etc
 
-### 2023-11-14 - 2023-11-17
+### 2023-11-14 - 2023-11-18
 
 - Day-13 - Part A | Wish 1: Find a recursive parse solution WIP
   - refactor: `parseP2c` & `parseP3RecursiveOnly` are now self-contained
@@ -836,3 +836,4 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - *It **works!!***
     - Semigroup `(<>)` for code readability / less pattern matching?!
     - new bug due to Semigroup! in `go4`
+    - fixed! `Nested xs <> Nested ys = Nested (xs ++ [Nested ys])`
