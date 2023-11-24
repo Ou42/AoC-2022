@@ -51,12 +51,11 @@ newtype PacketList = Packet [PacketVals] deriving Show
 data Pair          = Pair Int (PacketList, PacketList) deriving Show
 type Pairs         = [Pair]
 
-instance Semigroup PacketVals where
-  (<>) :: PacketVals -> PacketVals -> PacketVals
-  Val x <> Val y = Val (x*10 + y)
-  Val x <> Nested ys = Nested (Val x : ys)
-  Nested xs <> Val y = Nested (xs ++ [Val y])
-  Nested xs <> Nested ys = Nested (xs ++ [Nested ys])
+combinePVs :: PacketVals -> PacketVals -> PacketVals
+combinePVs (Val x) (Val y) = Val (x*10 + y)
+combinePVs (Val x) (Nested ys) = Nested (Val x : ys)
+combinePVs (Nested xs) (Val y) = Nested (xs ++ [Val y])
+combinePVs (Nested xs) (Nested ys) = Nested (xs ++ [Nested ys])
 
 
 splitP :: String -> (String, String)
@@ -90,8 +89,9 @@ foldP :: ((Char, [PacketVals]) -> Char -> (Char, [PacketVals]))
 foldP goFunc = head . snd . foldl' goFunc ('!',[]::[PacketVals])
 
 
-parseFoldSemigroup :: String -> PacketList
-parseFoldSemigroup = Packet . (\(Nested pVals) -> pVals) . foldP go4
+-- parseFoldSemigroup :: String -> PacketList
+parseFoldCombineFunc :: String -> PacketList
+parseFoldCombineFunc = Packet . (\(Nested pVals) -> pVals) . foldP go4
   where
     go4 :: (Char, [PacketVals]) -> Char -> (Char, [PacketVals])
     go4 (prevC, pv@(Nested ePV):pvs) c | isDigit c =
@@ -99,12 +99,17 @@ parseFoldSemigroup = Packet . (\(Nested pVals) -> pVals) . foldP go4
         then
           let -- ePV == extractedPV
               Val prevDigit = last ePV
-          in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
+              prevDigitVal  = last ePV
+          -- in  (c, Nested ( init ePV <> [Val (prevDigit*10 + read [c])]) : pvs)
+          -- in  error $  "---------------\n"
+          --           ++ "ePV = " ++ show ePV ++ "\n"
+          --           ++ "(init ePV) = " ++ show (init ePV) ++ "\n" 
+          in (c, Nested ( init ePV ++ [combinePVs prevDigitVal (Val (read [c]))] ) : pvs)
         else
-          (c, (pv <> Val (read [c])) : pvs) -- type checks here!
+          (c, combinePVs pv (Val (read [c])) : pvs) -- type checks here!
     go4 (_,  pvs) '[' = ('!', Nested [] : pvs)
     go4 (_, [pv]) ']' = ('!', [pv])
-    go4 (_, pv1 : pv2 : pvs) ']' = ('!', (pv2 <> pv1) : pvs)
+    go4 (_, pv1 : pv2 : pvs) ']' = ('!', combinePVs pv2 pv1 : pvs)
     go4 (_,  pvs) ',' = ('!', pvs) -- default action will be append
     go4 (_,  pvs) c   = error $ "--- char: " ++ [c] ++ " ---- is invalid! ----\n"
 
@@ -269,9 +274,9 @@ main = do
 
   hr
 
-  let packetsFromFold'    = parseInput fileInput parseFoldSemigroup
+  let packetsFromFold'    = parseInput fileInput parseFoldCombineFunc
   let validPairsFromFold' = map cmpPairPartA packetsFromFold'
 
   print validPairsFromFold'
-  putStr "Sum ( using `parseFoldSemigroup` ) = "
+  putStr "Sum ( using `parseFoldCombineFunc` ) = "
   print $ sum validPairsFromFold'

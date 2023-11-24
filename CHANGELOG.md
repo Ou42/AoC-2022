@@ -839,3 +839,8 @@ https://github.com/haskell/cabal/issues/6481 for more information.
     - fixed! `Nested xs <> Nested ys = Nested (xs ++ [Nested ys])`
     - refactor: renamed `parseFoldP` => `parseFoldSemigroup` & misc
     - more refactoring! func renaming (`parseFold`, `parseLookAhead`) etc
+
+### 2023-11-23
+
+- Day-13 - Part A | Unlawful Typeclass Instance
+  - My Semigroup implementation breaks the associativity law
